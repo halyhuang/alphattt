@@ -53,7 +53,7 @@ handle(State, {call, start_game, _Value}, _Session) ->
 	{ok, Pid} = player_client:start("webplayer", webplayer, board, "127.0.0.1", 8011),
 	player_client:enter_room(Pid),
 	WebPlayerPid = player_client:get_player(Pid),
-	{ok, OpponentPid} = player_client:start("ucb1", ucb1, board, "127.0.0.1", 8011),
+	{ok, OpponentPid} = player_client:start("mcts", mcts, board, "127.0.0.1", 8011),
 	player_client:enter_room(OpponentPid),
     {true, 0, #session{is_playing = true, pid = WebPlayerPid}, {response,  "ok"}}.	
 </erl>
