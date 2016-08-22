@@ -1,0 +1,59 @@
+<erl module=alphattt_mod>
+-compile(export_all).
+-record(session,  {is_playing = false,
+				   pid}).
+out(A) ->
+    A2=A#arg{state = []},
+    yaws_rpc:handler_session(A, {?MODULE, handle}).
+
+handle(State, {call, get_state, _Arg} = _Request, Session=#session{is_playing = false}) ->
+	Json = 	json2:obj_from_list([{"is_playing", false}]),
+    {true, 0, Session, {response, Json}};	
+
+handle(State, {call, get_state, _Arg} = _Request, Session=#session{is_playing = true, pid = Pid}) ->	
+    {IsUpdateMove, Move, LegalMovesJsonList} = case webplayer:is_move(Pid) of
+		    	{ok, true} ->
+
+		    		{ok, OpponentMove} = webplayer:get_opponent_move(Pid),
+		    		MoveJson = case OpponentMove of
+		    			none -> "";
+		    			{R, C, R1, C1} ->
+							io:format("Opponent Move ~p~n", [OpponentMove]),		
+		    				json2:obj_from_list([{"R", R}, {"C", C}, {"r", R1}, {"c", C1}])
+		    		end,
+					{ok, LegalMoves} = webplayer:get_legal_move(Pid),
+						LegalMovesJson = [ json2:obj_from_list([{"R", R}, {"C", C}, {"r", R1}, {"c", C1}]) || {R, C, R1, C1} <- LegalMoves ],
+		    		{true, MoveJson, LegalMovesJson};
+		    	_ -> 
+		    		{false, [], []}
+		   end,
+	StateJson = json2:obj_from_list([{"is_playing", true},
+									 {"is_update_move", IsUpdateMove},
+									 {"move", Move},
+									 {"legal_moves", {array, LegalMovesJsonList}}]), 
+    {true, 0, Session, {response, StateJson}};
+
+handle(State, {call, get_state, _Arg} = Request, _Session) ->
+	handle(State, Request, #session{is_playing = false});
+
+handle(State, {call, set_move, {array, [R, C, R1, C1]}} = _Request, Session=#session{pid = Pid}) ->	
+	Move = {R, C, R1, C1},
+	io:format("Webplayer Move ~p~n", [Move]),
+	case Pid of
+        undefined -> ok;
+        Pid ->  
+    		webplayer:set_move(Pid, Move)    	
+    end,		
+    {true, 0, Session, {response,  "ok"}};
+
+handle(State, {call, end_game, _Value}, _Session) ->
+    {true, 0, #session{is_playing = false}, {response,  "ok"}};
+
+handle(State, {call, start_game, _Value}, _Session) ->
+	{ok, Pid} = player_client:start("webplayer", webplayer, board, "127.0.0.1", 8011),
+	player_client:enter_room(Pid),
+	WebPlayerPid = player_client:get_player(Pid),
+	{ok, OpponentPid} = player_client:start("ucb1", ucb1, board, "127.0.0.1", 8011),
+	player_client:enter_room(OpponentPid),
+    {true, 0, #session{is_playing = true, pid = WebPlayerPid}, {response,  "ok"}}.	
+</erl>

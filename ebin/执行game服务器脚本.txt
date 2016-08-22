@@ -1,0 +1,1 @@
+nohup erl -noshell -noinput -detached -s game start &

@@ -1,0 +1,534 @@
+"human" VS "webplayer" Begin!!!
+"human" move {0,0,1,1}
+"webplayer" VS "human" Begin!!!
+"webplayer" VS "human" Begin!!!
+"human" VS "webplayer" Begin!!!
+"human" move {1,1,1,1}
+"human" VS "webplayer" Begin!!!
+"webplayer" VS "human" Begin!!!
+"human" VS "webplayer" Begin!!!
+"human" VS "webplayer" Begin!!!
+"human" VS "webplayer" Begin!!!
+"webplayer" VS "human" Begin!!!
+"webplayer" VS "human" Begin!!!
+"human" VS "webplayer" Begin!!!
+"human" move {0,0,1,1}
+"webplayer" VS "human" Begin!!!
+"webplayer" VS "human" Begin!!!
+"human" VS "webplayer" Begin!!!
+"human" move {0,0,1,1}
+"human" VS "webplayer" Begin!!!
+"human" move {0,0,1,1}
+"human" VS "webplayer" Begin!!!
+"human" move {0,0,1,1}
+"webplayer" VS "human" Begin!!!
+"human" VS "webplayer" Begin!!!
+"human" move {0,0,1,1}
+"human" VS "webplayer" Begin!!!
+"human" move {0,0,1,2}
+"webplayer" VS "human" Begin!!!
+"human" VS "webplayer" Begin!!!
+"human" move {0,1,1,1}
+"human" VS "webplayer" Begin!!!
+"human" move {2,2,2,2}
+"webplayer" move {2,2,2,0}
+"human" move {2,0,1,1}
+"webplayer" move {1,1,1,0}
+"human" move {1,0,2,0}
+"webplayer" VS "human" Begin!!!
+"webplayer" VS "human" Begin!!!
+"webplayer" move {1,2,1,0}
+"human" VS "webplayer" Begin!!!
+"human" move {0,0,1,1}
+"webplayer" move {1,1,1,0}
+"mcts" VS "webplayer" Begin!!!
+"mcts" move {1,2,0,2}
+"webplayer" move {0,2,0,0}
+"mcts" move {0,0,0,0}
+"webplayer" VS "mcts" Begin!!!
+"webplayer" move {1,2,1,1}
+"mcts" move {1,1,2,2}
+"webplayer" move {2,2,2,0}
+"mcts" move {2,0,0,0}
+"mcts" VS "webplayer" Begin!!!
+"mcts" move {0,2,0,0}
+"webplayer" move {0,0,0,2}
+"mcts" move {0,2,1,2}
+"webplayer" VS "mcts" Begin!!!
+"webplayer" move {0,2,0,2}
+"mcts" move {0,2,2,0}
+"webplayer" move {2,0,0,0}
+"mcts" move {0,0,1,2}
+"webplayer" move {1,2,2,2}
+"mcts" move {2,2,1,1}
+"webplayer" move {1,1,0,0}
+"mcts" move {0,0,0,0}
+"webplayer" move {0,0,0,2}
+"mcts" move {0,2,1,0}
+"webplayer" move {1,0,1,0}
+"mcts" move {1,0,1,2}
+"webplayer" move {1,2,1,2}
+"mcts" move {1,2,2,1}
+"webplayer" move {2,1,1,0}
+"mcts" move {1,0,2,0}
+"webplayer" move {2,0,2,0}
+"mcts" move {2,0,2,1}
+"webplayer" move {2,1,2,2}
+"mcts" move {2,2,1,2}
+"webplayer" move {1,2,0,2}
+"mcts" move {0,2,2,1}
+"webplayer" move {2,1,2,1}
+"mcts" move {2,1,0,1}
+"webplayer" move {0,1,0,1}
+"mcts" move {0,1,2,0}
+"webplayer" move {2,0,1,0}
+"mcts" move {1,0,2,2}
+"webplayer" move {2,2,1,0}
+"mcts" move {1,0,2,1}
+"webplayer" move {2,1,2,0}
+"mcts" move {0,0,1,1}
+"webplayer" move {1,1,1,1}
+"mcts" move {1,1,2,0}
+"webplayer" move {1,1,2,2}
+"mcts" move {2,2,0,0}
+"webplayer" move {0,0,1,0}
+"mcts" move {0,1,2,2}
+"webplayer" move {2,2,2,2}
+"mcts" move {2,2,2,1}
+"webplayer" move {0,1,2,1}
+"mcts" move {0,0,2,2}
+"webplayer" move {2,2,0,2}
+"mcts" move {0,2,2,2}
+"webplayer" move {2,2,2,0}
+"mcts" move {0,1,1,1}
+"webplayer" move {0,1,0,2}
+"mcts" move {0,1,0,0}
+"mcts" Wins!!!
+"mcts" VS "webplayer" Begin!!!
+"mcts" move {0,0,1,1}
+"webplayer" move {1,1,0,0}
+"mcts" move {0,0,1,2}
+"mcts" VS "webplayer" Begin!!!
+"mcts" move {2,1,1,2}
+"mcts" VS "webplayer" Begin!!!
+"mcts" move {0,1,2,2}
+"webplayer" move {2,2,0,0}
+"mcts" move {0,0,1,1}
+"webplayer" move {1,1,2,0}
+"mcts" move {2,0,2,1}
+"webplayer" move {2,1,0,2}
+"mcts" move {0,2,2,0}
+"webplayer" move {2,0,2,2}
+"mcts" move {2,2,1,1}
+"webplayer" move {1,1,0,0}
+"mcts" move {0,0,0,1}
+"webplayer" move {0,1,2,0}
+"mcts" move {2,0,0,1}
+"webplayer" move {0,1,0,2}
+"mcts" move {0,2,0,2}
+"webplayer" move {0,2,1,0}
+"mcts" move {1,0,1,2}
+"webplayer" move {1,2,0,0}
+"mcts" move {0,0,2,1}
+"webplayer" move {2,1,0,0}
+"mcts" move {2,0,1,2}
+"webplayer" move {1,2,1,1}
+"mcts" move {1,1,1,2}
+"webplayer" move {1,2,2,0}
+"mcts" move {2,0,0,0}
+"webplayer" move {2,2,2,2}
+"mcts" move {2,2,1,2}
+"webplayer" move {1,2,1,0}
+"mcts" move {1,0,2,2}
+"webplayer" move {2,2,1,0}
+"mcts" move {1,0,0,2}
+"webplayer" move {0,2,2,1}
+"mcts" move {2,1,0,1}
+"webplayer" move {0,1,0,1}
+"mcts" move {0,1,1,1}
+"webplayer" move {1,1,1,0}
+"mcts" move {2,0,1,1}
+"mcts" Wins!!!
+"webplayer" VS "webplayer" Begin!!!
+"webplayer" move {0,0,0,0}
+"mcts" VS "webplayer" Begin!!!
+"mcts" move {2,1,1,2}
+"webplayer" move {1,2,0,0}
+"mcts" move {0,0,2,0}
+"webplayer" move {2,0,0,0}
+"mcts" move {0,0,2,1}
+"webplayer" move {2,1,0,0}
+"mcts" move {0,0,2,2}
+"mcts" VS "webplayer" Begin!!!
+"mcts" move {1,0,2,2}
+"webplayer" move {2,2,0,0}
+"mcts" move {0,0,1,2}
+"webplayer" move {1,2,0,2}
+"mcts" move {0,2,1,1}
+"webplayer" move {1,1,2,0}
+"mcts" move {2,0,0,1}
+"webplayer" move {0,1,2,0}
+"mcts" move {2,0,0,0}
+"webplayer" move {0,0,2,0}
+"mcts" move {2,0,0,2}
+"webplayer" move {0,2,2,0}
+"mcts" move {1,1,0,0}
+"webplayer" move {0,0,0,2}
+"mcts" move {0,2,0,1}
+"webplayer" move {0,1,1,1}
+"mcts" move {1,1,1,2}
+"webplayer" move {1,2,2,0}
+"mcts" move {1,1,2,1}
+"webplayer" move {2,1,1,1}
+"mcts" move {1,1,1,1}
+"webplayer" move {1,1,1,0}
+"mcts" move {1,0,1,2}
+"webplayer" move {1,2,1,1}
+"mcts" move {1,1,0,1}
+"webplayer" move {0,1,0,2}
+"mcts" move {0,2,2,1}
+"mcts" Wins!!!
+"mcts" VS "webplayer" Begin!!!
+"mcts" move {1,1,1,0}
+"webplayer" move {1,0,2,0}
+"mcts" move {2,0,2,0}
+"mcts" VS "webplayer" Begin!!!
+"mcts" move {0,0,0,2}
+"webplayer" move {0,2,2,0}
+"mcts" move {2,0,2,2}
+"webplayer" move {2,2,0,0}
+"mcts" move {0,0,2,0}
+"webplayer" move {2,0,0,0}
+"mcts" move {0,0,1,1}
+"mcts" VS "webplayer" Begin!!!
+"mcts" move {2,2,0,0}
+"webplayer" move {0,0,2,0}
+"mcts" move {2,0,1,1}
+"webplayer" move {1,1,2,0}
+"mcts" move {2,0,2,0}
+"webplayer" move {2,0,0,0}
+"mcts" move {0,0,1,0}
+"webplayer" move {1,0,0,2}
+"mcts" move {0,2,0,2}
+"webplayer" move {0,2,2,0}
+"mcts" move {2,0,0,2}
+"webplayer" move {0,2,2,2}
+"mcts" move {2,2,2,2}
+"webplayer" move {2,2,1,1}
+"mcts" move {1,1,2,2}
+"webplayer" move {2,2,2,0}
+"mcts" move {0,1,0,1}
+"webplayer" move {0,1,2,0}
+"mcts" move {1,1,1,2}
+"webplayer" move {1,2,2,0}
+"mcts" move {0,2,1,2}
+"webplayer" move {1,2,1,1}
+"mcts" move {1,1,1,1}
+"webplayer" move {1,1,0,0}
+"mcts" move {0,0,0,1}
+"webplayer" move {0,1,1,1}
+"mcts" move {1,1,1,0}
+"webplayer" move {1,0,1,1}
+"mcts" move {2,2,0,1}
+"webplayer" move {0,1,0,2}
+"mcts" move {0,2,1,0}
+"webplayer" move {1,0,2,0}
+"mcts" move {0,2,1,1}
+"mcts" Wins!!!
+"webplayer" VS "mcts" Begin!!!
+"webplayer" move {0,2,2,0}
+"mcts" move {2,0,1,0}
+"webplayer" move {1,0,2,2}
+"mcts" move {2,2,0,2}
+"webplayer" move {0,2,1,1}
+"mcts" move {1,1,2,0}
+"webplayer" move {2,0,2,2}
+"mcts" move {2,2,2,2}
+"webplayer" move {2,2,1,0}
+"mcts" move {1,0,1,0}
+"webplayer" move {1,0,2,0}
+"mcts" move {2,0,0,0}
+"webplayer" move {0,0,2,1}
+"mcts" move {2,1,1,1}
+"webplayer" move {1,1,1,1}
+"mcts" move {1,1,0,0}
+"webplayer" VS "mcts" Begin!!!
+"webplayer" move {0,2,0,2}
+"mcts" move {0,2,2,1}
+"webplayer" move {2,1,1,0}
+"mcts" move {1,0,2,0}
+"webplayer" move {2,0,0,0}
+"mcts" move {0,0,0,0}
+"webplayer" move {0,0,2,2}
+"mcts" move {2,2,0,1}
+"webplayer" move {0,1,2,2}
+"mcts" move {2,2,0,0}
+"webplayer" move {0,0,2,0}
+"mcts" move {2,0,1,2}
+"webplayer" move {1,2,2,2}
+"mcts" move {2,2,2,1}
+"webplayer" move {2,1,2,1}
+"mcts" move {2,1,0,2}
+"webplayer" move {0,2,1,0}
+"mcts" move {1,0,0,2}
+"webplayer" move {0,2,0,1}
+"mcts" move {0,1,1,0}
+"webplayer" move {1,0,1,1}
+"mcts" move {1,1,0,1}
+"webplayer" move {0,1,0,2}
+"mcts" move {0,2,2,2}
+"webplayer" move {2,2,0,2}
+"mcts" move {0,2,2,0}
+"webplayer" move {2,0,1,1}
+"mcts" move {1,1,2,2}
+"webplayer" move {2,2,1,1}
+"mcts" move {1,1,2,1}
+"webplayer" move {2,1,1,1}
+"mcts" move {1,1,1,2}
+"webplayer" move {1,2,1,1}
+"mcts" move {1,1,1,1}
+"webplayer" move {0,0,2,1}
+"mcts" move {2,1,0,1}
+"webplayer" move {0,1,1,2}
+"mcts" move {1,2,1,0}
+"webplayer" move {1,0,2,1}
+"mcts" move {2,1,2,2}
+"webplayer" move {2,2,2,0}
+"mcts" move {2,0,2,2}
+"webplayer" move {1,2,0,0}
+"mcts" move {2,0,0,2}
+"mcts" Wins!!!
+"mcts" VS "webplayer" Begin!!!
+"mcts" move {2,0,2,0}
+"webplayer" move {2,0,0,2}
+"mcts" move {0,2,0,1}
+"webplayer" VS "mcts" Begin!!!
+"webplayer" move {0,2,0,2}
+"mcts" move {0,2,1,2}
+"webplayer" VS "mcts" Begin!!!
+"webplayer" move {0,2,2,2}
+"mcts" move {2,2,2,1}
+"webplayer" move {2,1,0,2}
+"mcts" move {0,2,2,1}
+"mcts" VS "webplayer" Begin!!!
+"mcts" move {1,1,1,1}
+"webplayer" move {1,1,2,2}
+"mcts" move {2,2,2,1}
+"webplayer" move {2,1,0,2}
+"mcts" move {0,2,2,0}
+"mcts" VS "webplayer" Begin!!!
+"mcts" move {0,1,0,0}
+"webplayer" move {0,0,2,0}
+"mcts" move {2,0,1,1}
+"webplayer" move {1,1,0,0}
+"mcts" move {0,0,2,1}
+"webplayer" move {2,1,1,0}
+"mcts" move {1,0,2,1}
+"webplayer" move {2,1,2,2}
+"mcts" move {2,2,1,0}
+"webplayer" move {1,0,0,2}
+"mcts" move {0,2,2,0}
+"webplayer" move {2,0,0,2}
+"mcts" move {0,2,1,0}
+"webplayer" move {1,0,0,0}
+"webplayer" VS "mcts" Begin!!!
+"webplayer" move {0,1,1,2}
+"mcts" move {1,2,2,0}
+"webplayer" move {2,0,0,2}
+"mcts" move {0,2,0,1}
+"webplayer" move {0,1,2,0}
+"mcts" move {2,0,2,1}
+"webplayer" move {2,1,1,1}
+"mcts" move {1,1,0,2}
+"webplayer" move {0,2,1,1}
+"mcts" move {1,1,2,0}
+"webplayer" move {2,0,1,1}
+"mcts" move {1,1,1,1}
+"webplayer" move {2,2,1,1}
+"mcts" move {2,0,2,0}
+"webplayer" move {2,0,0,1}
+"mcts" move {0,1,0,1}
+"webplayer" move {0,1,1,1}
+"mcts" move {2,2,0,0}
+"webplayer" move {0,0,2,2}
+"mcts" move {2,2,0,1}
+"webplayer" move {0,1,1,0}
+"mcts" move {1,0,0,1}
+"webplayer" move {0,0,1,1}
+"mcts" move {2,2,1,0}
+"webplayer" move {1,0,1,1}
+"mcts" move {2,0,2,2}
+"webplayer" move {2,2,2,0}
+"mcts" move {0,2,0,0}
+"webplayer" move {0,0,0,0}
+"mcts" move {0,2,0,2}
+"mcts" Wins!!!
+"webplayer" VS "webplayer" Begin!!!
+"webplayer" VS "mcts" Begin!!!
+"webplayer" move {1,1,0,2}
+"mcts" move {0,2,1,2}
+"webplayer" move {1,2,0,0}
+"mcts" move {0,0,1,1}
+"webplayer" move {1,1,1,1}
+"mcts" move {1,1,1,2}
+"webplayer" move {1,2,1,1}
+"mcts" move {1,1,2,1}
+"webplayer" move {2,1,1,1}
+"mcts" move {1,1,2,0}
+"webplayer" move {2,0,1,1}
+"mcts" move {1,1,2,2}
+"webplayer" move {2,2,1,1}
+"mcts" move {1,0,0,1}
+"webplayer" move {0,1,1,1}
+"mcts" move {1,0,2,1}
+"webplayer" move {2,1,0,0}
+"mcts" move {0,0,0,0}
+"webplayer" move {0,0,2,2}
+"mcts" move {2,2,1,2}
+"webplayer" move {1,2,2,2}
+"mcts" move {2,2,2,2}
+"webplayer" move {2,2,0,2}
+"mcts" move {0,2,1,0}
+"webplayer" move {1,0,1,1}
+"mcts" move {2,0,1,0}
+"webplayer" move {1,0,2,2}
+"mcts" move {2,2,0,0}
+"webplayer" move {0,0,1,2}
+"mcts" move {0,1,2,1}
+"webplayer" move {2,1,2,2}
+"mcts" move {2,2,2,0}
+"webplayer" move {2,0,0,2}
+"mcts" move {0,2,0,2}
+"webplayer" move {0,2,0,1}
+"mcts" move {0,1,0,1}
+"webplayer" move {0,1,1,2}
+"mcts" move {0,0,0,2}
+"webplayer" move {0,2,2,0}
+"mcts" move {2,0,2,0}
+"webplayer" move {2,0,0,1}
+"mcts" move {0,1,1,0}
+"webplayer" move {1,0,0,0}
+"mcts" move {0,0,0,1}
+"webplayer" move {0,1,2,2}
+"mcts" move {2,2,2,1}
+"mcts" Wins!!!
+"mcts" VS "webplayer" Begin!!!
+"mcts" move {2,2,2,2}
+"webplayer" move {2,2,0,0}
+"mcts" move {0,0,1,1}
+"webplayer" move {1,1,2,0}
+"mcts" move {2,0,0,0}
+"webplayer" move {0,0,2,2}
+"mcts" move {2,2,2,1}
+"webplayer" move {2,1,1,1}
+"mcts" move {1,1,1,2}
+"webplayer" move {1,2,1,1}
+"mcts" move {1,1,1,0}
+"webplayer" move {1,0,2,2}
+"mcts" move {2,2,2,0}
+"webplayer" move {2,0,2,2}
+"mcts" move {1,1,1,1}
+"webplayer" move {0,1,2,2}
+"mcts" move {2,1,2,2}
+"webplayer" move {1,0,2,1}
+"mcts" move {2,1,2,0}
+"webplayer" move {2,0,0,2}
+"mcts" move {0,2,0,2}
+"webplayer" move {0,2,2,0}
+"mcts" move {2,0,1,1}
+"webplayer" move {1,0,2,0}
+"mcts" move {2,0,1,2}
+"webplayer" move {1,2,2,0}
+"mcts" move {2,0,1,0}
+"webplayer" move {0,2,2,1}
+"mcts" move {2,1,2,1}
+"mcts" Wins!!!
+"mcts" VS "webplayer" Begin!!!
+"mcts" move {2,1,1,2}
+"mcts" VS "mcts" Begin!!!
+"mcts" move {1,2,2,2}
+"mcts" move {2,2,1,0}
+"mcts" move {1,0,2,2}
+"mcts" move {2,2,2,0}
+"mcts" move {2,0,2,0}
+"mcts" move {2,0,0,0}
+"mcts" move {0,0,2,2}
+"mcts" move {2,2,0,0}
+"mcts" move {0,0,2,0}
+"mcts" move {2,0,0,2}
+"mcts" move {0,2,0,0}
+"mcts" move {0,0,1,1}
+"mcts" move {1,1,2,2}
+"mcts" move {2,0,1,2}
+"mcts" move {1,2,1,2}
+"mcts" move {1,2,0,1}
+"mcts" move {0,1,0,2}
+"mcts" move {0,2,1,2}
+"mcts" move {1,2,0,2}
+"mcts" move {0,2,1,1}
+"mcts" move {1,1,0,2}
+"mcts" move {0,2,0,2}
+"mcts" move {0,2,2,0}
+"mcts" move {2,0,2,2}
+"mcts" move {0,0,1,2}
+"mcts" move {1,1,0,1}
+"mcts" move {0,1,0,0}
+"mcts" move {0,0,0,1}
+"mcts" move {0,1,0,1}
+"mcts" move {2,1,0,1}
+"mcts" move {0,2,1,0}
+"mcts" move {1,0,1,1}
+"mcts" move {1,1,1,1}
+"mcts" move {1,1,2,0}
+"mcts" move {0,0,2,1}
+"mcts" Wins!!!
+"mcts" VS "webplayer" Begin!!!
+"mcts" move {0,1,1,0}
+"webplayer" VS "mcts" Begin!!!
+"webplayer" move {0,1,2,1}
+"mcts" move {2,1,1,1}
+"webplayer" move {1,1,1,2}
+"mcts" move {1,2,0,0}
+"webplayer" move {0,0,2,0}
+"mcts" move {2,0,1,1}
+"webplayer" move {1,1,2,0}
+"mcts" move {2,0,2,1}
+"webplayer" move {2,1,0,0}
+"mcts" move {0,0,1,2}
+"webplayer" move {1,2,2,2}
+"mcts" move {2,2,0,2}
+"webplayer" move {0,2,2,0}
+"mcts" move {2,0,1,0}
+"webplayer" move {1,0,1,0}
+"mcts" move {1,0,0,2}
+"webplayer" move {0,2,2,2}
+"mcts" move {2,2,1,2}
+"webplayer" move {1,2,2,1}
+"mcts" move {2,1,2,1}
+"webplayer" move {2,1,0,2}
+"mcts" move {0,2,1,2}
+"webplayer" move {1,2,0,2}
+"mcts" move {0,2,1,0}
+"webplayer" move {1,0,2,0}
+"mcts" move {2,0,0,1}
+"mcts" VS "webplayer" Begin!!!
+"mcts" move {2,2,1,2}
+"webplayer" move {1,2,1,0}
+"mcts" move {1,0,1,1}
+"webplayer" move {1,1,2,0}
+"mcts" move {2,0,2,2}
+"webplayer" move {2,2,0,0}
+"mcts" move {0,0,2,2}
+"webplayer" move {2,2,2,0}
+"mcts" move {2,0,0,2}
+"webplayer" move {0,2,2,0}
+"mcts" move {2,0,2,0}
+"webplayer" VS "mcts" Begin!!!
+"webplayer" VS "mcts" Begin!!!
+"webplayer" VS "mcts" Begin!!!
+"webplayer" move {1,1,0,0}
+"mcts" move {0,0,0,2}
+"webplayer" move {0,2,2,0}
+"mcts" move {2,0,2,1}
+"webplayer" move {2,1,1,1}
+"mcts" move {1,1,2,2}

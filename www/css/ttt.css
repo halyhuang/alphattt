@@ -1,0 +1,80 @@
+body {  
+      font-family: "Î¢ÈíÑÅºÚ";  
+      color: white;  
+      text-align: center;
+	  padding: 0;
+	  margin: 0;
+	  background: -moz-linear-gradient(-45deg, #183850 0, #183850 25%, #192c46 50%, #22254c 75%, #22254c 100%);
+	  background: -webkit-linear-gradient(-45deg, #183850 0, #183850 25%, #192c46 50%, #22254c 75%, #22254c 100%);
+	  background-repeat: no-repeat;
+	  background-attachment: fixed;	
+}  
+.container {
+	width: 500px;
+}
+
+.char-room {
+	width: 800px;
+}
+
+.heading{  
+    width: 100%;  	
+    height: 40px;  	
+    text-align: center;  	
+    font-size: 30px;  
+	color:white;		
+}  
+.botton{
+    width: 100%;  	
+    text-align: center;  
+}
+.btns{  
+    font-size: 20px;  
+    text-align: center;  
+    display: inline-block;  
+    width: 150px;  
+    height: 27px;  
+    margin-right: 5px;  
+    line-height: 27px;  
+    background: darkturquoise;  
+    border: 1px solid #eee;  
+    border-radius: 7px;  
+    padding: 3px;  
+    cursor: pointer;  
+}  
+#play, #stop {  
+    width: 110px;  
+}  
+
+.chessboard {
+    width: 100%;  
+	border:2px solid blue;
+    background: white;  	
+}
+
+.chessboardtd {
+	border:2px solid blue;
+    background: white;  	
+}
+
+.horizontal {
+	border:2px solid #f00078;
+}
+
+.vertical {
+	height : 50px;
+	border:2px solid #f00078;
+}
+
+.grid {  
+    width: 50px;  
+    height: 50px;  
+	color:black;		
+    background-color: white;  
+    float: center;  
+    font-size: 40px;  	
+}  
+
+  
+  
+  

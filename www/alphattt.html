@@ -1,0 +1,197 @@
+﻿<!DOCTYPE html> 
+<html> 
+<head> 
+	<meta charset="utf-8"> 
+	<title>Ultimate Tic-Tac-Toe</title> 
+	<link rel="stylesheet" type="text/css" href="css/ttt.css"> 
+	<link rel="stylesheet" type="text/css" href="css/chatstyle.css"> 
+	<script src="jsolait/jsolait.js"></script>	
+    <script src="ttt.js"></script>  
+</head> 
+<body> 	
+	<table>
+		<tr>
+			<td>
+				<table class="container">
+					<tr>
+						<td>
+							<table class="heading">
+								<tr><td>Ultimate Tic-Tac-Toe</td></tr>				  			
+							</table>
+						</td>
+					<tr>
+					<tr>
+						<td>
+							<table class="botton">
+								<tr>
+									<td id="play" class="btns">开始</td>
+									<td id="stop" class="btns">结束</td>
+								</tr>
+							</table>
+						</td>
+					<tr>
+					<tr>
+						<td>				
+							<table class="chessboard">	
+								<tr>
+									<td class="chessboardtd"><div class="grid"></div></td>
+									<td class="chessboardtd"><div class="grid"></div></td>
+									<td class="chessboardtd"><div class="grid"></div></td>
+									<td><div class="vertical" /></td>									
+									<td class="chessboardtd"><div class="grid"></div></td>
+									<td class="chessboardtd"><div class="grid"></div></td>
+									<td class="chessboardtd"><div class="grid"></div></td>
+									<td><div class="vertical" /></td>									
+									<td class="chessboardtd"><div class="grid"></div></td>
+									<td class="chessboardtd"><div class="grid"></div></td>
+									<td class="chessboardtd"><div class="grid"></div></td>
+								</tr>
+								<tr>
+									<td class="chessboardtd"><div class="grid"></div></td>
+									<td class="chessboardtd"><div class="grid"></div></td>
+									<td class="chessboardtd"><div class="grid"></div></td>
+									<td><div class="vertical" /></td>									
+									<td class="chessboardtd"><div class="grid"></div></td>
+									<td class="chessboardtd"><div class="grid"></div></td>
+									<td class="chessboardtd"><div class="grid"></div></td>
+									<td><div class="vertical" /></td>									
+									<td class="chessboardtd"><div class="grid"></div></td>
+									<td class="chessboardtd"><div class="grid"></div></td>
+									<td class="chessboardtd"><div class="grid"></div></td>
+								</tr>
+								<tr>
+									<td class="chessboardtd"><div class="grid"></div></td>
+									<td class="chessboardtd"><div class="grid"></div></td>
+									<td class="chessboardtd"><div class="grid"></div></td>
+									<td><div class="vertical" /></td>									
+									<td class="chessboardtd"><div class="grid"></div></td>
+									<td class="chessboardtd"><div class="grid"></div></td>
+									<td class="chessboardtd"><div class="grid"></div></td>
+									<td><div class="vertical" /></td>									
+									<td class="chessboardtd"><div class="grid"></div></td>
+									<td class="chessboardtd"><div class="grid"></div></td>
+									<td class="chessboardtd"><div class="grid"></div></td>
+								</tr>
+								<tr>
+									<td><div class="horizontal" /></td>
+									<td><div class="horizontal" /></td>
+									<td><div class="horizontal" /></td>
+									<td><div class="horizontal" /></td>
+									<td><div class="horizontal" /></td>
+									<td><div class="horizontal" /></td>
+									<td><div class="horizontal" /></td>
+									<td><div class="horizontal" /></td>
+									<td><div class="horizontal" /></td>
+									<td><div class="horizontal" /></td>
+									<td><div class="horizontal" /></td>									
+								</tr>
+								<tr>
+									<td class="chessboardtd"><div class="grid"></div></td>
+									<td class="chessboardtd"><div class="grid"></div></td>
+									<td class="chessboardtd"><div class="grid"></div></td>
+									<td><div class="vertical" /></td>									
+									<td class="chessboardtd"><div class="grid"></div></td>
+									<td class="chessboardtd"><div class="grid"></div></td>
+									<td class="chessboardtd"><div class="grid"></div></td>
+									<td><div class="vertical" /></td>									
+									<td class="chessboardtd"><div class="grid"></div></td>
+									<td class="chessboardtd"><div class="grid"></div></td>
+									<td class="chessboardtd"><div class="grid"></div></td>
+								</tr>
+								<tr>
+									<td class="chessboardtd"><div class="grid"></div></td>
+									<td class="chessboardtd"><div class="grid"></div></td>
+									<td class="chessboardtd"><div class="grid"></div></td>
+									<td><div class="vertical" /></td>									
+									<td class="chessboardtd"><div class="grid"></div></td>
+									<td class="chessboardtd"><div class="grid"></div></td>
+									<td class="chessboardtd"><div class="grid"></div></td>
+									<td><div class="vertical" /></td>									
+									<td class="chessboardtd"><div class="grid"></div></td>
+									<td class="chessboardtd"><div class="grid"></div></td>
+									<td class="chessboardtd"><div class="grid"></div></td>
+								</tr>
+								<tr>
+									<td class="chessboardtd"><div class="grid"></div></td>
+									<td class="chessboardtd"><div class="grid"></div></td>
+									<td class="chessboardtd"><div class="grid"></div></td>
+									<td><div class="vertical" /></td>									
+									<td class="chessboardtd"><div class="grid"></div></td>
+									<td class="chessboardtd"><div class="grid"></div></td>
+									<td class="chessboardtd"><div class="grid"></div></td>
+									<td><div class="vertical" /></td>									
+									<td class="chessboardtd"><div class="grid"></div></td>
+									<td class="chessboardtd"><div class="grid"></div></td>
+									<td class="chessboardtd"><div class="grid"></div></td>
+								</tr>
+								<tr>
+									<td><div class="horizontal" /></td>
+									<td><div class="horizontal" /></td>
+									<td><div class="horizontal" /></td>
+									<td><div class="horizontal" /></td>
+									<td><div class="horizontal" /></td>
+									<td><div class="horizontal" /></td>
+									<td><div class="horizontal" /></td>
+									<td><div class="horizontal" /></td>
+									<td><div class="horizontal" /></td>
+									<td><div class="horizontal" /></td>
+									<td><div class="horizontal" /></td>									
+								</tr>								
+								<tr>
+									<td class="chessboardtd"><div class="grid"></div></td>
+									<td class="chessboardtd"><div class="grid"></div></td>
+									<td class="chessboardtd"><div class="grid"></div></td>
+									<td><div class="vertical" /></td>									
+									<td class="chessboardtd"><div class="grid"></div></td>
+									<td class="chessboardtd"><div class="grid"></div></td>
+									<td class="chessboardtd"><div class="grid"></div></td>
+									<td><div class="vertical" /></td>									
+									<td class="chessboardtd"><div class="grid"></div></td>
+									<td class="chessboardtd"><div class="grid"></div></td>
+									<td class="chessboardtd"><div class="grid"></div></td>
+								</tr>
+								<tr>
+									<td class="chessboardtd"><div class="grid"></div></td>
+									<td class="chessboardtd"><div class="grid"></div></td>
+									<td class="chessboardtd"><div class="grid"></div></td>
+									<td><div class="vertical" /></td>									
+									<td class="chessboardtd"><div class="grid"></div></td>
+									<td class="chessboardtd"><div class="grid"></div></td>
+									<td class="chessboardtd"><div class="grid"></div></td>
+									<td><div class="vertical" /></td>									
+									<td class="chessboardtd"><div class="grid"></div></td>
+									<td class="chessboardtd"><div class="grid"></div></td>
+									<td class="chessboardtd"><div class="grid"></div></td>
+								</tr>
+								<tr>
+									<td class="chessboardtd"><div class="grid"></div></td>
+									<td class="chessboardtd"><div class="grid"></div></td>
+									<td class="chessboardtd"><div class="grid"></div></td>
+									<td><div class="vertical" /></td>									
+									<td class="chessboardtd"><div class="grid"></div></td>
+									<td class="chessboardtd"><div class="grid"></div></td>
+									<td class="chessboardtd"><div class="grid"></div></td>
+									<td><div class="vertical" /></td>									
+									<td class="chessboardtd"><div class="grid"></div></td>
+									<td class="chessboardtd"><div class="grid"></div></td>
+									<td class="chessboardtd"><div class="grid"></div></td>
+								</tr>					
+							</table>						
+						</td>
+					</tr>
+				</table>
+			</td>
+			<td>
+				<table class="char-room">
+					<tr>
+						<td>
+							<ul class="chat-thread" id="result">									
+							</ul>	
+						</td>
+					</tr>
+				</table>				
+			</td>
+		</tr>
+	</table>
+</body> 
+</html>
