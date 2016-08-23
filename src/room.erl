@@ -34,7 +34,7 @@ show(Pid) ->
 init(Board) ->
 	<<A:32, B:32, C:32>> = crypto:rand_bytes(12),
 	random:seed({A, B, C}),
-	{ok, LogFile} = file:open("room_log.txt", [append]),
+	{ok, LogFile} = file:open("play_data.txt", [append]),
 	loop(#state{board = Board, log_file=LogFile}).	
 
 select_player(Players) ->
@@ -118,8 +118,7 @@ loop(State = #state{status = playing,
 			update(Current, GameState),
 			update(Next, GameState),
 			play(Current),
-			io:format(LogFile, "~p VS ~p Begin!!!~n", [CurrentNickName, NextNickName]),
-			file:sync(LogFile),
+			store_data({start, CurrentNickName, NextNickName}, LogFile),
 			loop(State);
 		reset ->
 			loop(State#state{status=waiting,
@@ -135,21 +134,20 @@ loop(State = #state{status = playing,
 					NextPlayer = {Next, _} = next_player(Current, Players),
 					update(Current, Move, GameState2),
 					update(Next, Move, GameState2),
-					io:format(LogFile, "~p move ~p~n", [CurrentNickName, Move]),
-					file:sync(LogFile),
+					store_data({move, CurrentNickName, Move}, LogFile),
 					case Board:winner(GameState2) of
 						on_going ->
 							play(Next),
 							loop(State#state{game_state = GameState2,
 											 current_player = NextPlayer});
 						draw ->
+							store_data({finish, draw}, LogFile),
 							loop(State#state{status = waiting,
 											 players=[],
 											 current_player=none});
 						_ ->
 							[notify_user(Pid, congradulations(CurrentNickName)) || {Pid, _, _} <- Players],
-							io:format(LogFile, "~p Wins!!!~n", [CurrentNickName]),
-							file:sync(LogFile),
+							store_data({finish, winner, CurrentNickName}, LogFile),
 							loop(State#state{status=waiting,
 											 players=[],
 											 current_player=none})
@@ -185,3 +183,17 @@ greeting(NickName) ->
 
 congradulations(NickName) ->
 	NickName ++ " Wins!!!".
+
+store_data({start, CurrentNickName, NextNickName}, LogFile) ->	
+	io:format(LogFile, "{\"begin\":[~p,~p]}~n", [CurrentNickName, NextNickName]),
+	file:sync(LogFile);
+store_data({move, CurrentNickName, {R, C, R1, C1}}, LogFile) ->
+	io:format(LogFile, "{~p:[~p,~p,~p,~p]}~n", [CurrentNickName, R, C, R1, C1]),
+	file:sync(LogFile);
+store_data({finish, draw}, LogFile) ->	
+	io:format(LogFile, "{~p:~p}~n", ["end", "draw"]),
+	file:sync(LogFile);
+store_data({finish, winner, CurrentNickName}, LogFile) ->	
+	io:format(LogFile, "{~p:~p}~n", ["end", CurrentNickName]),
+	file:sync(LogFile).
+
