@@ -8,7 +8,7 @@
 				current_player = none,
 				players = [], % players = [{pid, nick_name, monitor_ref}]
 				game_state,
-				log_file
+				steps = []
 				}).
 
 %% APIs
@@ -34,8 +34,7 @@ show(Pid) ->
 init(Board) ->
 	<<A:32, B:32, C:32>> = crypto:rand_bytes(12),
 	random:seed({A, B, C}),
-	{ok, LogFile} = file:open("play_data.txt", [append]),
-	loop(#state{board = Board, log_file=LogFile}).	
+	loop(#state{board = Board}).	
 
 select_player(Players) ->
 	N = random:uniform(2),
@@ -94,7 +93,7 @@ loop(State = #state{status = playing,
 					players = Players,
 					board = Board,
 					game_state = GameState, 
-					log_file=LogFile}) ->
+					steps = Steps}) ->
 	receive 
 		{enter, _Pid, _NickName} ->
 			loop(State);
@@ -118,8 +117,7 @@ loop(State = #state{status = playing,
 			update(Current, GameState),
 			update(Next, GameState),
 			play(Current),
-			store_data({start, CurrentNickName, NextNickName}, LogFile),
-			loop(State);
+			loop(State#state{steps = [{start, CurrentNickName, NextNickName}]});
 		reset ->
 			loop(State#state{status=waiting,
 				 players=[],
@@ -134,23 +132,26 @@ loop(State = #state{status = playing,
 					NextPlayer = {Next, _} = next_player(Current, Players),
 					update(Current, Move, GameState2),
 					update(Next, Move, GameState2),
-					store_data({move, CurrentNickName, Move}, LogFile),
+					NewSteps = Steps ++ [{move, integer_to_list(Board:current_player(GameState)), Move}],
 					case Board:winner(GameState2) of
 						on_going ->
 							play(Next),
 							loop(State#state{game_state = GameState2,
-											 current_player = NextPlayer});
+											 current_player = NextPlayer,
+											 steps=NewSteps});
 						draw ->
-							store_data({finish, draw}, LogFile),
+							store_data(NewSteps ++ [{finish, draw}]),
 							loop(State#state{status = waiting,
 											 players=[],
-											 current_player=none});
+											 current_player=none,
+											 steps=[]});
 						_ ->
 							[notify_user(Pid, congradulations(CurrentNickName)) || {Pid, _, _} <- Players],
-							store_data({finish, winner, CurrentNickName}, LogFile),
+							store_data(NewSteps ++ [{finish, winner, integer_to_list(Board:current_player(GameState))}]),
 							loop(State#state{status=waiting,
 											 players=[],
-											 current_player=none})
+											 current_player=none,
+											 steps=[]})
 					end
 			end;		
 		{'DOWN', _, process, Pid, Reason} ->
@@ -184,16 +185,22 @@ greeting(NickName) ->
 congradulations(NickName) ->
 	NickName ++ " Wins!!!".
 
+store_data(Steps) ->
+	{ok, LogFile} = file:open(make_filename(), [append]),	
+	[store_data(Step, LogFile) || Step <- Steps],
+	file:close(LogFile).
+
 store_data({start, CurrentNickName, NextNickName}, LogFile) ->	
-	io:format(LogFile, "{\"begin\":[~p,~p]}~n", [CurrentNickName, NextNickName]),
-	file:sync(LogFile);
-store_data({move, CurrentNickName, {R, C, R1, C1}}, LogFile) ->
-	io:format(LogFile, "{~p:[~p,~p,~p,~p]}~n", [CurrentNickName, R, C, R1, C1]),
-	file:sync(LogFile);
+	io:format(LogFile, "{\"begin\":[~p,~p]}~n", [CurrentNickName, NextNickName]);
+store_data({move, Player, {R, C, R1, C1}}, LogFile) ->
+	io:format(LogFile, "{~p:[~p,~p,~p,~p]}~n", [Player, R, C, R1, C1]);
 store_data({finish, draw}, LogFile) ->	
-	io:format(LogFile, "{~p:~p}~n", ["end", "draw"]),
-	file:sync(LogFile);
-store_data({finish, winner, CurrentNickName}, LogFile) ->	
-	io:format(LogFile, "{~p:~p}~n", ["end", CurrentNickName]),
-	file:sync(LogFile).
+	io:format(LogFile, "{~p:~p}~n", ["end", "draw"]);
+store_data({finish, winner, Player}, LogFile) ->	
+	io:format(LogFile, "{~p:~p}~n", ["end", Player]).
+
+make_filename() ->
+	{{Year, Month, Day}, {Hour, Minute, Second}} = calendar:local_time(),
+	io_lib:format("play_~p_~p_~p_~p_~p_~p.txt", [Year, Month, Day, Hour, Minute, Second]).
+
 
