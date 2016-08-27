@@ -186,6 +186,7 @@ congradulations(NickName) ->
 	NickName ++ " Wins!!!".
 
 store_data(Steps) ->
+	make_dir(),
 	{ok, LogFile} = file:open(make_filename(), [append]),	
 	[store_data(Step, LogFile) || Step <- Steps],
 	file:close(LogFile).
@@ -199,8 +200,17 @@ store_data({finish, draw}, LogFile) ->
 store_data({finish, winner, Player}, LogFile) ->	
 	io:format(LogFile, "{~p:~p}~n", ["end", Player]).
 
+make_dir() ->
+	DataDir = "play_data",
+	file:make_dir(DataDir),
+	file:set_cwd(DataDir),
+	{Year, Month, Day} = date(),	 
+	Dir = io_lib:format("~p_~p_~p", [Year, Month, Day]),
+	file:make_dir(Dir),
+	file:set_cwd(Dir).
+
 make_filename() ->
-	{{Year, Month, Day}, {Hour, Minute, Second}} = calendar:local_time(),
-	io_lib:format("play_~p_~p_~p_~p_~p_~p.txt", [Year, Month, Day, Hour, Minute, Second]).
+	{MegaSecs, Secs, MicroSecs} = now(),
+	io_lib:format("~p_~p_~p_~p.txt", [MegaSecs, Secs, MicroSecs, random:uniform(100)]).
 
 
