@@ -186,10 +186,12 @@ congradulations(NickName) ->
 	NickName ++ " Wins!!!".
 
 store_data(Steps) ->
+	{ok, CurrentDir} = file:get_cwd(),
 	make_dir(),
 	{ok, LogFile} = file:open(make_filename(), [append]),	
 	[store_data(Step, LogFile) || Step <- Steps],
-	file:close(LogFile).
+	file:close(LogFile),
+	file:set_cwd(CurrentDir).
 
 store_data({start, CurrentNickName, NextNickName}, LogFile) ->	
 	io:format(LogFile, "{\"begin\":[~p,~p]}~n", [CurrentNickName, NextNickName]);
