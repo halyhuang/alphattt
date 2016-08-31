@@ -29,11 +29,23 @@ class Board(object):
                 return True
         return False
 
+    def is_legal(self, (R, C, r, c)):
+        pass
+
+    def winner(self):
+        pass
+
+    def max_moves(self):
+        pass
+
+    def current_player(self):
+        pass
+
     def move(self, ((R, C, r, c), player)):
         s, n = Board.RC2S[(R, C)], Board.RC2S[(r, c)]
-        winner = None
         S, N = Board.BOARDS[s], Board.BOARDS[n]
         ssp = s + s + player
+        winner = None
         # move
         self.board[ssp] += N
         self.legals[s] -= N
@@ -51,7 +63,7 @@ class Board(object):
             winner = Board.PLAYER_NO
         return winner
 
-    def get_legal_moves(self):
+    def legal_moves(self):
         def append_points(legal_moves, m, s):
             R, C = Board.RS[s], Board.CS[s]
             for i in xrange(9):
@@ -70,7 +82,7 @@ class Board(object):
     def get_board(self):
         return tuple(self.board)
 
-    def paint(self):
+    def display(self):
         line = [["0" for i in xrange(9)] for i in xrange(9)]
         for N in xrange(9):
             I = self.board[N * 2]
