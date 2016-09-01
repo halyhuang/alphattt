@@ -3,6 +3,7 @@
 
 class Board(object):
 
+    NEXT_PLAYER = (1, 0)
     PLAYER_DRAW = 2
     BOARDS = (1, 2, 4, 8, 16, 32, 64, 128, 256)
     RS = (0, 0, 0, 1, 1, 1, 2, 2, 2)
@@ -35,7 +36,7 @@ class Board(object):
         return self.board[20]
 
     def move(self, (R, C, r, c)):
-        player = (self.board[20] + 1) % 2
+        player = Board.NEXT_PLAYER[self.board[20]]
         s, n = Board.RC2S[(R, C)], Board.RC2S[(r, c)]
         S, N = Board.BOARDS[s], Board.BOARDS[n]
         ssp = s + s + player
