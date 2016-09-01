@@ -3,9 +3,7 @@
 
 class Board(object):
 
-    PLAYER_ME = 0
-    PLAYER_AI = 1
-    PLAYER_NO = 2
+    PLAYER_DRAW = 2
     BOARDS = (1, 2, 4, 8, 16, 32, 64, 128, 256)
     RS = (0, 0, 0, 1, 1, 1, 2, 2, 2)
     CS = (0, 1, 2, 0, 1, 2, 0, 1, 2)
@@ -19,9 +17,10 @@ class Board(object):
     def __init__(self, copy_board=None):
         super(Board, self).__init__()
         self.board = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                      0, 0, 2, 0, 0]
+                      0, 0, 1, 0, 0]
         self.legals = [511 for i in xrange(9)]
         self.overs = [0 for i in xrange(9)]
+        self.__winner = None
 
     def __is_win(self, n):
         for i in Board.WINS:
@@ -29,23 +28,17 @@ class Board(object):
                 return True
         return False
 
-    def is_legal(self, (R, C, r, c)):
-        pass
-
     def winner(self):
-        pass
-
-    def max_moves(self):
-        pass
+        return self.__winner
 
     def current_player(self):
-        pass
+        return self.board[20]
 
-    def move(self, ((R, C, r, c), player)):
+    def move(self, (R, C, r, c)):
+        player = (self.board[20] + 1) % 2
         s, n = Board.RC2S[(R, C)], Board.RC2S[(r, c)]
         S, N = Board.BOARDS[s], Board.BOARDS[n]
         ssp = s + s + player
-        winner = None
         # move
         self.board[ssp] += N
         self.legals[s] -= N
@@ -55,13 +48,12 @@ class Board(object):
             self.board[18 + player] += S
             self.overs[s] = 1
             if self.__is_win(self.board[18 + player]):
-                winner = player
+                self.__winner = player
         elif not self.legals[s]:
             self.overs[s] = 1
         if sum(self.overs) == 9 \
-                and winner is None:
-            winner = Board.PLAYER_NO
-        return winner
+                and self.__winner is None:
+            self.__winner = Board.PLAYER_DRAW
 
     def legal_moves(self):
         def append_points(legal_moves, m, s):
@@ -89,9 +81,9 @@ class Board(object):
             A = self.board[N * 2 + 1]
             for n in xrange(9):
                 if ((I >> n) & 1) == 1:
-                    line[int(N / 3) * 3 + int(n / 3)][(N % 3) * 3 + n % 3] = "I"
-                if ((A >> n) & 1) == 1:
                     line[int(N / 3) * 3 + int(n / 3)][(N % 3) * 3 + n % 3] = "A"
+                if ((A >> n) & 1) == 1:
+                    line[int(N / 3) * 3 + int(n / 3)][(N % 3) * 3 + n % 3] = "B"
         for i in xrange(9):
             for j in xrange(9):
                 if j == 8:
