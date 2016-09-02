@@ -3,9 +3,8 @@
 
 class Board(object):
 
-    PLAYER_ME = 0
-    PLAYER_AI = 1
-    PLAYER_NO = 2
+    NEXT_PLAYER = (1, 0)
+    PLAYER_DRAW = 2
     BOARDS = (1, 2, 4, 8, 16, 32, 64, 128, 256)
     RS = (0, 0, 0, 1, 1, 1, 2, 2, 2)
     CS = (0, 1, 2, 0, 1, 2, 0, 1, 2)
@@ -19,9 +18,10 @@ class Board(object):
     def __init__(self, copy_board=None):
         super(Board, self).__init__()
         self.board = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                      0, 0, 2, 0, 0]
+                      0, 0, 1, 0, 0]
         self.legals = [511 for i in xrange(9)]
         self.overs = [0 for i in xrange(9)]
+        self.__winner = None
 
     def __is_win(self, n):
         for i in Board.WINS:
@@ -29,9 +29,15 @@ class Board(object):
                 return True
         return False
 
-    def move(self, ((R, C, r, c), player)):
+    def winner(self):
+        return self.__winner
+
+    def current_player(self):
+        return self.board[20]
+
+    def move(self, (R, C, r, c)):
+        player = Board.NEXT_PLAYER[self.board[20]]
         s, n = Board.RC2S[(R, C)], Board.RC2S[(r, c)]
-        winner = None
         S, N = Board.BOARDS[s], Board.BOARDS[n]
         ssp = s + s + player
         # move
@@ -43,15 +49,14 @@ class Board(object):
             self.board[18 + player] += S
             self.overs[s] = 1
             if self.__is_win(self.board[18 + player]):
-                winner = player
+                self.__winner = player
         elif not self.legals[s]:
             self.overs[s] = 1
         if sum(self.overs) == 9 \
-                and winner is None:
-            winner = Board.PLAYER_NO
-        return winner
+                and self.__winner is None:
+            self.__winner = Board.PLAYER_DRAW
 
-    def get_legal_moves(self):
+    def legal_moves(self):
         def append_points(legal_moves, m, s):
             R, C = Board.RS[s], Board.CS[s]
             for i in xrange(9):
@@ -70,16 +75,16 @@ class Board(object):
     def get_board(self):
         return tuple(self.board)
 
-    def paint(self):
+    def display(self):
         line = [["0" for i in xrange(9)] for i in xrange(9)]
         for N in xrange(9):
             I = self.board[N * 2]
             A = self.board[N * 2 + 1]
             for n in xrange(9):
                 if ((I >> n) & 1) == 1:
-                    line[int(N / 3) * 3 + int(n / 3)][(N % 3) * 3 + n % 3] = "I"
-                if ((A >> n) & 1) == 1:
                     line[int(N / 3) * 3 + int(n / 3)][(N % 3) * 3 + n % 3] = "A"
+                if ((A >> n) & 1) == 1:
+                    line[int(N / 3) * 3 + int(n / 3)][(N % 3) * 3 + n % 3] = "B"
         for i in xrange(9):
             for j in xrange(9):
                 if j == 8:
