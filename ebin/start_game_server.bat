@@ -1,1 +1,1 @@
-erl -sname gameserver -setcookie alphattt -s game_server start
+erl -sname gameserver -setcookie alphattt -s game_boot start
