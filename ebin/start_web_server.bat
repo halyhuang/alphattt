@@ -1,0 +1,1 @@
+erl -sname webserver -setcookie alphattt -s web_server start
