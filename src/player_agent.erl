@@ -9,7 +9,12 @@ init(Socket) ->
 handle_tcp_data(TcpData, State=#state{room = null}) ->
 	NewState =  case binary_to_term(TcpData) of
 					{echo, Msg} ->
-						send_message({echo, Msg}, State);
+						send_message({echo, Msg}, State),
+						State;
+		 			{login, UserName, Password, Ref, From} ->
+						LoginState = game_server_auth:login(UserName, Password), 
+						send_message({login, LoginState, Ref, From}, State),
+						State;
 					{enter_room, NickName, RoomID} ->
 						case roommgr:enter(RoomID) of
 							{ok, NewRoomPid} ->

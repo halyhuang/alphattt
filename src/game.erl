@@ -3,8 +3,9 @@
 -export([start/0]).
 
 start() ->
-	{ok, _Pid} = tcp_server:start(8011, player_agent),
-	roommgr:start(board, 5).
+    roommgr:start(board, 5),
+    db:start(),
+    tcp_server:start(8011, player_agent).
 
 
 

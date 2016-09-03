@@ -84,8 +84,8 @@ loop(State = #state{status = waiting, board = Board, players = Players}) ->
 					loop(State)
 			end;
 		{get_state, Ref, From} ->
-			PlayerNickName = [ NickName || {_Pid, NickName, _Ref} <- Players],
-			From ! {Ref, {State#state.status, PlayerNickName}},
+			PlayerNickNames = [ NickName || {_Pid, NickName, _Ref} <- Players],
+			From ! {Ref, {State#state.status, PlayerNickNames}},
 			loop(State);
 		show ->
 			io:format("status=~p, players=~p~n", [State#state.status, Players]),

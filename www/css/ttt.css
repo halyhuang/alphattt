@@ -42,6 +42,22 @@ body {
     padding: 3px;  
     cursor: pointer;  
 }  
+
+.icons{  
+    font-size: 20px;  
+    text-align: center;  
+    display: inline-block;  
+    width: 150px;  
+    height: 27px;  
+    margin-right: 5px;  
+    line-height: 27px;  
+    background: darkturquoise;  
+    border: 1px solid #eee;  
+    border-radius: 34.4px;  
+    padding: 3px;  
+    cursor: pointer;  
+} 
+
 #play, #stop {  
     width: 110px;  
 }  
@@ -52,6 +68,18 @@ body {
     background: white;  	
 }
 
+.gamehall {
+    width: 100%;  
+	border:2px solid blue;
+    background: #66b3ff;  	
+}
+
+.gamehalltable  table {
+	border:0;
+	border-collapse:5;  
+	border-spacing:5;  
+    background: white;  	
+}
 .chessboardtd {
 	border:2px solid blue;
     background: white;  	
@@ -76,5 +104,11 @@ body {
 }  
 
   
+td.tight1 {
+ padding:25px;
+}
   
+td.tight {
+ padding:5px;
+}
   
