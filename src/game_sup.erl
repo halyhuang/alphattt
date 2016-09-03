@@ -15,8 +15,8 @@ init([]) ->
             				permanent,2000,worker,[ranklist]},
     Rommmgr = {roommgr, {roommgr,start,[board, 6]},
             				permanent,2000,worker,[roommgr]},
-    Auth = {game_server_auth, {game_server_auth,start,[]},
-            				permanent,2000,worker,[game_server_auth]},  
+    Auth = {game_auth, {game_auth,start,[]},
+            				permanent,2000,worker,[game_auth]},  
     TcpServer = {tcp_server, {tcp_server, start,[8011, player_agent]},
             				permanent,2000,worker,[tcp_server]},        				          				
     {ok,{{one_for_one, 4, 3600}, [Ranklist, Rommmgr, Auth, TcpServer]}}.

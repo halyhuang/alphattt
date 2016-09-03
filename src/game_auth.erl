@@ -1,4 +1,4 @@
--module(game_server_auth).
+-module(game_auth).
 -include("db_table.hrl").
 
 -behaviour (gen_server).
