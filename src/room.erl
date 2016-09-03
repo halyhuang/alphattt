@@ -1,6 +1,6 @@
 -module(room).
 -export([start/1]).
--export([enter/2, leave/2, play/2, show/1]).
+-export([enter/2, leave/2, play/2, show/1, get_state/1]).
 -export([reset/1]).
 
 -record(state, {board,
@@ -13,8 +13,7 @@
 
 %% APIs
 start(Board) ->
-	Pid = spawn(fun() -> init(Board) end),
-	{ok, Pid}.
+	spawn(fun() -> init(Board) end).
 
 enter(Pid, {Player, NickName}) ->
 	Pid ! {enter, Player, NickName}.
@@ -25,11 +24,22 @@ leave(Pid, Player) ->
 play(Pid, {Player, Move}) ->
 	Pid ! {play, Player, Move}.
 
+get_state(Pid) ->
+	call(Pid, get_state).	
+
 reset(Pid) ->
 	Pid ! reset.
 
 show(Pid) ->
 	Pid ! show.	
+
+call(Pid, Msg) ->
+	Ref = make_ref(),
+	Pid ! {Msg, Ref, self()},
+	receive
+		{Ref, Reply} ->
+			Reply
+	end.	
 
 init(Board) ->
 	<<A:32, B:32, C:32>> = crypto:rand_bytes(12),
@@ -73,6 +83,10 @@ loop(State = #state{status = waiting, board = Board, players = Players}) ->
 				false ->
 					loop(State)
 			end;
+		{get_state, Ref, From} ->
+			PlayerNickNames = [ NickName || {_Pid, NickName, _Ref} <- Players],
+			From ! {Ref, {State#state.status, PlayerNickNames}},
+			loop(State);
 		show ->
 			io:format("status=~p, players=~p~n", [State#state.status, Players]),
 			loop(State);
@@ -129,7 +143,7 @@ loop(State = #state{status = playing,
 					loop(State);
 				true ->
 					GameState2 = Board:next_state(GameState, Move),
-					NextPlayer = {Next, _} = next_player(Current, Players),
+					NextPlayer = {Next, NextNickName} = next_player(Current, Players),
 					update(Current, Move, GameState2),
 					update(Next, Move, GameState2),
 					NewSteps = Steps ++ [{move, integer_to_list(Board:current_player(GameState)), Move}],
@@ -140,20 +154,28 @@ loop(State = #state{status = playing,
 											 current_player = NextPlayer,
 											 steps=NewSteps});
 						draw ->
-							store_data(NewSteps ++ [{finish, draw}]),
+							NewSteps2 = NewSteps ++ [{finish, draw}],
+							store_data(NewSteps2),
+							db_api:add_game(CurrentNickName, NextNickName, draw, NewSteps2),
 							loop(State#state{status = waiting,
 											 players=[],
 											 current_player=none,
 											 steps=[]});
 						_ ->
 							[notify_user(Pid, congradulations(CurrentNickName)) || {Pid, _, _} <- Players],
-							store_data(NewSteps ++ [{finish, winner, integer_to_list(Board:current_player(GameState))}]),
+							NewSteps2 = NewSteps ++ [{finish, winner, integer_to_list(Board:current_player(GameState))}], 
+							store_data(NewSteps2),
+							db_api:add_game(CurrentNickName, NextNickName, CurrentNickName, NewSteps2),
 							loop(State#state{status=waiting,
 											 players=[],
 											 current_player=none,
 											 steps=[]})
 					end
-			end;		
+			end;	
+		{get_state, Ref, From} ->
+			PlayerNickName = [ NickName || {_Pid, NickName, _Ref} <- Players],
+			From ! {Ref, {State#state.status, PlayerNickName}},
+			loop(State);				
 		{'DOWN', _, process, Pid, Reason} ->
 			io:format("~p down @waiting for: ~p~n", [Pid, Reason]),
 			self() ! {leave, Pid},

@@ -1,5 +1,5 @@
 var serviceURL = "alphattt.yaws";
-var methods = [ "get_state", "start_game", "end_game", "get_move", "get_legal_move", "set_move"];
+var methods = ["get_state", "start_game", "end_game", "get_move", "get_legal_move", "set_move", "is_login"];
 
 var jsonrpc = imprt("jsonrpc");
 var service = new jsonrpc.ServiceProxy(serviceURL, methods);
@@ -7,8 +7,26 @@ var grids;
 var timerID = 0;
 
 window.onload = function() {  
+	check_login();
 	init_botton();	
 };  
+
+function check_login()
+{
+	try
+	{
+		var state = service.is_login();
+		if (!state.is_login)
+		{
+			location.href = "login.html";
+		}
+	}
+	catch(e) 
+	{
+    	alert(e);
+    }
+
+}
 
 function poll()
 {

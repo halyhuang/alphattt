@@ -1,0 +1,143 @@
+html {
+            color: #333;
+            text-rendering: optimizelegibility;
+        }
+        .reg-box {
+            background-color: #eaeaea;
+            padding-bottom: 35px;
+            padding-top: 20px;
+        }
+
+        body, h1, h2, h3, h4, h5, h6, hr, p, blockquote, dl, dt, dd, ul, ol, li, pre, form, fieldset, legend, button, input, textarea, th, td {
+            margin: 0;
+            padding: 0;
+            word-wrap: break-word;
+        }
+        body {
+            background: #eee none repeat scroll 0 0;
+            font-family: "HelveticaNeue","Helvetica Neue",Helvetica,Arial,sans-serif;
+        }
+        html, body, div, span, applet, object, iframe, h1, h2, h3, h4, h5, h6, p, blockquote, pre, a, abbr, acronym, address, big, cite, code, del, dfn, em, img, ins, kbd, q, s, samp, small, strike, strong, sub, sup, tt, var, b, u, i, dl, dt, dd, ol, nav ul, nav li, fieldset, form, label, legend, table, caption, tbody, tfoot, thead, tr, th, td, article, aside, canvas, details, embed, figure, figcaption, footer, header, hgroup, menu, nav, output, ruby, section, summary, time, mark, audio, video {
+            border: 0 none;
+            font: inherit;
+            margin: 0;
+            padding: 0;
+            vertical-align: baseline;
+        }
+        html, body, div, span, applet, object, iframe, h1, h2, h3, h4, h5, h6, p, blockquote, pre, a, abbr, acronym, address, big, cite, code, del, dfn, em, img, ins, kbd, q, s, samp, small, strike, strong, sub, sup, tt, var, b, u, i, dl, dt, dd, ol, nav ul, nav li, fieldset, form, label, legend, table, caption, tbody, tfoot, thead, tr, th, td, article, aside, canvas, details, embed, figure, figcaption, footer, header, hgroup, menu, nav, output, ruby, section, summary, time, mark, audio, video {
+            font: inherit;
+        }
+        .clearfix::after {
+            clear: both;
+            content: " ";
+            display: block;
+            font-size: 0;
+            height: 0;
+            visibility: hidden;
+        }
+        .reg-con {
+            background-color: #fff;
+            border: 1px solid #dedede;
+            margin-left: auto;
+            margin-right: auto;
+            padding: 30px 20px;
+            width: 958px;
+        }
+
+        .reg-2-login {
+            padding-top: 65px;
+            width: 200px;
+        }
+        .fr {
+            float: right;
+        }
+
+        .reg-form-hd {
+            color: #5c5c5c;
+            font-size: 20px;
+            font-weight: bold;
+        }
+        .reg-form-bd {
+            overflow: hidden;
+            padding: 25px 10px;
+            position: relative;
+        }
+        .reg-form-label {
+            float: left;
+            height: 34px;
+            line-height: 34px;
+            margin-right: 3px;
+            text-align: right;
+            width: 98px;
+        }
+        .reg-form-tip {
+            color: #5c5c5c;
+            float: left;
+            line-height: 34px;
+            margin-left: 8px;
+        }
+        .reg-form-input {
+            background-color: #fff;
+            border: 1px solid #bccddc;
+            float: left;
+            height: 21px;
+            line-height: normal;
+            padding: 5px 10px;
+            transition: all 0.25s linear 0s;
+            width: 190px;
+        }
+        .reg-form-input.error
+        {
+            border-color: #ff0000;
+            box-shadow: 0 1px 1px rgba(0,0,0,0.075) inset,0 0 8px rgba(255,0,0,0.6);
+            outline: 0 none;
+        }
+        .reg-form-check label {
+            color: #333;
+            float: left;
+            font: 12px/34px "Microsoft Yahei";
+        }
+        .reg-form-btn {
+            background: rgba(0, 0, 0, 0) url("../image/160-sprite.png") no-repeat scroll -132px -280px;
+            border: medium none;
+            color: #fff;
+            cursor: pointer;
+            display: block;
+            font-size: 18px;
+            font-weight: bold;
+            height: 48px;
+            margin-left: 111px;
+            outline: medium none;
+            padding-bottom: 2px;
+            text-align: center;
+            width: 210px;
+        }
+        body, button, input, select, textarea {
+            font: 400 12px/1.5 "Lantinghei SC","Microsoft Yahei","Hiragino Sans GB","Microsoft Sans Serif","WenQuanYi Micro Hei",sans-serif;
+        }
+        .reg-form-check input {
+            float: left;
+            margin-right: 5px;
+            margin-top: 11px;
+        }
+        button, input, select, textarea {
+            font-size: 100%;
+            outline: medium none;
+        }
+
+        .reg-form-check {
+            height: 34px;
+            padding-left: 111px;
+        }
+        .reg-form-item {
+            height: 34px;
+            margin-top: 15px;
+            overflow: hidden;
+        }
+
+        .reg-2-login a {
+            color: #0068d3;
+        }
+        a {
+            text-decoration: none;
+        }

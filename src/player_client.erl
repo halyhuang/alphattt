@@ -1,6 +1,6 @@
 -module(player_client).
 -export([start/5]).
--export([enter_room/1, leave_room/1, show/1, stop/1]).
+-export([login/2, enter_room/2, leave_room/1, show/1, stop/1]).
 -export([get_player/1]).
 
 -record(state, {nickname,
@@ -13,8 +13,11 @@ start(NickName, PlayerType, Board, SIp, SPort) ->
 							  Board, SIp, SPort) end),
 	{ok, Pid}.
 
-enter_room(Pid) ->
-	Pid ! enter_room,
+login(Pid, Password) ->
+	call(Pid, {login, Password}).	
+
+enter_room(Pid, RoomID) ->
+	Pid ! {enter_room, RoomID},
 	ok.
 
 leave_room(Pid) ->
@@ -59,8 +62,11 @@ loop(State = #state{nickname=NickName,
 	receive
 		{echo, Msg} ->
 			gen_tcp:send(Sock, term_to_binary({echo, Msg}));
-		enter_room ->
-			gen_tcp:send(Sock, term_to_binary({enter_room, NickName})),
+		{{login, Password}, Ref, From} ->
+			gen_tcp:send(Sock, term_to_binary({login, NickName, Password, Ref, From})),
+			loop(State);			
+		{enter_room, RoomID} ->
+			gen_tcp:send(Sock, term_to_binary({enter_room, NickName, RoomID})),
 			loop(State);
 		leave_room ->
 			gen_tcp:send(Sock, term_to_binary({leave_room, NickName})),
@@ -79,6 +85,8 @@ loop(State = #state{nickname=NickName,
 					io:format("ECHO: ~p~n", [Msg]);
 				{notify, Msg} ->
 					io:format("~s~n", [Msg]);
+				{login, Result, Ref, From} ->
+					From ! {Ref, Result};					
 				{update, Move, GameState} ->
 					player:update(Type, Player, GameState),
 					player:display(Type, Player, GameState, Move);
