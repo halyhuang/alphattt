@@ -12,7 +12,7 @@ handle_tcp_data(TcpData, State=#state{room = null}) ->
 						send_message({echo, Msg}, State),
 						State;
 		 			{login, UserName, Password, Ref, From} ->
-						LoginState = game_server_auth:login(UserName, Password), 
+						LoginState = game_auth:login(UserName, Password), 
 						send_message({login, LoginState, Ref, From}, State),
 						State;
 					{enter_room, NickName, RoomID} ->

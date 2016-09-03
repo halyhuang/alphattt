@@ -3,7 +3,7 @@
 -include_lib("stdlib/include/qlc.hrl").
 -include("db_table.hrl").
 
--export([add_user/1, add_user/3, get_user/1, get_all_users/0, del_user/1]).
+-export([add_user/3, get_user/1, get_all_users/0, del_user/1]).
 
 -export([add_game/4, get_all_games/0]).
 
@@ -26,10 +26,6 @@ player_result(Player, Opponent, Player) ->
 	{PlayerResult#user{win   = PlayerResult#user.win + 1, 
 					   total = PlayerResult#user.total + 1},
 	 OpponentResult#user{total = OpponentResult#user.total + 1}}.
-
-
-add_user(Name) ->
-	add_user(Name, "", human).
 
 add_user(Name, Password, Type) ->
 	F = fun() ->

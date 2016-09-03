@@ -3,7 +3,7 @@
 
 -behaviour (gen_server).
 
--export([start/0, login/2]).
+-export([start/0, login/2, register/1, register/3]).
 
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
 
@@ -14,6 +14,12 @@ start() ->
 
 login(UserName, Password) ->
 	gen_server:call({global, ?MODULE}, {login, UserName, Password}).
+
+register(UserName) ->
+	register(UserName, "", unknown).
+
+register(UserName, Password, Type) ->
+	gen_server:call({global, ?MODULE}, {register, UserName, Password, Type}).
 
 init([]) ->
 	{ok, #state{}}.
@@ -31,6 +37,15 @@ handle_call({login, UserName, Password}, _From, State) ->
 			ok;
 		_ ->
 			{error, password_not_match}
+	end,
+	{reply, Reply, State};
+handle_call({register, UserName, Password, Type}, _From, State) ->	
+	Reply = case db_api:get_user(UserName) of
+		[] -> 
+			db_api:add_user(UserName, Password, Type),
+			ok;		
+		_ ->
+			{error, user_already_register}
 	end,
 	{reply, Reply, State}.
 
