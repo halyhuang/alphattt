@@ -1,5 +1,5 @@
     {['./*'],
-    [debug_info,verbose,{i,"./include"},
+    [debug_info,verbose,{i,"../include"},
     {outdir,"../ebin"}
     ]}.
     
