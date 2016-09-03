@@ -160,7 +160,7 @@ random_game(Player, LegalStates, IterCount, MaxMoves,
 
 %% return: {GameState, Existed}
 select_one(Player, LegalStates,
-			#state{exploration_factor=EF, plays_wins=PlaysWins}) ->
+			#state{exploration_factor=_EF, plays_wins=PlaysWins}) ->
 	GSs = [ I || {_, I} <- LegalStates],
 	RandomGS = choice(GSs),
 	{RandomGS, lookup(PlaysWins, {Player, RandomGS}) =/= none}.	

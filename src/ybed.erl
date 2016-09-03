@@ -7,7 +7,8 @@ start() ->
 run() ->
     Id = "embedded",
     {ok, Dir} = file:get_cwd(),
-    YarwsDir = "E:/10035938/github/alphattt/",
+    Index = string:rstr(Dir, "ebin"),
+    YarwsDir = string:sub_string(Dir, 1, Index - 1),
     GconfList = [                 
                  {id, Id},
                  {logdir, YarwsDir ++ "logs"},

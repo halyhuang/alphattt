@@ -4,6 +4,7 @@
 
 start() ->
     ybed_sup:start_link(),
+    timer:sleep(3000),
     ybed:start().
 
 
