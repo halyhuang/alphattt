@@ -41,12 +41,12 @@ del_user(Name) ->
 
 
 add_game(Player, Opponent, Result, Steps) ->
-	{PlayerResult, OpponentResult} = player_result(Player, Opponent, Result),
 	F = fun() ->
+			{PlayerResult, OpponentResult} = player_result(Player, Opponent, Result),
 			mnesia:write(PlayerResult),
 			mnesia:write(OpponentResult),
 			mnesia:write(#game{player = Player, opponent = Opponent, 
-					time = calendar:local_time(), 
+					time = now(), 
 					result = Result, steps = Steps})
 		end,
 	mnesia:transaction(F).

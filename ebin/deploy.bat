@@ -1,1 +1,1 @@
-erl -sname gameserver -s deploy run
+erl -sname gameserver -s deploy run -s erlang halt
