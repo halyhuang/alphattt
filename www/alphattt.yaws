@@ -56,21 +56,20 @@ handle(State, {call, login, {array, [UserName, Password]}} = _Request, Session=#
 	{true, 0, Session, {response, make_json_fault_report(aready_login)}};
 
 %% register	login response  true|{false, Reason}				 
-%%handle(State, {call, register, {array, [UserName, Password, Type]}} = _Request, Session) ->
-%% 	Pid = get_client_pid(Session),
-%%	RegisterState = player_client:register(Pid, {UserName, Password, Type}),
-%%	Json = 
-%%		case RegisterState of
-%%			true -> make_json_true_report();		
-%%			{false, Reason} -> make_json_fault_report(Reason)
-%%		end,
-%%	case undefined =:= Session of
-%%		true -> 
-%%			{true, 0, #session{client_pid = Pid}, {response, Json}};
-%%		false ->
-%%			{true, 0, Session#session{client_pid = Pid}, {response, Json}}
-%%	end;
-
+handle(State, {call, register, {array, [UserName, Password, Type]}} = _Request, Session) ->
+	PlayerType = 
+		case "human" =:= Type of
+			true -> human;
+			false -> robot
+		end,
+	RegisterState = game_auth:register(UserName, Password, PlayerType),
+	Json = 
+		case RegisterState of
+			ok-> make_json_true_report();		
+			{error, Reason} -> make_json_fault_report(Reason)
+		end,
+	{true, 0, Session, {response, Json}};
+	
 %% is_login
 handle(State, {call, is_login, _Arg} = _Request, Session) ->
 	Is_Login = 
