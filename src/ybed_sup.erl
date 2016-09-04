@@ -11,6 +11,8 @@ start_link() ->
     supervisor:start_link({local, ?MODULE}, ?MODULE, []).
 
 init([]) ->
+	WebAgentMgr = {web_agent_mgr, {web_agent_mgr,start,[]},
+            			permanent,2000,worker,[web_agent_mgr]},
     YBed = {ybed, {ybed,start,[]},
             permanent,2000,worker,[ybed]},
-    {ok,{{one_for_all,0,1}, [YBed]}}.
+    {ok,{{one_for_all,0,1}, [YBed, WebAgentMgr]}}.

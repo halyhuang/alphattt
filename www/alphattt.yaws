@@ -1,39 +1,31 @@
 <erl module=alphattt_mod>
--include("session.hrl").
+
 -compile(export_all).
 
 out(A) ->
-    yaws_rpc:handler_session(A, {?MODULE, handle}).
+    Pid = web_agent_mgr:get_agent(A),
+    yaws_rpc:handler_session(A#arg{state = {web_agent, Pid}}, {?MODULE, handle}).
 
-handle(_State, {call, Func, _Args}, undefined) ->
-    {ok, Pid} = web_agent:start(),
-	io:format("alphattt func ~p call before create session ~p~n", [Func, Pid]),
-    {true, 0, #session{pid = pid_to_list(Pid)}, {response, "ok"}};
-	
-handle(State, {call, get_state, _Arg}, Session=#session{pid = PidStr}) ->
-    Pid = list_to_pid(PidStr),
+handle({web_agent, Pid}, {call, get_state, _Arg}, Session) ->
 	Response = web_agent:get_state(Pid), 
     {true, 0, Session, {response, Response}};
 
-handle(State, {call, set_move, {array, [R, C, R1, C1]}}, Session=#session{pid = PidStr}) ->	
-    Pid = list_to_pid(PidStr),
+handle({web_agent, Pid}, {call, set_move, {array, [R, C, R1, C1]}}, Session) ->	
 	Move = {R, C, R1, C1},
 	io:format("Webplayer Move ~p~n", [Move]),
 	ok = web_agent:set_move(Pid, Move),	
     {true, 0, Session, {response, "ok"}};
 
-handle(State, {call, play_vs_robot, _Value}, Session=#session{pid = PidStr}) ->
-    Pid = list_to_pid(PidStr),
+handle({web_agent, Pid}, {call, play_vs_robot, _Value}, Session) ->
 	ok = web_agent:play_vs_robot(Pid, "mcts", mcts),
     {true, 0, Session, {response, "ok"}};
 
-handle(State, {call, play_vs_human, _Value}, Session=#session{pid = PidStr}) ->
-    Pid = list_to_pid(PidStr),
+handle({web_agent, Pid}, {call, play_vs_human, _Value}, Session) ->
 	ok = web_agent:play_vs_human(Pid),
     {true, 0, Session, {response, "ok"}};
 
-handle(_State, {call, Func, _Value}, Session) -> 
-	io:format("Unknown funcion call ~p Session ~p~n", [Func, Session]),
-	{true, 0, Session, {response, "ok"}}.	   	
+handle({web_agent, Pid}, {call, Func, _Args}, Session) ->
+    io:format("alphattt unknown func call ~p, web_agent ~p~n", [Func, Pid]),
+    {true, 0, Session, {response, "ok"}}.  
 	
 </erl>

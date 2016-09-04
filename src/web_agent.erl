@@ -1,8 +1,8 @@
 -module(web_agent).
--export([start/0, login/3, enter_room/2, play_vs_robot/3, play_vs_human/1, set_move/2, get_state/1, show/1]).
+-export([start/0, login/3, is_login/1, enter_room/2, play_vs_robot/3, play_vs_human/1, set_move/2, get_state/1, show/1]).
 
--record(state,  {username = "KK",
-				 password = "123456",
+-record(state,  {username = none,
+				 password = none,
 				 room = none,
 				 web_player = none,
 				 player_client = none,
@@ -16,6 +16,9 @@ start() ->
 
 login(Pid, UserName, Password) ->
 	call(Pid, {login, UserName, Password}).	
+
+is_login(Pid) ->
+	call(Pid, is_login).	
 
 enter_room(Pid, RoomID) ->
 	call(Pid, {enter_room, RoomID}).
@@ -50,8 +53,8 @@ loop(State) ->
 					From ! {Ref, stop},
 					stop
 			end
-	    after 60000 ->    %% keep state for 60 secs only
-	        exit(normal)			
+	    after 180 * 1000 ->    %% keep state for 60 secs only
+	        exit(time_out)			
 	end.
 
 
@@ -66,6 +69,25 @@ call(Pid, Msg) ->
 handle_call(show, State) ->
 	io:format("web_agent ~p state ~p~n", [self(), State]),
 	{reply, ok, State};
+
+handle_call({login, UserName, Password}, State=#state{username = none}) ->
+	case game_auth:login(UserName, Password) of
+			ok ->				
+				{reply, ok, State#state{username = UserName, password = Password}};	
+			Reaseon ->
+				{reply, Reaseon, State}
+	end;	
+
+handle_call({login, UserName, _Password}, State=#state{username = LoginedName}) ->
+	Reason = io_lib:format("user ~p already login, try login username ~p", [LoginedName, UserName]),
+	io:format("~p~n", [Reason]),
+	{reply, Reason, State};
+
+handle_call(is_login, State=#state{username = none}) ->
+	{reply, false, State};	
+
+handle_call(is_login, State) ->
+	{reply, true, State};	
 
 handle_call({enter_room, RoomID}, State) ->
 	{reply, ok, State#state{room = RoomID}};
@@ -95,31 +117,41 @@ handle_call({set_move, Move}, State=#state{web_player = WebPlayerPid}) ->
 	webplayer:set_move(WebPlayerPid, Move),	
 	{reply, ok, State};
 
-handle_call(play_vs_human, State=#state{username = UserName, password = Password, room = RoomID, 
+handle_call(play_vs_human, State=#state{username = UserName, password = Password, room = Room, 
 		web_player = none, player_client = none}) ->
-	{ok, Pid} = player_client:start(UserName, webplayer, board, "127.0.0.1", 8011),
+	RoomID = get_room_id(Room),
+	{ok, Pid} = player_client:start(UserName, Password, webplayer, board, "127.0.0.1", 8011),
 	WebPlayerPid = player_client:get_player(Pid),
-	ok = player_client:login(Pid, Password),
+	timer:sleep(100),
 	player_client:enter_room(Pid, RoomID),
-	{reply, ok, State#state{player_client = Pid, web_player = WebPlayerPid}};
+	{reply, ok, State#state{room = RoomID, player_client = Pid, web_player = WebPlayerPid}};
 
 handle_call(play_vs_human, State=#state{player_client = PlayerClientPid, room = RoomID}) ->
 	player_client:enter_room(PlayerClientPid, RoomID),
 	{reply, ok, State};
 
-handle_call({play_vs_robot, RobotName, RobotType}, State=#state{username = UserName, password = Password, room = RoomID, 
+handle_call({play_vs_robot, RobotName, RobotType}, State=#state{username = UserName, password = Password, room = Room, 
 		web_player = none, player_client = none, opponent_player = none}) ->
-	{ok, Pid} = player_client:start(UserName, webplayer, board, "127.0.0.1", 8011),
+	RoomID = get_room_id(Room),
+	{ok, Pid} = player_client:start(UserName, Password, webplayer, board, "127.0.0.1", 8011),
 	WebPlayerPid = player_client:get_player(Pid),
-	ok = player_client:login(Pid, Password),
+	timer:sleep(100),
 	player_client:enter_room(Pid, RoomID),
-	{ok, OpponentPid} = player_client:start(RobotName, RobotType, board, "127.0.0.1", 8011),
-	ok = player_client:login(OpponentPid, ""),	
+	{ok, OpponentPid} = player_client:start(RobotName, "", RobotType, board, "127.0.0.1", 8011),	
+	timer:sleep(100),
 	player_client:enter_room(OpponentPid, RoomID),
 
-	{reply, ok, State#state{player_client = Pid, web_player = WebPlayerPid, opponent_player = OpponentPid}};
+	{reply, ok, State#state{room = RoomID, player_client = Pid, web_player = WebPlayerPid, opponent_player = OpponentPid}};
 
 handle_call({play_vs_robot, _RobotName, _RobotType}, State=#state{player_client = PlayerClientPid, opponent_player = OpponentPid, room = RoomID}) ->
 	player_client:enter_room(PlayerClientPid, RoomID),
 	player_client:enter_room(OpponentPid, RoomID),
 	{reply, ok, State}.
+
+get_room_id(none) ->
+	{ok, RoomID} = roommgr:get_empty_room(),
+	RoomID;
+get_room_id(RoomID) ->
+	RoomID.
+
+

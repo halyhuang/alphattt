@@ -5,21 +5,8 @@ var service = new jsonrpc.ServiceProxy("alphattt.yaws", ["play_vs_robot", "play_
 var grids;
 var timerID = 0;
 
-
-var hall_jsonrpc = imprt("jsonrpc");
-var auth_service = new hall_jsonrpc.ServiceProxy("auth.yaws", ["create_session", "is_login"]);
-
-function init_session()
-{
-    try 
-	{
-		auth_service.create_session();
-	} 
-	catch(e) 
-	{
-		alert(e);
-	}	
-}
+var auth_jsonrpc = imprt("jsonrpc");
+var auth_service = new auth_jsonrpc.ServiceProxy("auth.yaws", ["is_login"]);
 
 function is_login()
 {
@@ -28,7 +15,6 @@ function is_login()
 }
 
 window.onload = function() {  
-	init_session();
 	init_botton();	
 };  
 
@@ -112,18 +98,32 @@ function info(msg)
 
 function play_vs_human()
 {
-	init_board();
-	var result = service.play_vs_human();
-	info("play vs human start!!!");	
-	timerID = setInterval(poll, 1000);	
+	if (is_login())
+	{
+		init_board();
+		var result = service.play_vs_human();
+		info("play vs human start!!!");	
+		timerID = setInterval(poll, 1000);	
+	}
+	else
+	{
+		location.href = "login.html";
+	}		
 }  
 
 function play_vs_robot()
 {
-	init_board();	
-	var result = service.play_vs_robot();	
-	info("play vs robot start!!!");	
-	timerID = setInterval(poll, 1000);		
+	if (is_login())
+	{	
+		init_board();	
+		var result = service.play_vs_robot();	
+		info("play vs robot start!!!");	
+		timerID = setInterval(poll, 1000);	
+	}
+	else
+	{
+		location.href = "login.html";
+	}
 }
 
 function click_move()

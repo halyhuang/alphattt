@@ -32,11 +32,11 @@ handle_cast(_Msg, State) ->
 
 handle_call({login, UserName, Password}, _From, State) ->
 	Reply = case db_api:get_user(UserName) of
-		[] -> {error, user_not_exist};
+		[] -> "user not register";
 		[#user{name=UserName, password=Password}] ->
 			ok;
 		_ ->
-			{error, password_not_match}
+			"password isn't match"
 	end,
 	{reply, Reply, State};
 handle_call({register, UserName, Password, Type}, _From, State) ->	

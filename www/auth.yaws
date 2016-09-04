@@ -1,23 +1,30 @@
 <erl module=auth_mod>
--include("session.hrl").
 
 -compile(export_all).
 
 out(A) ->
-    yaws_rpc:handler_session(A, {?MODULE, handle}).
+    Pid = web_agent_mgr:get_agent(A),
+    yaws_rpc:handler_session(A#arg{state = {web_agent, Pid}}, {?MODULE, handle}).
 
-handle(_State, {call, Func, _Args}, undefined) ->
-    {ok, Pid} = web_agent:start(),
-    io:format("auth func ~p call before create session ~p~n", [Func, Pid]),
-    {true, 0, #session{pid = pid_to_list(Pid)}, {response, "ok"}};
-handle(_State, {call, create_session, _Args}, Session=#session{pid = Pid}) ->
-    io:format("auth use exist session_pid = ~p~n", [Pid]),
-    Json = json2:obj_from_list([{"value", true}]),
-    {true, 0, Session, {response, Json}};
-handle(_State, {call, is_login, _}, Session=#session{pid = Pid}) ->
-    io:format("auth session_pid = ~p~n", [Pid]),
-    Json = json2:obj_from_list([{"value", false}]),
-    {true, 0, Session, {response, Json}}.    
+handle({web_agent, Pid}, {call, is_login, _}, Session) ->
+    IsLogin = web_agent:is_login(Pid),
+    Response = json2:obj_from_list([{"value", IsLogin}]),
+    {true, 0, Session, {response, Response}};
+
+handle({web_agent, Pid}, {call, login, {array, [UserName, Password]}}, Session) ->
+    Response = case web_agent:login(Pid, UserName, Password) of
+                    ok ->
+                        json2:obj_from_list([{"value", true},
+                                             {"reason", ""}]);
+                    Reason ->
+                        json2:obj_from_list([{"value", false},
+                                             {"reason", Reason}])
+                end,
+    {true, 0, Session, {response, Response}};
+
+handle({web_agent, Pid}, {call, Func, _Args}, Session) ->
+    io:format("auth unknown func call ~p, web_agent ~p~n", [Func, Pid]),
+    {true, 0, Session, {response, "ok"}}. 
 
 </erl>
 

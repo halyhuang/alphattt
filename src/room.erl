@@ -3,6 +3,8 @@
 -export([enter/2, leave/2, play/2, show/1, get_state/1]).
 -export([reset/1]).
 
+-define(ROOM_TIME_OUT, 60 * 10).
+
 -record(state, {board,
 				status = waiting, % status = waiting ! playing
 				current_player = none,
@@ -13,7 +15,8 @@
 
 %% APIs
 start(Board) ->
-	spawn(fun() -> init(Board) end).
+	Pid = spawn(fun() -> init(Board) end),
+	{ok, Pid}.
 
 enter(Pid, {Player, NickName}) ->
 	Pid ! {enter, Player, NickName}.
@@ -100,7 +103,7 @@ loop(State = #state{status = waiting, board = Board, players = Players}) ->
 			loop(State);
 		Unexpected ->
 			io:format("unexpected @waiting ~p~n", [Unexpected]),
-			loop(State)
+			loop(State)			
 	end;
 loop(State = #state{status = playing,
 					current_player = {Current, CurrentNickName},
@@ -183,6 +186,8 @@ loop(State = #state{status = playing,
 		Unexpected ->
 			io:format("unexpected @waiting ~p~n", [Unexpected]),
 			loop(State)
+	    after ?ROOM_TIME_OUT * 1000 ->    
+	        exit(time_out)			
 	end.
 
 
