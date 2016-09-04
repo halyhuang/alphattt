@@ -42,7 +42,7 @@ handle_call(get_all_rooms, _From, State=#state{rooms=Rooms}) ->
 	RoomStates = [ {RoomID, room:get_state(RoomPid)} || {RoomID, RoomPid} <- Rooms],
 	{reply, RoomStates, State};
 handle_call({enter, RoomID}, _From, State=#state{rooms=Rooms}) ->
-	Reply = case lists:keyfind(1, RoomID, Rooms) of
+	Reply = case lists:keyfind(RoomID, 1, Rooms) of
 		{RoomID, RoomPid} -> 
 			{ok, RoomPid};
 		_ ->

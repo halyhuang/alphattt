@@ -1,0 +1,21 @@
+<erl module=hall_mod>
+-include("session.hrl").
+
+-compile(export_all).
+
+out(A) ->
+    yaws_rpc:handler_session(A, {?MODULE, handle}).
+
+handle(_State, {call, Func, _Args}, undefined) ->
+    {ok, Pid} = web_agent:start(),
+    io:format("hall func ~p call before create session ~p~n", [Func, Pid]),
+    {true, 0, #session{pid = pid_to_list(Pid)}, {response, "ok"}};
+  
+handle(_State, {call, enter_room, {array, [RoomID]}}, Session=#session{pid = PidStr}) ->
+    Pid = list_to_pid(PidStr),
+    io:format("enter room ~p pid ~p~n", [RoomID, Pid]),
+    ok = web_agent:enter_room(Pid, RoomID),
+    {true, 0, Session, {response, "ok"}}.    
+
+</erl>
+

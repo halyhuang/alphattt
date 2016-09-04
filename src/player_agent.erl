@@ -1,12 +1,12 @@
 -module(player_agent).
 -export([init/1, handle_tcp_data/2, handle_info/2]).
 
--record(state, {socket, room = null}).
+-record(state, {socket, room = null, wait_login = true}).
 
 init(Socket) ->
 	{ok, #state{socket = Socket}}.
 
-handle_tcp_data(TcpData, State=#state{room = null}) ->
+handle_tcp_data(TcpData, State=#state{wait_login = true}) ->
 	NewState =  case binary_to_term(TcpData) of
 					{echo, Msg} ->
 						send_message({echo, Msg}, State),
@@ -15,6 +15,15 @@ handle_tcp_data(TcpData, State=#state{room = null}) ->
 						LoginState = game_auth:login(UserName, Password), 
 						send_message({login, LoginState, Ref, From}, State),
 						State;
+					Unexpected ->
+						io:format("Unexpected is ~p before enter_room ~n", [Unexpected]),
+						State
+				end,
+	{ok, NewState#state{wait_login = false}};
+handle_tcp_data(TcpData, State=#state{room = RoomPid}) ->
+	NewState =  case binary_to_term(TcpData) of
+					{echo, Msg} ->
+						send_message({echo, Msg}, State);
 					{enter_room, NickName, RoomID} ->
 						case roommgr:enter(RoomID) of
 							{ok, NewRoomPid} ->
@@ -22,16 +31,7 @@ handle_tcp_data(TcpData, State=#state{room = null}) ->
 								State#state{room = NewRoomPid};
 							_ ->
 								State
-						end;
-					Unexpected ->
-						io:format("Unexpected is ~p before enter_room ~n", [Unexpected]),
-						State
-				end,
-	{ok, NewState};
-handle_tcp_data(TcpData, State=#state{room = RoomPid}) ->
-	NewState =  case binary_to_term(TcpData) of
-					{echo, Msg} ->
-						send_message({echo, Msg}, State);
+						end;						
 					{leave_room, _NickName} ->
 						room:leave(RoomPid, self()),
 						State#state{room = null};

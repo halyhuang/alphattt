@@ -1,45 +1,46 @@
-var serviceURL = "alphattt.yaws";
-var methods = ["get_state", "start_game", "end_game", "get_move", "get_legal_move", "set_move", "is_login"];
+
 
 var jsonrpc = imprt("jsonrpc");
-var service = new jsonrpc.ServiceProxy(serviceURL, methods);
+var service = new jsonrpc.ServiceProxy("alphattt.yaws", ["play_vs_robot", "play_vs_human", "get_state", "set_move"]);
 var grids;
 var timerID = 0;
 
-window.onload = function() {  
-	check_login();
-	init_botton();	
-};  
 
-function check_login()
+var hall_jsonrpc = imprt("jsonrpc");
+var auth_service = new hall_jsonrpc.ServiceProxy("auth.yaws", ["create_session", "is_login"]);
+
+function init_session()
 {
-	try
+    try 
 	{
-		var state = service.is_login();
-		if (!state.is_login)
-		{
-			location.href = "login.html";
-		}
-	}
+		auth_service.create_session();
+	} 
 	catch(e) 
 	{
-    	alert(e);
-    }
-
+		alert(e);
+	}	
 }
+
+function is_login()
+{
+	var r = auth_service.is_login();
+	return r.value;
+}
+
+window.onload = function() {  
+	init_session();
+	init_botton();	
+};  
 
 function poll()
 {
     try {
 			var state = service.get_state();
-			if (state.is_playing)
+			if (state.is_update_move)
 			{
-				if (state.is_update_move)
-				{
-					set_legal_move(state.legal_moves);			
-					update_move(state.move);
-				}	
-			}
+				set_legal_move(state.legal_moves);			
+				update_move(state.move);
+			}	
      } catch(e) {
         alert(e);
      }	
@@ -48,10 +49,10 @@ function poll()
 
 function init_botton()
 {
-    var bn_start_game = document.getElementById('play');  
-	bn_start_game.onclick = start_game; 
-    var bn_end_game = document.getElementById('stop');  
-	bn_end_game.onclick = end_game; 	
+    var bn_human = document.getElementById('play_human');  
+	bn_human.onclick = play_vs_human; 
+    var bn_robot = document.getElementById('play_robot');  
+	bn_robot.onclick = play_vs_robot; 	
 }  
 
 function init_board()
@@ -109,23 +110,20 @@ function info(msg)
        "<li>" + msg + "</li>";
 }
 
-function start_game()
+function play_vs_human()
 {
 	init_board();
-	var result = service.start_game();
-	info("game start!!!");	
+	var result = service.play_vs_human();
+	info("play vs human start!!!");	
 	timerID = setInterval(poll, 1000);	
 }  
 
-function end_game()
+function play_vs_robot()
 {
-	if (timeID != 0)
-	{
-		clearInterval(timeID);
-		timerID = 0;
-	}
-	service.end_game();	
-	info("end start!!!");	
+	init_board();	
+	var result = service.play_vs_robot();	
+	info("play vs robot start!!!");	
+	timerID = setInterval(poll, 1000);		
 }
 
 function click_move()

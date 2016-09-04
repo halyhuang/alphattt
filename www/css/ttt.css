@@ -58,7 +58,7 @@ body {
     cursor: pointer;  
 } 
 
-#play, #stop {  
+#play_human, #play_robot {  
     width: 110px;  
 }  
 
@@ -68,18 +68,6 @@ body {
     background: white;  	
 }
 
-.gamehall {
-    width: 100%;  
-	border:2px solid blue;
-    background: #66b3ff;  	
-}
-
-.gamehalltable  table {
-	border:0;
-	border-collapse:5;  
-	border-spacing:5;  
-    background: white;  	
-}
 .chessboardtd {
 	border:2px solid blue;
     background: white;  	
@@ -103,12 +91,4 @@ body {
     font-size: 40px;  	
 }  
 
-  
-td.tight1 {
- padding:25px;
-}
-  
-td.tight {
- padding:5px;
-}
   
