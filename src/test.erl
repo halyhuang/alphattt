@@ -4,7 +4,7 @@
 
 add_player(Name, Password, Type, RoomID) ->
 	{ok, Pid} = player_client:start(Name, Password, Type, board, "127.0.0.1", 8011),
-	timer:sleep(100),
+	timer:sleep(500),
 	player_client:enter_room(Pid, RoomID),
 	Pid.
 
