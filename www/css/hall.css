@@ -1,0 +1,42 @@
+body {  
+      font-family: "Î¢ÈíÑÅºÚ";  
+      color: white;  
+      text-align: center;
+	  padding: 0;
+	  margin: 0;
+	  background: -moz-linear-gradient(-45deg, #183850 0, #183850 25%, #192c46 50%, #22254c 75%, #22254c 100%);
+	  background: -webkit-linear-gradient(-45deg, #183850 0, #183850 25%, #192c46 50%, #22254c 75%, #22254c 100%);
+	  background-repeat: no-repeat;
+	  background-attachment: fixed;	
+}  
+
+#container {
+	width: 800px;
+}
+
+#gamehall {
+	width: 70%;	
+    background: #66b3ff; 	
+}
+  
+td.chessplayer {
+ width:40px;
+ height:40px;	
+ padding:25px;
+}
+
+td.checkdeskimg {
+ width:60px;
+ height:60px;	
+ padding:25px;	
+}
+
+#ranklist {
+ width:300px;
+ background: green; 
+}
+
+.onlineuser {
+ height:200px;	
+}
+  
