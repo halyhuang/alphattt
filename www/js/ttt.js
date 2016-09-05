@@ -1,12 +1,12 @@
 
 
 var jsonrpc = imprt("jsonrpc");
-var service = new jsonrpc.ServiceProxy("alphattt.yaws", ["play_vs_robot", "play_vs_human", "get_state", "set_move"]);
+var service = new jsonrpc.ServiceProxy("alphattt.yaws", ["start_game", "start_robot", "get_state", "set_move"]);
 var grids;
-var timerID = 0;
+var timerID;
 
 var auth_jsonrpc = imprt("jsonrpc");
-var auth_service = new auth_jsonrpc.ServiceProxy("auth.yaws", ["init_session", "is_login"]);
+var auth_service = new auth_jsonrpc.ServiceProxy("auth.yaws", ["is_login"]);
 
 function is_login()
 {
@@ -14,13 +14,16 @@ function is_login()
 	return r.value;
 }
 
-function init_session()
+function check_login()
 {
-	auth_service.init_session();
+	if (!is_login())
+	{		
+		location.href = "login.html";
+	}
 }
 
 window.onload = function() {  
-	init_session();
+	check_login();
 	init_botton();	
 };  
 
@@ -41,10 +44,15 @@ function poll()
 
 function init_botton()
 {
-    var bn_human = document.getElementById('play_human');  
-	bn_human.onclick = play_vs_human; 
-    var bn_robot = document.getElementById('play_robot');  
-	bn_robot.onclick = play_vs_robot; 	
+    var bn_start = document.getElementById('start_game');  
+	bn_start.onclick = start_game; 
+    var bn_robot = document.getElementById('start_robot');  
+	bn_robot.onclick = start_robot; 	
+    var bn_witness = document.getElementById('start_witness');  
+	bn_witness.onclick = start_witness; 	
+    var bn_hall = document.getElementById('start_hall');  
+	bn_hall.onclick = start_hall; 	
+	
 }  
 
 function init_board()
@@ -102,34 +110,37 @@ function info(msg)
        "<li>" + msg + "</li>";
 }
 
-function play_vs_human()
+function set_timer()
 {
-	if (is_login())
-	{
-		init_board();
-		var result = service.play_vs_human();
-		info("play vs human start!!!");	
-		timerID = setInterval(poll, 1000);	
+	if( timerID == undefined)
+	{	
+		timerID = setInterval(poll, 1000);
 	}
-	else
-	{
-		location.href = "login.html";
-	}		
+}
+
+function start_game()
+{
+	init_board();
+	var result = service.start_game();
+	info("start!");	
+	set_timer();
 }  
 
-function play_vs_robot()
+function start_robot()
 {
-	if (is_login())
-	{	
-		init_board();	
-		var result = service.play_vs_robot();	
-		info("play vs robot start!!!");	
-		timerID = setInterval(poll, 1000);	
-	}
-	else
-	{
-		location.href = "login.html";
-	}
+	var result = service.start_robot();	
+	info("robot start!");	
+	set_timer();	
+}
+
+function start_witness()
+{
+	alert("not finish");
+}
+
+function start_hall()
+{
+	location.href = "hall.html";
 }
 
 function click_move()

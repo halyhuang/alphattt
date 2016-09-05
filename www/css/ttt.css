@@ -58,14 +58,14 @@ body {
     cursor: pointer;  
 } 
 
-#play_human, #play_robot {  
+#start_game, #start_robot, #start_witness, #start_hall {  
     width: 110px;  
 }  
 
 .chessboard {
     width: 100%;  
 	border:2px solid blue;
-    background: white;  	
+    background: white;  
 }
 
 .chessboardtd {

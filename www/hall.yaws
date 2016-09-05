@@ -3,8 +3,8 @@
 -compile(export_all).
 
 out(A) ->
-    yaws_rpc:handler_session(A, {?MODULE, handle}).
-  
+    yaws_rpc:handler_session(A, {?MODULE, handle}).  
+
 handle(_State, {call, enter_room, {array, [RoomID]}}, #session{pid_str = PidStr}) ->
     Pid = web_agent_mgr:get_agent_pid(PidStr),
     io:format("enter room ~p pid ~p~n", [RoomID, Pid]),

@@ -1,24 +1,5 @@
 var auth_jsonrpc = imprt("jsonrpc");
-var auth_service = new auth_jsonrpc.ServiceProxy("auth.yaws", ["init_session", "is_login", "login"]);
-
-function is_login()
-{
-	var r = auth_service.is_login();
-	return r.value;
-}
-
-function init_session()
-{
-    try {
-		auth_service.init_session();
-     } catch(e) {
-        alert(e);
-     }	
-}
-
-window.onload = function() {  
-	init_session();
-};  
+var auth_service = new auth_jsonrpc.ServiceProxy("auth.yaws", ["login"]);
 
 $(function()
 {

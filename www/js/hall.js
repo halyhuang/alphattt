@@ -5,7 +5,7 @@ var jsonrpc = imprt("jsonrpc");
 var service = new jsonrpc.ServiceProxy("hall.yaws", ["enter_room"]);
 
 var auth_jsonrpc = imprt("jsonrpc");
-var auth_service = new auth_jsonrpc.ServiceProxy("auth.yaws", ["init_session", "is_login"]);
+var auth_service = new auth_jsonrpc.ServiceProxy("auth.yaws", ["is_login"]);
 
 function is_login()
 {
@@ -13,17 +13,16 @@ function is_login()
 	return r.value;
 }
 
-function init_session()
+function check_login()
 {
-    try {
-		auth_service.init_session();
-     } catch(e) {
-        alert(e);
-     }	
+	if (!is_login())
+	{		
+		location.href = "login.html";
+	}
 }
 
 window.onload = function() { 
- 	init_session();
+ 	check_login();
 	init_hall();
 };  
 
