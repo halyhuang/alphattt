@@ -6,7 +6,7 @@ var grids;
 var timerID = 0;
 
 var auth_jsonrpc = imprt("jsonrpc");
-var auth_service = new auth_jsonrpc.ServiceProxy("auth.yaws", ["is_login"]);
+var auth_service = new auth_jsonrpc.ServiceProxy("auth.yaws", ["init_session", "is_login"]);
 
 function is_login()
 {
@@ -14,7 +14,13 @@ function is_login()
 	return r.value;
 }
 
+function init_session()
+{
+	auth_service.init_session();
+}
+
 window.onload = function() {  
+	init_session();
 	init_botton();	
 };  
 

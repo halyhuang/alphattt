@@ -1,18 +1,20 @@
 -module(player_client).
--export([start/6]).
--export([enter_room/2, leave_room/1, show/1, stop/1]).
+-export([start/5]).
+-export([login/2, enter_room/2, leave_room/1, show/1, stop/1]).
 -export([get_player/1]).
 
 -record(state, {nickname,
-				password,
 				type,
 				player,
 				board,
 				socket}).
-start(NickName, Password, PlayerType, Board, SIp, SPort) ->
-	Pid = spawn(fun() -> init(NickName, Password, PlayerType, 
+start(NickName, PlayerType, Board, SIp, SPort) ->
+	Pid = spawn(fun() -> init(NickName, PlayerType, 
 							  Board, SIp, SPort) end),
 	{ok, Pid}.
+
+login(Pid, Password) ->
+	call(Pid, {login, Password}).	
 
 enter_room(Pid, RoomID) ->
 	Pid ! {enter_room, RoomID},
@@ -41,20 +43,18 @@ call(Pid, Msg) ->
 			Reply
 	end.	
 
-init(NickName, Password, PlayerType, Board, SIp, SPort) ->
+init(NickName, PlayerType, Board, SIp, SPort) ->
 	io:format("connect to ~p~n", [{SIp, SPort}]),
 	{ok, Sock} = gen_tcp:connect(SIp, SPort, [binary, {active, true},
 													  {packet, 2}]),
 	Player = player:start(PlayerType, Board),
 	loop(#state{nickname=NickName,
-				password=Password,
 			    type=PlayerType,
 			    player=Player,
 			    board=Board,
 			    socket=Sock}).
 
 loop(State = #state{nickname=NickName,
-					password=Password,
 					type=Type,
 					player=Player,
 					board=_Board,
@@ -62,11 +62,14 @@ loop(State = #state{nickname=NickName,
 	receive
 		{echo, Msg} ->
 			gen_tcp:send(Sock, term_to_binary({echo, Msg}));			
+		{{login, Password}, Ref, From} ->
+			gen_tcp:send(Sock, term_to_binary({login, NickName, Password, Ref, From})),
+			loop(State);			
 		{enter_room, RoomID} ->
-			gen_tcp:send(Sock, term_to_binary({enter_room, RoomID})),
+			gen_tcp:send(Sock, term_to_binary({enter_room, NickName, RoomID})),
 			loop(State);
 		leave_room ->
-			gen_tcp:send(Sock, term_to_binary(leave_room)),
+			gen_tcp:send(Sock, term_to_binary({leave_room, NickName})),
 			loop(State);
 		stop ->
 			player:stop(Type, Player);	
@@ -82,11 +85,14 @@ loop(State = #state{nickname=NickName,
 					io:format("ECHO: ~p~n", [Msg]);
 				{notify, Msg} ->
 					io:format("~s~n", [Msg]);
-				challenge ->
-					io:format("challenge~n"),			
-					gen_tcp:send(Sock, term_to_binary({challenge, NickName, Password}));
-				{challenge_result, Result} ->
-					io:format("challenge result ~p~n", [Result]);
+				{login, Result, Ref, From} ->
+					case Result of
+						ok ->
+							io:format("User ~p success login~n", [NickName]);
+						Reason ->
+							io:format("User ~p login failed, reason ~p~n", [NickName, Reason])
+					end,
+					From ! {Ref, Result};					
 				{update, Move, GameState} ->
 					player:update(Type, Player, GameState),
 					player:display(Type, Player, GameState, Move);

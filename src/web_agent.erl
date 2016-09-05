@@ -119,9 +119,9 @@ handle_call({set_move, Move}, State=#state{web_player = WebPlayerPid}) ->
 
 handle_call(play_vs_human, State=#state{username = UserName, password = Password, room = RoomID, 
 		web_player = none, player_client = none}) ->
-	{ok, Pid} = player_client:start(UserName, Password, webplayer, board, "127.0.0.1", 8011),
+	{ok, Pid} = player_client:start(UserName, webplayer, board, "127.0.0.1", 8011),
 	WebPlayerPid = player_client:get_player(Pid),
-	timer:sleep(500),
+	player_client:login(Pid, Password),
 	player_client:enter_room(Pid, RoomID),
 	{reply, ok, State#state{player_client = Pid, web_player = WebPlayerPid}};
 
@@ -132,10 +132,11 @@ handle_call(play_vs_human, State=#state{player_client = PlayerClientPid, room = 
 handle_call({play_vs_robot, RobotName, RobotType}, State=#state{username = UserName, password = Password, room = Room, 
 		web_player = none, player_client = none, opponent_player = none}) ->
 	RoomID = get_room_id(Room),
-	{ok, Pid} = player_client:start(UserName, Password, webplayer, board, "127.0.0.1", 8011),
+	{ok, Pid} = player_client:start(UserName, webplayer, board, "127.0.0.1", 8011),
 	WebPlayerPid = player_client:get_player(Pid),
-	{ok, OpponentPid} = player_client:start(RobotName, "", RobotType, board, "127.0.0.1", 8011),	
-	timer:sleep(500),
+	player_client:login(Pid, Password),	
+	{ok, OpponentPid} = player_client:start(RobotName, RobotType, board, "127.0.0.1", 8011),	
+	player_client:login(OpponentPid, ""),	
 	player_client:enter_room(Pid, RoomID),
 	player_client:enter_room(OpponentPid, RoomID),
 
