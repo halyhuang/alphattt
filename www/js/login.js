@@ -1,5 +1,16 @@
 var auth_jsonrpc = imprt("jsonrpc");
-var auth_service = new auth_jsonrpc.ServiceProxy("auth.yaws", ["login"]);
+var auth_service = new auth_jsonrpc.ServiceProxy("auth.yaws", ["is_login", "login"]);
+
+function is_login()
+{
+	var r = auth_service.is_login();
+	return r.value;
+}
+
+window.onload = function() {  
+	is_login();
+};  
+
 
 $(function()
 {
@@ -25,6 +36,10 @@ $(function()
         {
             location.href = "hall.html";
         }
+		else
+		{
+			alert("登录失败！原因：" + result.reason);
+		}		
     });
     $("#sub").click(function () {
 			var username = $("#username").val();

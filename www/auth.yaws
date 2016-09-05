@@ -5,10 +5,11 @@
 out(A) ->
     yaws_rpc:handler_session(A, {?MODULE, handle}).
 
-handle(_State, {call, is_login, _}, undefined) ->
+handle(_State, {call, _, _}, undefined) ->
     {ok, Pid} = web_agent_mgr:start_agent(),
     io:format("create web agent ~p~n", [Pid]),
-    Response = json2:obj_from_list([{"value", false}]),
+    Response = json2:obj_from_list([{"value", false},
+                                    {"reason", ""}]),
     {true, 0, #session{pid_str = pid_to_list(Pid)}, {response, Response}};
 
 handle(_State, {call, is_login, _}, #session{pid_str = PidStr}) ->

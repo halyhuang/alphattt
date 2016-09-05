@@ -4,6 +4,7 @@ var jsonrpc = imprt("jsonrpc");
 var service = new jsonrpc.ServiceProxy("alphattt.yaws", ["start_game", "start_robot", "get_state", "set_move"]);
 var grids;
 var timerID;
+var move_color = '#53FF53';
 
 var auth_jsonrpc = imprt("jsonrpc");
 var auth_service = new auth_jsonrpc.ServiceProxy("auth.yaws", ["is_login"]);
@@ -85,17 +86,22 @@ function update_move(move)
 		info("move(" + move.R + "," + move.C + "," + move.r + "," + move.c + ")");
 		grids[index].state = 2;
 		grids[index].innerHTML = "O";
-		grids[index].style.background = '#53FF53';
+		grids[index].style.background = move_color;
 	}
 }
 
-function set_legal_move(legal_moves)
+function set_all_inlegal()
 {
 	for (var i=0; i < grids.length; i++)
 	{ 
 		grids[i].style.background = 'white';	
 		grids[i].is_legal = false;	
-	}	
+	}		
+}
+
+function set_legal_move(legal_moves)
+{
+	set_all_inlegal();
 	for (var i=0; i<legal_moves.length; i++)
 	{ 
 		var index = grid_pos(legal_moves[i]);
@@ -147,9 +153,11 @@ function click_move()
 {
 	if (this.is_legal)
 	{
+		set_all_inlegal();
 		service.set_move(this.R, this.C, this.r, this.c);	
 		this.state = 1;
 		this.innerHTML = "X";	
+		this.style.background = move_color;
 		info("move(" + this.R + "," + this.C + "," + this.r + "," + this.c + ")");
 	}
 }
