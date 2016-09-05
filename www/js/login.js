@@ -30,14 +30,21 @@ $(function()
 		var result = auth_service.login(userName, password);
         if (result.value)
         {
-            location.href = "alphattt.html";
+            location.href = "hall.html";
         }
 		else
 		{
 			alert("登录失败！原因：" + result.reason);
 		}
     });
-
+    $("#guest").click(function()
+    {		
+		var result = auth_service.login("guest", "");
+        if (result.value)
+        {
+            location.href = "hall.html";
+        }
+    });
     $("#sub").click(function () {
 			var username = $("#username").val();
 			var pw = $("#pw").val();
