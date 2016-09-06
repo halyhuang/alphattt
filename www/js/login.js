@@ -19,6 +19,18 @@ $(function()
 		var userName = $("#username").val();
 		var password = $("#pw").val();
 
+		if(userName == "" || password == "")
+        {
+            alert("用户名或密码不能为空");
+			return;
+        }
+		
+		if(userName == password)
+        {
+            alert("用户名或密码不能相同");
+			return;
+        }
+		
 		var result = auth_service.login(userName, password);
         if (result.value)
         {
@@ -46,7 +58,7 @@ $(function()
 			var pw = $("#pw").val();
             if(username == "" || pw == "")
             {
-                alert("用户名或密码不能为空！");
+                alert("用户名或密码不能为空");
             }
 		});
 

@@ -2,6 +2,8 @@
 
 -export([robot_vs_robot/0]).
 
+-export([connect/0]).
+
 robot_vs_robot() ->
 	NickName = "mcts",
 	{ok, Pid} = player_client:start(NickName, mcts, board, "127.0.0.1", 8011),
@@ -24,6 +26,10 @@ get_empty_room(Rooms) ->
 	io:format("rooms ~p~n", [Rooms]),
 	[EmptyRoomID | _T] = [ RoomID || {RoomID, Status, Players} <- Rooms, (Status == waiting) and (length(Players) == 0)],
 	EmptyRoomID.
+
+connect() ->
+	io:format("ping gameserver ~p~n", [net_adm:ping('gameserver@localhost')]),
+	io:format("ping webserver ~p~n", [net_adm:ping('webserver@localhost')]).
 
 
 			
