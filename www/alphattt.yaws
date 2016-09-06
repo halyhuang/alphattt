@@ -1,31 +1,34 @@
 <erl module=alphattt_mod>
-
+-include("session.hrl").
 -compile(export_all).
 
 out(A) ->
-    Pid = web_agent_mgr:get_agent(A),
-    yaws_rpc:handler_session(A#arg{state = {web_agent, Pid}}, {?MODULE, handle}).
+    yaws_rpc:handler_session(A, {?MODULE, handle}).
 
-handle({web_agent, Pid}, {call, get_state, _Arg}, Session) ->
+handle(_State, {call, get_state, _Arg}, #session{pid_str = PidStr}) ->
+    Pid = web_agent_mgr:get_agent_pid(PidStr),
 	Response = web_agent:get_state(Pid), 
-    {true, 0, Session, {response, Response}};
+    {true, 0, #session{pid_str = pid_to_list(Pid)}, {response, Response}};
 
-handle({web_agent, Pid}, {call, set_move, {array, [R, C, R1, C1]}}, Session) ->	
+handle(_State, {call, set_move, {array, [R, C, R1, C1]}}, #session{pid_str = PidStr}) ->	
 	Move = {R, C, R1, C1},
 	io:format("Webplayer Move ~p~n", [Move]),
+    Pid = web_agent_mgr:get_agent_pid(PidStr),   
 	ok = web_agent:set_move(Pid, Move),	
-    {true, 0, Session, {response, "ok"}};
+    {true, 0, #session{pid_str = pid_to_list(Pid)}, {response, "ok"}};
 
-handle({web_agent, Pid}, {call, play_vs_robot, _Value}, Session) ->
-	ok = web_agent:play_vs_robot(Pid, "mcts", mcts),
-    {true, 0, Session, {response, "ok"}};
+handle(_State, {call, start_robot, _Value}, #session{pid_str = PidStr}) ->
+    Pid = web_agent_mgr:get_agent_pid(PidStr),
+	ok = web_agent:start_robot(Pid, "mcts", mcts),
+    {true, 0, #session{pid_str = pid_to_list(Pid)}, {response, "ok"}};
 
-handle({web_agent, Pid}, {call, play_vs_human, _Value}, Session) ->
-	ok = web_agent:play_vs_human(Pid),
-    {true, 0, Session, {response, "ok"}};
+handle(_State, {call, start_game, _Value}, #session{pid_str = PidStr}) ->
+    Pid = web_agent_mgr:get_agent_pid(PidStr),
+	ok = web_agent:start_game(Pid),
+    {true, 0, #session{pid_str = pid_to_list(Pid)}, {response, "ok"}};
 
-handle({web_agent, Pid}, {call, Func, _Args}, Session) ->
-    io:format("alphattt unknown func call ~p, web_agent ~p~n", [Func, Pid]),
+handle(_State, {call, Func, _Args}, Session = #session{pid_str = PidStr}) ->
+    io:format("alphattt unknown func call ~p, web_agent ~p~n", [Func, PidStr]),
     {true, 0, Session, {response, "ok"}}.  
 	
 </erl>

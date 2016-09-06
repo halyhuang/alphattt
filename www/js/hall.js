@@ -4,7 +4,25 @@ var jsonrpc = imprt("jsonrpc");
 
 var service = new jsonrpc.ServiceProxy("hall.yaws", ["enter_room"]);
 
-window.onload = function() {  	
+var auth_jsonrpc = imprt("jsonrpc");
+var auth_service = new auth_jsonrpc.ServiceProxy("auth.yaws", ["is_login"]);
+
+function is_login()
+{
+	var r = auth_service.is_login();
+	return r.value;
+}
+
+function check_login()
+{
+	if (!is_login())
+	{		
+		location.href = "login.html";
+	}
+}
+
+window.onload = function() { 
+ 	check_login();
 	init_hall();
 };  
 

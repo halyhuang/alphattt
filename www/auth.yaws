@@ -1,17 +1,26 @@
 <erl module=auth_mod>
-
+-include("session.hrl").
 -compile(export_all).
 
 out(A) ->
-    Pid = web_agent_mgr:get_agent(A),
-    yaws_rpc:handler_session(A#arg{state = {web_agent, Pid}}, {?MODULE, handle}).
+    yaws_rpc:handler_session(A, {?MODULE, handle}).
 
-handle({web_agent, Pid}, {call, is_login, _}, Session) ->
+handle(_State, {call, _, _}, undefined) ->
+    {ok, Pid} = web_agent_mgr:start_agent(),
+    io:format("create web agent ~p~n", [Pid]),
+    Response = json2:obj_from_list([{"value", false},
+                                    {"reason", ""}]),
+    {true, 0, #session{pid_str = pid_to_list(Pid)}, {response, Response}};
+
+handle(_State, {call, is_login, _}, #session{pid_str = PidStr}) ->
+    Pid = web_agent_mgr:get_agent_pid(PidStr),
     IsLogin = web_agent:is_login(Pid),
     Response = json2:obj_from_list([{"value", IsLogin}]),
-    {true, 0, Session, {response, Response}};
+    {true, 0, #session{pid_str = pid_to_list(Pid)}, {response, Response}};
 
-handle({web_agent, Pid}, {call, login, {array, [UserName, Password]}}, Session) ->
+handle(_State, {call, login, {array, [UserName, Password]}}, #session{pid_str = PidStr}) ->
+    Pid = web_agent_mgr:get_agent_pid(PidStr),
+    io:format("login, web_agent ~p~n", [Pid]),    
     Response = case web_agent:login(Pid, UserName, Password) of
                     ok ->
                         json2:obj_from_list([{"value", true},
@@ -20,10 +29,10 @@ handle({web_agent, Pid}, {call, login, {array, [UserName, Password]}}, Session) 
                         json2:obj_from_list([{"value", false},
                                              {"reason", Reason}])
                 end,
-    {true, 0, Session, {response, Response}};
+    {true, 0, #session{pid_str = pid_to_list(Pid)}, {response, Response}};
 
-handle({web_agent, Pid}, {call, Func, _Args}, Session) ->
-    io:format("auth unknown func call ~p, web_agent ~p~n", [Func, Pid]),
+handle(_State, {call, Func, _Args}, Session = #session{pid_str = PidStr}) ->
+    io:format("auth unknown func call ~p, web_agent ~p~n", [Func, PidStr]),
     {true, 0, Session, {response, "ok"}}. 
 
 </erl>

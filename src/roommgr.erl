@@ -26,7 +26,7 @@ enter(RoomID) ->
 
 show() ->
 	[io:format("Room ~p is ~p, players ~p~n", [RoomID, RoomState, Players])
-	 || {RoomID, {RoomState, Players}} <- get_all_rooms()],
+	 || {RoomID, RoomState, Players} <- get_all_rooms()],
 	ok.
 
 get_all_rooms() ->
@@ -71,7 +71,9 @@ handle_call(get_empty_room, _From, State=#state{rooms=Rooms}) ->
 	{reply, Reply, State};
 
 handle_call(get_all_rooms, _From, State=#state{rooms=Rooms}) ->
-	RoomStates = [ {RoomID, room:get_state(RoomPid)} || {RoomID, RoomPid, _Ref} <- Rooms],
+	RoomStates = [ begin
+					{Status, Players} = room:get_state(RoomPid),
+					{RoomID, Status, Players} end || {RoomID, RoomPid, _Ref} <- Rooms],
 	{reply, RoomStates, State};
 
 handle_call({enter, RoomID}, _From, State=#state{rooms=Rooms}) ->

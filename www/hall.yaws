@@ -1,17 +1,17 @@
 <erl module=hall_mod>
-
+-include("session.hrl").
 -compile(export_all).
 
 out(A) ->
-    Pid = web_agent_mgr:get_agent(A),
-    yaws_rpc:handler_session(A#arg{state = {web_agent, Pid}}, {?MODULE, handle}).
-  
-handle({web_agent, Pid}, {call, enter_room, {array, [RoomID]}}, Session) ->
+    yaws_rpc:handler_session(A, {?MODULE, handle}).  
+
+handle(_State, {call, enter_room, {array, [RoomID]}}, #session{pid_str = PidStr}) ->
+    Pid = web_agent_mgr:get_agent_pid(PidStr),
     io:format("enter room ~p pid ~p~n", [RoomID, Pid]),
     ok = web_agent:enter_room(Pid, RoomID),
-    {true, 0, Session, {response, "ok"}};
-handle({web_agent, Pid}, {call, Func, _Args}, Session) ->
-    io:format("hall unknown func call ~p, web_agent ~p~n", [Func, Pid]),
+    {true, 0, #session{pid_str = pid_to_list(Pid)}, {response, "ok"}};
+handle(_State, {call, Func, _Args}, Session = #session{pid_str = PidStr}) ->
+    io:format("hall unknown func call ~p, web_agent ~p~n", [Func, PidStr]),
     {true, 0, Session, {response, "ok"}}.     
 
 </erl>

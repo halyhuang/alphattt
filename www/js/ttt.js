@@ -1,9 +1,10 @@
 
 
 var jsonrpc = imprt("jsonrpc");
-var service = new jsonrpc.ServiceProxy("alphattt.yaws", ["play_vs_robot", "play_vs_human", "get_state", "set_move"]);
+var service = new jsonrpc.ServiceProxy("alphattt.yaws", ["start_game", "start_robot", "get_state", "set_move"]);
 var grids;
-var timerID = 0;
+var timerID;
+var move_color = '#53FF53';
 
 var auth_jsonrpc = imprt("jsonrpc");
 var auth_service = new auth_jsonrpc.ServiceProxy("auth.yaws", ["is_login"]);
@@ -14,7 +15,16 @@ function is_login()
 	return r.value;
 }
 
+function check_login()
+{
+	if (!is_login())
+	{		
+		location.href = "login.html";
+	}
+}
+
 window.onload = function() {  
+	check_login();
 	init_botton();	
 };  
 
@@ -35,10 +45,15 @@ function poll()
 
 function init_botton()
 {
-    var bn_human = document.getElementById('play_human');  
-	bn_human.onclick = play_vs_human; 
-    var bn_robot = document.getElementById('play_robot');  
-	bn_robot.onclick = play_vs_robot; 	
+    var bn_start = document.getElementById('start_game');  
+	bn_start.onclick = start_game; 
+    var bn_robot = document.getElementById('start_robot');  
+	bn_robot.onclick = start_robot; 	
+    var bn_witness = document.getElementById('start_witness');  
+	bn_witness.onclick = start_witness; 	
+    var bn_hall = document.getElementById('start_hall');  
+	bn_hall.onclick = start_hall; 	
+	
 }  
 
 function init_board()
@@ -71,17 +86,22 @@ function update_move(move)
 		info("move(" + move.R + "," + move.C + "," + move.r + "," + move.c + ")");
 		grids[index].state = 2;
 		grids[index].innerHTML = "O";
-		grids[index].style.background = '#53FF53';
+		grids[index].style.background = move_color;
 	}
 }
 
-function set_legal_move(legal_moves)
+function set_all_inlegal()
 {
 	for (var i=0; i < grids.length; i++)
 	{ 
 		grids[i].style.background = 'white';	
 		grids[i].is_legal = false;	
-	}	
+	}		
+}
+
+function set_legal_move(legal_moves)
+{
+	set_all_inlegal();
 	for (var i=0; i<legal_moves.length; i++)
 	{ 
 		var index = grid_pos(legal_moves[i]);
@@ -96,43 +116,48 @@ function info(msg)
        "<li>" + msg + "</li>";
 }
 
-function play_vs_human()
+function set_timer()
 {
-	if (is_login())
-	{
-		init_board();
-		var result = service.play_vs_human();
-		info("play vs human start!!!");	
-		timerID = setInterval(poll, 1000);	
+	if( timerID == undefined)
+	{	
+		timerID = setInterval(poll, 1000);
 	}
-	else
-	{
-		location.href = "login.html";
-	}		
+}
+
+function start_game()
+{
+	init_board();
+	var result = service.start_game();
+	info("start!");	
+	set_timer();
 }  
 
-function play_vs_robot()
+function start_robot()
 {
-	if (is_login())
-	{	
-		init_board();	
-		var result = service.play_vs_robot();	
-		info("play vs robot start!!!");	
-		timerID = setInterval(poll, 1000);	
-	}
-	else
-	{
-		location.href = "login.html";
-	}
+	var result = service.start_robot();	
+	info("robot start!");	
+	set_timer();	
+}
+
+function start_witness()
+{
+	alert("not finish");
+}
+
+function start_hall()
+{
+	location.href = "hall.html";
 }
 
 function click_move()
 {
 	if (this.is_legal)
 	{
+		set_all_inlegal();
 		service.set_move(this.R, this.C, this.r, this.c);	
 		this.state = 1;
 		this.innerHTML = "X";	
+		this.style.background = move_color;
 		info("move(" + this.R + "," + this.C + "," + this.r + "," + this.c + ")");
 	}
 }

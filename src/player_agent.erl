@@ -1,36 +1,32 @@
 -module(player_agent).
 -export([init/1, handle_tcp_data/2, handle_info/2]).
 
--record(state, {socket, room = null, wait_login = true, username, password}).
+-record(state, {socket, room = none, wait_login = true}).
 
 init(Socket) ->
-	State = #state{socket = Socket},
-	send_message(challenge, State),
-	{ok, State}.
+	{ok, #state{socket = Socket}}.
 
 handle_tcp_data(TcpData, State=#state{wait_login = true}) ->
 	case binary_to_term(TcpData) of
 		{echo, Msg} ->
 			send_message({echo, Msg}, State),
 			{ok, State};
-		{challenge, UserName, Password} ->
-			case game_auth:login(UserName, Password) of
-				ok ->
-					send_message({challenge_result, ok}, State),
-					{ok, State#state{wait_login = false, username = UserName, password = Password}};
-				Reaseon ->
-					send_message({challenge_result, Reaseon}, State),
-					{ok, State}							
-			end;
+		{show_room, _NickName, Ref, From} ->
+			send_message({show_room, roommgr:get_all_rooms(), Ref, From}, State),
+			{ok, State};			
+		{login, UserName, Password, Ref, From} ->
+			LoginState = game_auth:login(UserName, Password), 
+			send_message({login, LoginState, Ref, From}, State),
+			{ok, State#state{wait_login = false}};
 		Unexpected ->
-			io:format("Unexpected is ~p before challenge ~n", [Unexpected]),
+			io:format("Unexpected is ~p before login ~n", [Unexpected]),
 			{ok, State}
 	end;
-handle_tcp_data(TcpData, State=#state{room = RoomPid, username = NickName}) ->
+handle_tcp_data(TcpData, State=#state{room = RoomPid}) ->
 	NewState =  case binary_to_term(TcpData) of
 					{echo, Msg} ->
 						send_message({echo, Msg}, State);
-					{enter_room, RoomID} ->
+					{enter_room, NickName, RoomID} ->
 						case roommgr:enter(RoomID) of
 							{ok, NewRoomPid} ->
 								room:enter(NewRoomPid, {self(), NickName}),
@@ -39,9 +35,12 @@ handle_tcp_data(TcpData, State=#state{room = RoomPid, username = NickName}) ->
 								io:format("enter room failed, reason ~p~n", [Reason]),
 								State
 						end;						
-					leave_room ->
+					{leave_room, _NickName} ->
 						room:leave(RoomPid, self()),
-						State#state{room = null};
+						State#state{room = none};
+					{show_room, _NickName, Ref, From} ->
+						send_message({show_room, roommgr:get_all_rooms(), Ref, From}, State),
+						State;									
 					{play, Move} ->
 						room:play(RoomPid, {self(), Move}),
 						State;
