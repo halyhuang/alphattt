@@ -10,10 +10,7 @@ handle_tcp_data(TcpData, State=#state{wait_login = true}) ->
 	case binary_to_term(TcpData) of
 		{echo, Msg} ->
 			send_message({echo, Msg}, State),
-			{ok, State};
-		{show_room, _NickName, Ref, From} ->
-			send_message({show_room, roommgr:get_all_rooms(), Ref, From}, State),
-			{ok, State};			
+			{ok, State};		
 		{login, UserName, Password, Ref, From} ->
 			LoginState = game_auth:login(UserName, Password), 
 			send_message({login, LoginState, Ref, From}, State),
@@ -23,32 +20,31 @@ handle_tcp_data(TcpData, State=#state{wait_login = true}) ->
 			{ok, State}
 	end;
 handle_tcp_data(TcpData, State=#state{room = RoomPid}) ->
-	NewState =  case binary_to_term(TcpData) of
-					{echo, Msg} ->
-						send_message({echo, Msg}, State);
-					{enter_room, NickName, RoomID} ->
-						case roommgr:enter(RoomID) of
-							{ok, NewRoomPid} ->
-								room:enter(NewRoomPid, {self(), NickName}),
-								State#state{room = NewRoomPid};
-							Reason ->
-								io:format("enter room failed, reason ~p~n", [Reason]),
-								State
-						end;						
-					{leave_room, _NickName} ->
-						room:leave(RoomPid, self()),
-						State#state{room = none};
-					{show_room, _NickName, Ref, From} ->
-						send_message({show_room, roommgr:get_all_rooms(), Ref, From}, State),
-						State;									
-					{play, Move} ->
-						room:play(RoomPid, {self(), Move}),
-						State;
-					Unexpected ->
-						io:format("Unexpected is ~p~n", [Unexpected]),
-						State
-				end,
-	{ok, NewState}.
+    case binary_to_term(TcpData) of
+		{echo, Msg} ->
+			send_message({echo, Msg}, State);
+		{show_room, _NickName, Ref, From} ->
+			send_message({show_room, roommgr:get_all_rooms(), Ref, From}, State),
+			{ok, State};				
+		{enter_room, NickName, RoomID} ->
+			case roommgr:enter(RoomID) of
+				{ok, NewRoomPid} ->
+					room:enter(NewRoomPid, {self(), NickName}),
+					{ok, State#state{room = NewRoomPid}};
+				Reason ->
+					io:format("enter room failed, reason ~p~n", [Reason]),
+					{ok, State}
+			end;						
+		{leave_room, _NickName} ->
+			room:leave(RoomPid, self()),
+			{ok, State#state{room = none}};									
+		{play, Move} ->
+			room:play(RoomPid, {self(), Move}),
+			{ok, State};
+		Unexpected ->
+			io:format("Unexpected is ~p~n", [Unexpected]),
+			{ok, State}
+	end.
 
 handle_info(Msg, State) ->
 	send_message(Msg, State),
