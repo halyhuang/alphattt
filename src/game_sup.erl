@@ -13,7 +13,7 @@ start_link() ->
 init([]) ->
     Ranklist = {ranklist, {ranklist,start,[]},
             				permanent,2000,worker,[ranklist]},
-    Rommmgr = {roommgr, {roommgr,start,[board, 128]},
+    Rommmgr = {roommgr, {roommgr,start,[board, 32]},
             				permanent,2000,worker,[roommgr]},
     Auth = {game_auth, {game_auth,start,[]},
             				permanent,2000,worker,[game_auth]},  

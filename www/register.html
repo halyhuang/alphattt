@@ -3,57 +3,41 @@
 <head>
     <meta charset="UTF-8">
     <title>注册</title>
-	<link rel="stylesheet" type="text/css" href="css/register.css"> 
+	<link  rel="shortcut icon" href="image/lecheng.png"/>
+	<link rel="stylesheet" type="text/css" href="css/login.css"> 
     <link rel="stylesheet" href="./bootstrap/css/bootstrap.min.css">
     <script src="jsolait/jsolait.js"></script>  
     <script src="jquery/jquery.min.js"></script>
     <script src="bootstrap/js/bootstrap.min.js"></script>
-    <script src="register.js"></script> 
+    <script src="./js/register.js"></script> 
 
 </head>
 <body>
-<div class="bd reg-box">
-    <div class="reg-con clearfix">
-        <form id="js-reg-form" class="reg-form fl" autocomplete="off" method="post" action="" novalidate="novalidate">
-            <h2 class="reg-form-hd">注册帐号</h2>
-            <div class="reg-form-bd">
-                <div class="reg-item-group">
-                    <div class="reg-form-item clearfix">
-                        <label class="reg-form-label" for="userName">用户名：</label>
-                        <input id="userName" class="reg-form-input" type="text" tabindex="1" maxlength="32" name="userName">
-                        <div class="reg-form-tip">以字母开头由大小写字母、数字、下划线组成,长度为6-32位。</div>
-
-                    </div>
-                    <div class="reg-form-item clearfix">
-                        <label class="reg-form-label" for="userPwd">密码：</label>
-                        <input id="userPwd" class="reg-form-input" type="password" tabindex="2" maxlength="32" name="userPwd">
-                        <div class="reg-form-tip">6-32位字符，区分大小写。</div>
-                    </div>
-                    <div class="reg-form-item clearfix">
-                        <label class="reg-form-label" for="confirmUserPwd">确认密码：</label>
-                        <input id="confirmUserPwd" class="reg-form-input" type="password" tabindex="3" maxlength="32" name="confirmUserPwd">
-                        <div class="reg-form-tip">请输入与密码一致。</div>
-                    </div>
-                    <div class="reg-form-item clearfix">
-                        <label class="reg-form-label">类型：</label>
-                        <!--input id="playertype" class="reg-form-input" type="text" tabindex="4" name="playertype"-->
-                        <select id="type" style="margin-top: 5px;width: 80px;height: 21px">
-                            <option>人类</option>
-                            <option>机器</option>
-                        </select>
-                    </div>
-                </div>
-
-                <button id="register" class="reg-form-btn" tabindex="9">提交注册</button>
-            </div>
-        </form>
-        <div class="reg-2-login fr">
-            已有帐号，
+<div class="logo_box">
+	<h3>用户注册</h3>
+		<div class="input_outer">
+			<span class="u_user"></span>
+			<label class="l-login login_username" style="color: rgb(255, 255, 255);display: block;">输入用户�?/label>
+			<input id = "username" name="logname" class="text" onFocus="$('.login_username').hide()" onBlur="if(this.value=='') $('.login_username').show()" value="" style="color: #FFFFFF !important;position:absolute; z-index:100;" type="text">
+		</div>
+		<div class="input_outer">
+			<span class="us_uer"></span>
+			<label class="l-login login_password" style="color: rgb(255, 255, 255);display: block;">输入密码</label>
+			<input id = "pw" name="logpass" class="text" style="color: #FFFFFF !important; position:absolute; z-index:100;" onFocus="$('.login_password').hide()" onBlur="if(this.value=='') $('.login_password').show()" value="" type="password">
+		</div>
+		<div class="input_outer">
+			<span class="us_uer"></span>
+			<label class="l-login login_passwordagin" style="color: rgb(255, 255, 255);display: block;">再次输入密码</label>
+			<input id = "pw_agin" name="logpass" class="text" style="color: #FFFFFF !important; position:absolute; z-index:100;" onFocus="$('.login_passwordagin').hide()" onBlur="if(this.value=='') $('.login_passwordagin').show()" value="" type="password">
+		</div>
+		<div class="mb2"><a id="register_human" class="act-but submit" href="javascript:;" style="color: #FFFFFF">注册人类用户</a></div>
+		<div class="mb2"><a id="register_robot" class="act-but submit" href="javascript:;" style="color: #FFFFFF">注册机器人用�?/a></div>
+	<div class="sas">
+            已有帐号�
             <a title="登录" href="login.html">
-                可直接登录
+                可直接登�
                 <span>>></span>
             </a>
-        </div>
     </div>
 </body>
 </html>
