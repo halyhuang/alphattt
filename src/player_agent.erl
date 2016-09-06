@@ -11,6 +11,9 @@ handle_tcp_data(TcpData, State=#state{wait_login = true}) ->
 		{echo, Msg} ->
 			send_message({echo, Msg}, State),
 			{ok, State};
+		{show_room, _NickName, Ref, From} ->
+			send_message({show_room, roommgr:get_all_rooms(), Ref, From}, State),
+			{ok, State};			
 		{login, UserName, Password, Ref, From} ->
 			LoginState = game_auth:login(UserName, Password), 
 			send_message({login, LoginState, Ref, From}, State),
@@ -35,6 +38,9 @@ handle_tcp_data(TcpData, State=#state{room = RoomPid}) ->
 					{leave_room, _NickName} ->
 						room:leave(RoomPid, self()),
 						State#state{room = none};
+					{show_room, _NickName, Ref, From} ->
+						send_message({show_room, roommgr:get_all_rooms(), Ref, From}, State),
+						State;									
 					{play, Move} ->
 						room:play(RoomPid, {self(), Move}),
 						State;

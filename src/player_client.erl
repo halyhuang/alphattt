@@ -1,6 +1,6 @@
 -module(player_client).
 -export([start/5]).
--export([login/2, enter_room/2, leave_room/1, show/1, stop/1]).
+-export([login/2, enter_room/2, leave_room/1, show_room/1, show/1, stop/1]).
 -export([get_player/1]).
 
 -record(state, {nickname,
@@ -23,6 +23,8 @@ enter_room(Pid, RoomID) ->
 leave_room(Pid) ->
 	Pid ! leave_room,
 	ok.
+show_room(Pid) ->
+	call(Pid, show_room).
 
 stop(Pid) ->
 	Pid ! stop,
@@ -71,6 +73,9 @@ loop(State = #state{nickname=NickName,
 		leave_room ->
 			gen_tcp:send(Sock, term_to_binary({leave_room, NickName})),
 			loop(State);
+		{show_room, Ref, From} ->
+			gen_tcp:send(Sock, term_to_binary({show_room, NickName, Ref, From})),
+			loop(State);			
 		stop ->
 			player:stop(Type, Player);	
 		{get_player, Ref, From} ->
@@ -92,7 +97,9 @@ loop(State = #state{nickname=NickName,
 						Reason ->
 							io:format("User ~p login failed, reason ~p~n", [NickName, Reason])
 					end,
-					From ! {Ref, Result};					
+					From ! {Ref, Result};	
+				{show_room, Reply, Ref, From} ->
+					From ! {Ref, Reply};
 				{update, Move, GameState} ->
 					player:update(Type, Player, GameState),
 					player:display(Type, Player, GameState, Move);
