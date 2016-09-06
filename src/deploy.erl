@@ -12,6 +12,7 @@ run() ->
 	db_api:add_user("KK", "", human),	
 	db_api:add_user("tt", "", human),	
 	db_api:add_user("TTT", "", human),	
+	db_api:add_user("pybot", "", robot),
 	db:stop().
 
 
