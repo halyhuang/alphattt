@@ -1,19 +1,9 @@
 var auth_jsonrpc = imprt("jsonrpc");
 var auth_service = new auth_jsonrpc.ServiceProxy("auth.yaws", ["is_login", "login"]);
 
-function is_login()
-{
-	var r = auth_service.is_login();
-	return r.value;
-}
-
-window.onload = function() {  
-	is_login();
-};  
-
-
 $(function()
 {
+	is_login();
     $("#login").click(function()
     {
 		var userName = $("#username").val();
@@ -61,5 +51,9 @@ $(function()
                 alert("用户名或密码不能为空");
             }
 		});
-
+	function is_login()
+	{
+		var r = auth_service.is_login();
+		return r.value;
+	}
 });
