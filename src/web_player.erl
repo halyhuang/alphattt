@@ -1,4 +1,4 @@
--module(webplayer).
+-module(web_player).
 -export([start/1, start/3, update/2, display/3, get_move/1]).
 -export([get_legal_move/1, set_move/2, is_move/1, get_opponent_move/1]).
 

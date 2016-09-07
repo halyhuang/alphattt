@@ -8,6 +8,7 @@ var player_background_color = '#00FFFF';
 var opponent_move_color = '#53FF53';
 var background_color = 'white';
 var legal_moves;
+var	is_playing = false;
 
 var auth_jsonrpc = imprt("jsonrpc");
 var auth_service = new auth_jsonrpc.ServiceProxy("auth.yaws", ["is_login"]);
@@ -30,6 +31,15 @@ window.onload = function() {
 	check_login();
 	init_botton();	
 };  
+window.onbeforeunload = function(event) 
+{ 
+	var is_leave = true;
+	if (is_playing)
+	{
+		is_leave = confirm("确定离开此页面吗？");
+	}
+	return is_leave;
+}
 
 function poll()
 {
@@ -138,6 +148,7 @@ function set_timer()
 
 function start_game()
 {
+	is_playing = true;
 	init_board();
 	var result = service.start_game();
 	info("start!");	
