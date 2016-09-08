@@ -4,10 +4,10 @@
 
 -record(state,  {board = board,
 			     game_states = [],
-			     ref = none,
 			     from = none,
 			     is_move = false,
 			     opponent_move = none,
+			     player_client,
 			     move}).
 
 %% APIs.
@@ -48,12 +48,10 @@ init([Board]) ->
 loop(State) ->
 	receive
 		{call, Ref, From, Msg} ->
-			case handle_call(Msg, State) of
+			case handle_call(Msg, State#state{from = From}) of
 				{reply, Reply, NewState} ->
 					From ! {Ref, Reply},
 					loop(NewState);
-				{noreply, NewState} ->					
-					loop(NewState#state{ref = Ref, from = From});
 				stop ->
 					From ! {Ref, stop},
 					stop
@@ -83,12 +81,12 @@ handle_call(is_move, State=#state{is_move=IsMove}) ->
 	{reply, {ok, IsMove}, State};
 handle_call(get_opponent_move, State=#state{opponent_move = Move}) ->
 	{reply, {ok, Move}, State#state{is_move = false}};	
-handle_call({set_move, Move}, State=#state{ref = Ref, from = From}) ->
-	case From of
+handle_call({set_move, Move}, State=#state{player_client = PlayerClient}) ->
+	case PlayerClient of
 		[] -> ok;
-		From ->	
-			From ! {Ref, {ok, Move}}
+		PlayerClient ->	
+			PlayerClient ! {play, Move}
 	end,
 	{reply, ok, State#state{move = Move}};
-handle_call(get_move, State) ->
-	{noreply, State}.
+handle_call(get_move, State=#state{from = From}) ->
+	{reply, ok, State#state{player_client = From}}.

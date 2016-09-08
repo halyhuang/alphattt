@@ -79,7 +79,10 @@ loop(State = #state{nickname=NickName,
 			loop(State);
 		{show_room, Ref, From} ->
 			gen_tcp:send(Sock, term_to_binary({show_room, NickName})),
-			loop(State#state{ref = Ref, from = From});			
+			loop(State#state{ref = Ref, from = From});	
+		{play, Move} ->
+			gen_tcp:send(Sock, term_to_binary({play, Move})),
+			loop(State);
 		stop ->
 			player:stop(Type, Player);	
 		{get_player, Ref, From} ->
@@ -110,8 +113,7 @@ loop(State = #state{nickname=NickName,
 				stop ->
 					player:stop(Type, Player);
 				play ->
-					{ok, Move} = player:get_move(Type, Player),
-					gen_tcp:send(Sock, term_to_binary({play, Move}));
+					player:get_move(Type, Player);
 				Unexpected ->
 					io:format("client receive unexpected tcp ~p~n", [Unexpected])
 			end,
