@@ -8,7 +8,8 @@
 				 plays_wins,  % ets, key = {player, game_state}
 				              %             value = {plays::integer(),
                               %			             wins:integer()}
-				 game_states = []
+				 game_states = [],
+				 from
 				 }).
 
 % APIs
@@ -45,7 +46,7 @@ init([Board, MaxTime, ExplorationFactor]) ->
 loop(State) ->
 	receive
 		{call, Ref, From, Msg} ->
-			case handle_call(Msg, State) of
+			case handle_call(Msg, State#state{from = From}) of
 				{reply, Reply, NewState} ->
 					From ! {Ref, Reply},
 					loop(NewState);
@@ -68,7 +69,7 @@ handle_call({update, GameState}, State=#state{game_states=GSs}) ->
 handle_call({display, GameState, Move}, State=#state{board=Board}) ->
 	io:format("~ts~n", [Board:display(GameState, Move)]),
 	{reply, ok, State};
-handle_call(get_move, State=#state{board=Board, game_states=GSs}) ->
+handle_call(get_move, State=#state{board=Board, game_states=GSs, from = From}) ->
 	GS = hd(GSs),
 	{Player, LegalStates} = player_legal_states(Board, GS),
 	NextMove = 
@@ -92,6 +93,7 @@ handle_call(get_move, State=#state{board=Board, game_states=GSs}) ->
 				[{Move, _, _, _} | _] = SortedStats,
 				Move
 		end,
+	From ! {play, NextMove},		
 	{reply, {ok, NextMove}, State};
 handle_call(stop, _State) ->
 	stop.	

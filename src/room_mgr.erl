@@ -1,8 +1,8 @@
--module(roommgr).
+-module(room_mgr).
 
 -behaviour (gen_server).
 
--export([start/2, enter/1, show/0, get_empty_room/0, get_all_rooms/0]).
+-export([start/2, enter/1, show/0, get_all_rooms/0, reset/1]).
 
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
 
@@ -24,16 +24,17 @@ spawn_room(RoomID, Board) ->
 enter(RoomID) ->
 	gen_server:call({global, ?MODULE}, {enter, RoomID}).
 
+reset(RoomID) ->
+	gen_server:cast({global, ?MODULE}, {reset, RoomID}).
+
 show() ->
 	[io:format("Room ~p is ~p, players ~p~n", [RoomID, RoomState, Players])
 	 || {RoomID, RoomState, Players} <- get_all_rooms()],
 	ok.
 
-get_all_rooms() ->
-	gen_server:call({global, ?MODULE}, get_all_rooms).	
 
-get_empty_room() ->
-	gen_server:call({global, ?MODULE}, get_empty_room).			
+get_all_rooms() ->
+	gen_server:call({global, ?MODULE}, get_all_rooms).			
 
 handle_info({'DOWN', _, process, Pid, Reason}, State=#state{board = Board, rooms=Rooms}) ->
 	case lists:keyfind(Pid, 2, Rooms) of
@@ -48,6 +49,15 @@ handle_info({'DOWN', _, process, Pid, Reason}, State=#state{board = Board, rooms
 	end.
 
 
+handle_cast({reset, RoomID}, State=#state{rooms=Rooms}) ->
+	case lists:keyfind(RoomID, 1, Rooms) of
+		{RoomID, RoomPid, _Ref} ->
+			room:reset(RoomPid);
+		_ ->
+			io:format("Room ~p not exist~n", [RoomID])
+	end,
+	{noreply, State};
+
 handle_cast(show, State=#state{rooms=Rooms}) ->
 	[begin
 		{RoomState, Players} = room:get_state(RoomPid),
@@ -55,20 +65,6 @@ handle_cast(show, State=#state{rooms=Rooms}) ->
 	end || {RoomID, RoomPid, _Ref} <- Rooms],
 	{noreply, State}.
 
-
-handle_call(get_empty_room, _From, State=#state{rooms=Rooms}) ->
-	RoomStates = [ 
-					begin
-						{RoomState, Players} = room:get_state(RoomPid),
-						{{RoomState, length(Players)}, RoomID}
-					end || {RoomID, RoomPid, _Ref} <- Rooms],
-	Reply = case lists:keyfind({waiting, 0}, 1, RoomStates) of
-				{_, RoomID} ->
-					{ok, RoomID};
-				_ ->
-					"no empty room"
-			end,
-	{reply, Reply, State};
 
 handle_call(get_all_rooms, _From, State=#state{rooms=Rooms}) ->
 	RoomStates = [ begin

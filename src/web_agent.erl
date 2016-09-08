@@ -95,18 +95,18 @@ handle_call({enter_room, RoomID}, State) ->
 handle_call(get_state, State=#state{web_player = none}) ->
 	{reply, json2:obj_from_list([{"is_update_move", false}]), State};
 
-handle_call(get_state, State=#state{web_player = WebPlayerPid}) ->
-    {IsUpdateMove, Move, LegalMovesJsonList} = case webplayer:is_move(WebPlayerPid) of
+handle_call(get_state, State=#state{web_player = WebplayerPid}) ->
+    {IsUpdateMove, Move, LegalMovesJsonList} = case web_player:is_move(WebplayerPid) of
 		    	{ok, true} ->
 
-		    		{ok, OpponentMove} = webplayer:get_opponent_move(WebPlayerPid),
+		    		{ok, OpponentMove} = web_player:get_opponent_move(WebplayerPid),
 		    		MoveJson = case OpponentMove of
 		    			none -> "";
 		    			{R, C, R1, C1} ->
 							io:format("Opponent Move ~p~n", [OpponentMove]),		
 		    				json2:obj_from_list([{"R", R}, {"C", C}, {"r", R1}, {"c", C1}])
 		    		end,
-					{ok, LegalMoves} = webplayer:get_legal_move(WebPlayerPid),
+					{ok, LegalMoves} = web_player:get_legal_move(WebplayerPid),
 						LegalMovesJson = [ json2:obj_from_list([{"R", R}, {"C", C}, {"r", R1}, {"c", C1}]) || {R, C, R1, C1} <- LegalMoves ],
 		    		{true, MoveJson, LegalMovesJson};
 		    	_ -> 
@@ -116,17 +116,17 @@ handle_call(get_state, State=#state{web_player = WebPlayerPid}) ->
 									 {"move", Move},
 									 {"legal_moves", {array, LegalMovesJsonList}}]),
 	{reply, StateJson, State};
-handle_call({set_move, Move}, State=#state{web_player = WebPlayerPid}) ->
-	webplayer:set_move(WebPlayerPid, Move),	
+handle_call({set_move, Move}, State=#state{web_player = WebplayerPid}) ->
+	web_player:set_move(WebplayerPid, Move),	
 	{reply, ok, State};
 
 handle_call(start_game, State=#state{username = UserName, password = Password, room = RoomID, 
 		player = none}) ->
-	{ok, Player} = player_client:start(UserName, webplayer, board, "127.0.0.1", 8011),
+	{ok, Player} = player_client:start(UserName, web_player, board, "127.0.0.1", 8011),
 	player_client:login(Player, Password),
-	WebPlayerPid = player_client:get_player(Player),
+	WebplayerPid = player_client:get_player(Player),
 	player_client:enter_room(Player, RoomID),
-	{reply, ok, State#state{player = Player, web_player = WebPlayerPid}};
+	{reply, ok, State#state{player = Player, web_player = WebplayerPid}};
 
 handle_call(start_game, State=#state{room = RoomID, player = Player}) ->
 	player_client:enter_room(Player, RoomID),

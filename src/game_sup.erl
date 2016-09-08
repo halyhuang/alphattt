@@ -13,8 +13,8 @@ start_link() ->
 init([]) ->
     Ranklist = {ranklist, {ranklist,start,[]},
             				permanent,2000,worker,[ranklist]},
-    Rommmgr = {roommgr, {roommgr,start,[board, 32]},
-            				permanent,2000,worker,[roommgr]},
+    Rommmgr = {room_mgr, {room_mgr,start,[board, 32]},
+            				permanent,2000,worker,[room_mgr]},
     Auth = {game_auth, {game_auth,start,[]},
             				permanent,2000,worker,[game_auth]},  
     TcpServer = {tcp_server, {tcp_server, start,[8011, player_agent]},
