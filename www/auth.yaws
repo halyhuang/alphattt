@@ -34,11 +34,9 @@ handle(_State, {call, register, {array, [UserName, Password, Type]}}, Session) -
                 end,	
     {true, 0, Session, {response, Response}};	
 	
-	
-	
+		
 handle(_State, {call, login, {array, [UserName, Password]}}, #session{pid_str = PidStr}) ->
     Pid = web_agent_mgr:get_agent_pid(PidStr),
-    io:format("login, web_agent ~p~n", [Pid]),    
     Response = case web_agent:login(Pid, UserName, Password) of
                     ok ->
                         json2:obj_from_list([{"value", true},
@@ -48,6 +46,14 @@ handle(_State, {call, login, {array, [UserName, Password]}}, #session{pid_str = 
                                              {"reason", Reason}])
                 end,
     {true, 0, #session{pid_str = pid_to_list(Pid)}, {response, Response}};
+
+handle(_State, {call, logout, _}, #session{pid_str = PidStr}) ->
+    Pid = web_agent_mgr:get_agent_pid(PidStr),
+    io:format("logout, web_agent ~p~n", [Pid]),    
+    web_agent:logout(Pid),
+    Response = json2:obj_from_list([{"value", true},
+                                    {"reason", ""}]),
+    {true, 0, #session{pid_str = pid_to_list(Pid)}, {response, Response}};    
 
 handle(_State, {call, Func, _Args}, Session = #session{pid_str = PidStr}) ->
     io:format("auth unknown func call ~p, web_agent ~p~n", [Func, PidStr]),

@@ -1,11 +1,15 @@
 var auth_jsonrpc = imprt("jsonrpc");
-var auth_service = new auth_jsonrpc.ServiceProxy("auth.yaws", ["is_login", "login"]);
+var auth_service = new auth_jsonrpc.ServiceProxy("auth.yaws", ["is_login", "login", "logout"]);
 
 $(function()
 {
-	is_login();
+	var islogin = is_login();
     $("#login").click(function()
     {
+		if (islogin)
+		{
+			auth_service.logout();
+		}
 		var userName = $("#username").val();
 		var password = $("#pw").val();
 
