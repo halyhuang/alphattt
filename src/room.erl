@@ -1,6 +1,6 @@
 -module(room).
 -export([start/1]).
--export([enter/2, leave/2, play/2, show/1, get_state/1]).
+-export([enter/2, leave/2, play/2, get_state/1]).
 -export([reset/1]).
 
 -define(ROOM_TIME_OUT, 60 * 10).
@@ -32,9 +32,6 @@ get_state(Pid) ->
 
 reset(Pid) ->
 	Pid ! reset.
-
-show(Pid) ->
-	Pid ! show.	
 
 call(Pid, Msg) ->
 	Ref = make_ref(),
@@ -89,9 +86,6 @@ loop(State = #state{status = waiting, board = Board, players = Players}) ->
 		{get_state, Ref, From} ->
 			PlayerNickNames = [ NickName || {_Pid, NickName, _Ref} <- Players],
 			From ! {Ref, {State#state.status, PlayerNickNames}},
-			loop(State);
-		show ->
-			io:format("status=~p, players=~p~n", [State#state.status, Players]),
 			loop(State);
 		reset ->
 			loop(State#state{status=waiting,
