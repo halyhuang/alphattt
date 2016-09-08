@@ -1,7 +1,6 @@
 # -*- coding: UTF-8 -*-
 import time
 import random
-import copy
 
 from board import Board
 
@@ -58,7 +57,7 @@ class TreeSearch(object):
         return self.__search_tree(board, legal_moves)
 
     def __tree_path(self, board, legal_moves):
-        _board = copy.deepcopy(board)
+        _board = Board(board)
         _legal_moves = legal_moves
         move_trace = []
         while True:
@@ -84,7 +83,7 @@ class TreeSearch(object):
             node["total"] += inc["total"]
 
     def __search_node(self, board, move):
-        _board = copy.deepcopy(board)
+        _board = Board(board)
         _board.move(move)
         node = self.tree.get(_board.get_board(), None)
         return node

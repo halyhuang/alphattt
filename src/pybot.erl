@@ -5,7 +5,8 @@
 -record(state,  {board = board,
                  max_time = 1000,  % milliseconds
                  exploration_factor = 1.4,
-                 game_states = []
+                 game_states = [],
+                 from
                  }).
 
 % APIs
@@ -42,7 +43,7 @@ init([Board, MaxTime, ExplorationFactor]) ->
 loop(State, Ppy) ->
     receive
         {call, Ref, From, Msg} ->
-            case handle_call(Msg, State, Ppy) of
+            case handle_call(Msg, State#state{from = From}, Ppy) of
                 {reply, Reply, NewState} ->
                     From ! {Ref, Reply},
                     loop(NewState, Ppy);
@@ -70,8 +71,9 @@ handle_call({display, GameState, Move}, State=#state{board=Board}, Ppy) ->
     end,
     io:format("player move ~p~n", [Move]),
     {reply, ok, State};
-handle_call(get_move, State=#state{board=Board, game_states=GSs}, Ppy) ->
+handle_call(get_move, State=#state{board=Board, game_states=GSs, from = From}, Ppy) ->
     NextMove = python:call(Ppy, pybot, get_move, []),
+    From ! {play, NextMove},
     {reply, {ok, NextMove}, State};
 handle_call(stop, _State, _) ->
     stop.

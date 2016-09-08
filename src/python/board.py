@@ -17,6 +17,12 @@ class Board(object):
 
     def __init__(self, copy_board=None):
         super(Board, self).__init__()
+        if copy_board is not None:
+            self.board = list(copy_board.board)
+            self.legals = list(copy_board.legals)
+            self.overs = list(copy_board.overs)
+            self.__winner = copy_board.winner()
+            return
         self.board = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                       0, 0, 1, 0, 0]
         self.legals = [511 for i in xrange(9)]
