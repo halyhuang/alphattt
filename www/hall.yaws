@@ -3,15 +3,41 @@
 -compile(export_all).
 
 out(A) ->
-    yaws_rpc:handler_session(A, {?MODULE, handle}).  
+    yaws_rpc:handler_session(A, {?MODULE, handle}).
 
+get_two_player([Player1|[]])->
+	{Player1,""};
+get_two_player([Player1|Rest])->
+	[Player2|_X] = Rest,
+	{Player1,Player2};
+get_two_player([])->
+	{"",""}.
+	
+create_single_room(Room)-> 	
+	{RoomId,_,Players} = Room,
+	{Player1,Player2} = get_two_player(Players),
+	json2:obj_from_list([{"roomId", RoomId},
+						 {"player1", Player1}, 
+						 {"player2", Player2}]).
 
-handle(_State, {call, leave_room, _}, #session{pid_str = PidStr}) ->
-    Pid = web_agent_mgr:get_agent_pid(PidStr),
-    ok = web_agent:leave_room(Pid),
-    Response = json2:obj_from_list([{"value", true},
-                                {"reason", ""}]),      
-    {true, 0, #session{pid_str = pid_to_list(Pid)}, {response, Response}};
+create_single_user(User)-> 	
+	{Point,Name,Type} = User,
+	json2:obj_from_list([{"point", Point},
+						 {"name", Name}, 
+						 {"type", atom_to_list(Type)}]).
+						 	
+handle(State, {call, get_hallState, _Arg}, Session = #session{pid_str = PidStr}) ->
+	RoomsJason =[ create_single_room(Room) || Room <- room_mgr:get_all_rooms()],
+	StateJson = json2:obj_from_list([{"rooms", {array, RoomsJason}}]), 
+    {true, 0, Session, {response, StateJson}};	
+handle(State, {call, get_RankList, _Arg} , Session = #session{pid_str = PidStr}) ->
+	Ranklist =[ create_single_user(User) || User <- ranklist:top()],
+	StateJson = json2:obj_from_list([{"users", {array, Ranklist}}]), 
+    {true, 0, Session, {response, StateJson}};	
+handle(State, {call, get_OneLineList, _Arg} , Session = #session{pid_str = PidStr}) ->
+	Ranklist =[ create_single_user(User) || User <- ranklist:top()],	%TODO
+	StateJson = json2:obj_from_list([{"users", {array, Ranklist}}]), 
+    {true, 0, Session, {response, StateJson}};	
 
 handle(_State, {call, enter_room, {array, [RoomID]}}, #session{pid_str = PidStr}) ->
     Pid = web_agent_mgr:get_agent_pid(PidStr),
@@ -19,6 +45,14 @@ handle(_State, {call, enter_room, {array, [RoomID]}}, #session{pid_str = PidStr}
     Response = json2:obj_from_list([{"value", true},
                                 {"reason", ""}]),      
     {true, 0, #session{pid_str = pid_to_list(Pid)}, {response, Response}};
+
+handle(_State, {call, leave_room, _}, #session{pid_str = PidStr}) ->
+    Pid = web_agent_mgr:get_agent_pid(PidStr),
+    ok = web_agent:leave_room(Pid),
+    Response = json2:obj_from_list([{"value", true},
+                                {"reason", ""}]),      
+    {true, 0, #session{pid_str = pid_to_list(Pid)}, {response, Response}};
+	
 handle(_State, {call, Func, _Args}, Session = #session{pid_str = PidStr}) ->
     io:format("hall unknown func call ~p, web_agent ~p~n", [Func, PidStr]),
     {true, 0, Session, {response, "ok"}}.     

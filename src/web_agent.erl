@@ -1,6 +1,6 @@
 -module(web_agent).
 -export([start/0, login/3, logout/1, is_login/1, enter_room/2, leave_room/1, start_robot/3, set_move/2, 
-		get_state/1, show/1]).
+		get_state/1, show/1, stop/1]).
 
 -record(state,  {username = none,	
 				 room = none,
@@ -41,6 +41,8 @@ get_state(Pid) ->
 show(Pid) ->
 	call(Pid, show).
 
+stop(Pid) ->
+	call(Pid, stop).
 
 %%
 init() ->
@@ -73,6 +75,9 @@ call(Pid, Msg) ->
 handle_call(show, State=#state{username = UserName, player = Player, 
 		web_player = WebPlayer, robot_player = RobotPlayer, room = RoomID}) ->
 	{reply, {ok, {UserName, RoomID, Player, WebPlayer, RobotPlayer}}, State};
+
+handle_call(stop, _State) ->
+	stop;
 
 handle_call({login, UserName, Password}, State=#state{username = none, player = none}) ->
 	{ok, Player} = player_client:start(UserName, web_player, board, "127.0.0.1", 8011),
