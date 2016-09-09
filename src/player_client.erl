@@ -52,6 +52,7 @@ init(NickName, PlayerType, Board, SIp, SPort) ->
 	{ok, Sock} = gen_tcp:connect(SIp, SPort, [binary, {active, true},
 													  {packet, 2}]),
 	Player = player:start(PlayerType, Board),
+	erlang:link(Player),
 	loop(#state{nickname=NickName,
 			    type=PlayerType,
 			    player=Player,

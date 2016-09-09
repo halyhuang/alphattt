@@ -1,7 +1,10 @@
 
 
 var jsonrpc = imprt("jsonrpc");
-var service = new jsonrpc.ServiceProxy("alphattt.yaws", ["start_game", "start_robot", "get_state", "set_move"]);
+var service = new jsonrpc.ServiceProxy("alphattt.yaws", ["start_robot", "get_state", "set_move"]);
+
+var hall_service = new jsonrpc.ServiceProxy("hall.yaws", ["leave_room"]);
+
 var grids;
 var timerID;
 var player_background_color = '#00FFFF';
@@ -37,6 +40,10 @@ window.onbeforeunload = function(event)
 	if (is_playing)
 	{
 		is_leave = confirm("确定离开此页面吗？");
+		if (is_leave)
+		{
+			hall_service.leave_room();
+		}
 	}
 	return is_leave;
 }
@@ -59,8 +66,6 @@ function poll()
 
 function init_botton()
 {
-    var bn_start = document.getElementById('start_game');  
-	bn_start.onclick = start_game; 
     var bn_robot = document.getElementById('start_robot');  
 	bn_robot.onclick = start_robot; 	
     var bn_witness = document.getElementById('start_witness');  
@@ -146,17 +151,10 @@ function set_timer()
 	}
 }
 
-function start_game()
+function start_robot()
 {
 	is_playing = true;
 	init_board();
-	var result = service.start_game();
-	info("start!");	
-	set_timer();
-}  
-
-function start_robot()
-{
 	var result = service.start_robot();	
 	info("robot start!");	
 	set_timer();	
@@ -169,7 +167,12 @@ function start_witness()
 
 function start_hall()
 {
-	location.href = "hall.html";
+    try {
+			hall_service.leave_room();
+			location.href = "hall.html";
+     } catch(e) {
+        alert(e);
+     }	
 }
 
 function set_grid_inlegal()

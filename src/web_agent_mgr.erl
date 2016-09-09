@@ -7,7 +7,8 @@
 
 -export([start/0, start_agent/0, get_agent_pid/1, show/0]).
 
--record(state,  {agents = []}).
+-record(state,  {agents = [],
+				 index = 1}).
 
 %% APIs.
 
@@ -35,10 +36,10 @@ init([]) ->
 	{ok, #state{}}.
 
 handle_info({'DOWN', _, process, Pid, Reason}, State=#state{agents=Agents}) ->
-	case lists:keyfind(Pid, 1, Agents) of
-		{Pid, _Ref} ->
+	case lists:keyfind(Pid, 2, Agents) of
+		{_ID, Pid, _Ref} ->
 			io:format("web agent ~p down, reason ~p~n", [Pid, Reason]),
-			NewAgents = lists:keydelete(Pid, 1, Agents),
+			NewAgents = lists:keydelete(Pid, 2, Agents),
 		    {noreply, State#state{agents = NewAgents}};
 		_ ->
 			io:format("web agent ~p down, reason ~p, can't find web agent~n", [Pid, Reason]),
@@ -46,13 +47,18 @@ handle_info({'DOWN', _, process, Pid, Reason}, State=#state{agents=Agents}) ->
 	end.
 
 handle_cast(show, State=#state{agents=Agents}) ->
-	io:format("web agents:~n~p~n", [Agents]),
+	io:format("------------- begin web agent state -----------~n"),	
+	[ begin
+		{ok, WebAgetState} = web_agent:get_state(Pid),
+		io:format("id:~p, state:~p~n", [ID, WebAgetState])
+	   end || {ID, Pid, _Ref} <- Agents],
+	io:format("------------- end web agent state -----------~n"),	
 	{noreply, State}.
 
-handle_call(start_agent, _From, State=#state{agents=Agents}) ->
+handle_call(start_agent, _From, State=#state{agents=Agents, index = Index}) ->
 	{ok, Pid} = web_agent:start(),
 	Ref = erlang:monitor(process, Pid),
-	{reply, {ok, Pid}, State#state{agents = [{Pid, Ref} | Agents]}}.
+	{reply, {ok, Pid}, State#state{agents = [{Index, Pid, Ref} | Agents]}}.
 
 terminate(_Reason, _State) ->
 	ok.
