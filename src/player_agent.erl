@@ -50,10 +50,14 @@ handle_tcp_data(TcpData, State=#state{status = enter_room, room = RoomPid}) ->
 		{enter_room, NickName, RoomID} ->
 			case room_mgr:enter(RoomID) of
 				{ok, NewRoomPid} ->
-					room:enter(NewRoomPid, {self(), NickName}),
-					Notify = io_lib:format("player ~p enter room ~p~n", [NickName, RoomID]),
-					send_message({notify, Notify}, State),
-					{ok, State#state{room = NewRoomPid}};
+					case NewRoomPid =:= RoomPid of
+						true ->
+							{ok, State};
+						false ->
+							room:leave(RoomPid, self()),
+							room:enter(NewRoomPid, {self(), NickName}),
+							{ok, State#state{room = NewRoomPid}}
+					end;
 				Reason ->
 					Notify = io_lib:format("player ~p enter room ~p failed, reason ~p~n", [NickName, RoomID, Reason]),
 					send_message({notify, Notify}, State),
