@@ -30,20 +30,27 @@ handle(State, {call, get_hallState, _Arg}, Session = #session{pid_str = PidStr})
 	RoomsJason =[ create_single_room(Room) || Room <- room_mgr:get_all_rooms()],
 	StateJson = json2:obj_from_list([{"rooms", {array, RoomsJason}}]), 
     {true, 0, Session, {response, StateJson}};	
+
 handle(State, {call, get_RankList, _Arg} , Session = #session{pid_str = PidStr}) ->
 	Ranklist =[ create_single_user(User) || User <- ranklist:top()],
 	StateJson = json2:obj_from_list([{"users", {array, Ranklist}}]), 
     {true, 0, Session, {response, StateJson}};	
+
 handle(State, {call, get_OneLineList, _Arg} , Session = #session{pid_str = PidStr}) ->
 	Ranklist =[ create_single_user(User) || User <- ranklist:top()],	%TODO
 	StateJson = json2:obj_from_list([{"users", {array, Ranklist}}]), 
     {true, 0, Session, {response, StateJson}};	
 
-handle(_State, {call, enter_room, {array, [RoomID]}}, #session{pid_str = PidStr}) ->
+handle(_State, {call, get_room, _}, #session{pid_str = PidStr}) ->    
+    Pid = web_agent_mgr:get_agent_pid(PidStr),   
+    RoomID = web_agent:get_room(Pid), 
+    Response = json2:obj_from_list([{"room_id", RoomID}]),    
+    {true, 0, #session{pid_str = pid_to_list(Pid)}, {response, Response}};
+    
+handle(_State, {call, set_room, {array, [RoomID]}}, #session{pid_str = PidStr}) ->
     Pid = web_agent_mgr:get_agent_pid(PidStr),
-    ok = web_agent:enter_room(Pid, RoomID),
-    Response = json2:obj_from_list([{"value", true},
-                                {"reason", ""}]),      
+    ok = web_agent:set_room(Pid, RoomID),
+    Response = json2:obj_from_list([{"value", true}]),
     {true, 0, #session{pid_str = pid_to_list(Pid)}, {response, Response}};
 
 handle(_State, {call, leave_room, _}, #session{pid_str = PidStr}) ->

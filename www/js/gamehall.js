@@ -1,9 +1,7 @@
-var methods = [ "get_hallState","enter_room","get_RankList","get_OneLineList" ];
 var jsonrpc = imprt("jsonrpc");
-var service = new jsonrpc.ServiceProxy("hall.yaws", methods);
+var service = new jsonrpc.ServiceProxy("hall.yaws", [ "get_hallState","set_room","get_RankList","get_OneLineList" ]);
+var auth_service = new jsonrpc.ServiceProxy("auth.yaws", ["is_login"]);
 
-var auth_jsonrpc = imprt("jsonrpc");
-var auth_service = new auth_jsonrpc.ServiceProxy("auth.yaws", ["is_login"]);
 $(document).ready(function() {
 	check_login();
 	UpdatePage();
@@ -52,7 +50,7 @@ function ShowOnLineList()
 function enterRoom(tableid)
 {
     try {
-			service.enter_room(tableid);
+			service.set_room(tableid);
 			location.href = "alphattt.html";
      } catch(e) {
         alert(e);

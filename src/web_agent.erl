@@ -1,6 +1,6 @@
 -module(web_agent).
--export([start/0, login/3, logout/1, is_login/1, enter_room/2, leave_room/1, start_robot/3, set_move/2, 
-		get_state/1, show/1, stop/1]).
+-export([start/0, login/3, logout/1, is_login/1, set_room/2, enter_room/1, leave_room/1, start_robot/3, 
+		is_move/1, get_legal_moves/1, set_move/2, is_display_move/1, get_display_move/1, get_room/1, show/1, stop/1]).
 
 -record(state,  {username = none,	
 				 room = none,
@@ -23,8 +23,14 @@ logout(Pid) ->
 is_login(Pid) ->
 	call(Pid, is_login).	
 
-enter_room(Pid, RoomID) ->
-	call(Pid, {enter_room, RoomID}).
+set_room(Pid, RoomID) ->
+	call(Pid, {set_room, RoomID}).
+
+get_room(Pid) ->
+	call(Pid, get_room).
+
+enter_room(Pid) ->
+	call(Pid, enter_room).
 
 leave_room(Pid) ->
 	call(Pid, leave_room).	
@@ -35,8 +41,17 @@ start_robot(Pid, RobotName, RobotType) ->
 set_move(Pid, Move) ->
 	call(Pid, {set_move, Move}).
 
-get_state(Pid) ->
-	call(Pid, get_state).
+is_display_move(Pid) ->
+	call(Pid, is_display_move).	
+
+get_display_move(Pid) ->
+	call(Pid, get_display_move).
+
+is_move(Pid) ->
+	call(Pid, is_move).
+
+get_legal_moves(Pid) ->
+	call(Pid, get_legal_moves).	
 
 show(Pid) ->
 	call(Pid, show).
@@ -114,54 +129,75 @@ handle_call(is_login, State=#state{username = none}) ->
 handle_call(is_login, State) ->
 	{reply, true, State};	
 
-handle_call({enter_room, RoomID}, State=#state{room = none, player = Player}) ->
-    io:format("enter room ~p~n", [RoomID]),
+handle_call({set_room, RoomID}, State) ->
+    io:format("set room ~p~n", [RoomID]),
+	{reply, ok, State#state{room = RoomID}};
+
+handle_call(get_room, State=#state{room = none}) ->
+	{reply, 0, State};
+handle_call(get_room, State=#state{room = RoomID}) ->
+	{reply, RoomID, State};	
+
+handle_call(enter_room, State=#state{username = UserName, room = none}) ->
+    io:format("~p room isn't set~n", [UserName]),
+	{reply, ok, State};
+
+handle_call(enter_room, State=#state{username = UserName, room = RoomID, player = Player}) ->
+    io:format("~p enter room ~p~n", [UserName, RoomID]),
 	player_client:enter_room(Player, RoomID),
 	{reply, ok, State#state{room = RoomID}};
 
-handle_call(leave_room, State=#state{room = RoomID, player = Player}) ->
-    io:format("leave room ~p~n", [RoomID]),
+handle_call(leave_room, State=#state{username = UserName, room = none}) ->
+    io:format("~p room isn't set~n", [UserName]),
+	{reply, ok, State};
+
+handle_call(leave_room, State=#state{username = UserName, room = RoomID, player = Player, web_player = WebPlayer}) ->
+    io:format("~p leave room ~p~n", [UserName, RoomID]),
 	player_client:leave_room(Player),
+	case WebPlayer of
+		none -> 
+			ok;
+		WebPlayer ->
+			player_client:leave_room(WebPlayer)
+	end,
 	{reply, ok, State#state{room = none}};
 
+handle_call(is_move, State=#state{web_player = WebPlayer}) ->
+	{ok, IsMove} = web_player:is_move(WebPlayer),
+	{reply, IsMove, State};
 
-handle_call(get_state, State=#state{web_player = none}) ->
-	{reply, json2:obj_from_list([{"is_update_move", false}]), State};
+handle_call(is_display_move, State=#state{web_player = WebPlayer}) ->
+	{ok, IsMove} = web_player:is_display_move(WebPlayer),
+	{reply, IsMove, State};
 
-handle_call(get_state, State=#state{web_player = WebPlayer}) ->
-    {IsUpdateMove, Move, LegalMovesJsonList} = case web_player:is_move(WebPlayer) of
-		    	{ok, true} ->
+handle_call(get_display_move, State=#state{web_player = WebPlayer}) ->
+	{ok, Moves} = web_player:get_display_move(WebPlayer),					    		
+	{reply, Moves, State};
 
-		    		{ok, OpponentMove} = web_player:get_opponent_move(WebPlayer),
-		    		MoveJson = case OpponentMove of
-		    			none -> "";
-		    			{R, C, R1, C1} ->
-							io:format("Opponent Move ~p~n", [OpponentMove]),		
-		    				json2:obj_from_list([{"R", R}, {"C", C}, {"r", R1}, {"c", C1}])
-		    		end,
-					{ok, LegalMoves} = web_player:get_legal_move(WebPlayer),
-						LegalMovesJson = [ json2:obj_from_list([{"R", R}, {"C", C}, {"r", R1}, {"c", C1}]) || {R, C, R1, C1} <- LegalMoves ],
-		    		{true, MoveJson, LegalMovesJson};
-		    	_ -> 
-		    		{false, [], []}
-		   end,
-	StateJson = json2:obj_from_list([{"is_update_move", IsUpdateMove},
-									 {"move", Move},
-									 {"legal_moves", {array, LegalMovesJsonList}}]),
-	{reply, StateJson, State};
-handle_call({set_move, Move}, State=#state{web_player = WebPlayer}) ->
+handle_call(get_legal_moves, State=#state{web_player = none}) ->
+	{reply, [], State};
+handle_call(get_legal_moves, State=#state{web_player = WebPlayer}) ->
+	{ok, PlayerID, LegalMoves} = web_player:get_legal_moves(WebPlayer),	
+	{reply, {PlayerID, LegalMoves}, State};
+	
+handle_call({set_move, Move}, State=#state{username = UserName, web_player = WebPlayer}) ->
+	io:format("~p Move ~p~n", [UserName, Move]),
 	web_player:set_move(WebPlayer, Move),	
 	{reply, ok, State};
 
-handle_call({start_robot, RobotName, RobotType}, State=#state{robot_player = none, room = RoomID}) ->
+handle_call({start_robot, RobotName, _RobotType}, State=#state{room = none}) ->
+    io:format("~p room isn't set~n", [RobotName]),
+    {reply, ok, State};
+
+handle_call({start_robot, RobotName, RobotType}, State=#state{robot_player = none}) ->
 	{ok, RobotPlayer} = player_client:start(RobotName, RobotType, board, "127.0.0.1", 8011),	
 	erlang:link(RobotPlayer),	
 	player_client:login(RobotPlayer, ""),
-	player_client:enter_room(RobotPlayer, RoomID),
-	{reply, ok, State#state{robot_player = RobotPlayer}};
+	handle_call({start_robot, RobotName, RobotType}, State#state{robot_player = RobotPlayer});
 
-handle_call({start_robot, _RobotName, _RobotType}, State=#state{robot_player = RobotPlayer, room = RoomID}) ->
+handle_call({start_robot, RobotName, _RobotType}, State=#state{robot_player = RobotPlayer, room = RoomID}) ->
 	player_client:enter_room(RobotPlayer, RoomID),
+	io:format("~p enter room ~p~n", [RobotName, RoomID]),
 	{reply, ok, State}.
 
 
