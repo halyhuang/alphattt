@@ -15,14 +15,14 @@ body {
 }
 
 #gamehall {
-	width: 70%;	
+	width: 60%;	
     background: #66b3ff; 	
 }
   
 td.chessplayer {
  width:40px;
  height:40px;	
- padding:25px;
+ padding:15px;
 }
 
 td.checkdeskimg {
@@ -31,12 +31,25 @@ td.checkdeskimg {
  padding:25px;	
 }
 
-#ranklist {
+.datalist {
  width:300px;
  background: green; 
+}
+
+.gamehall {
+    width: 60%;  
+    background: #66b3ff;  	
 }
 
 .onlineuser {
  height:200px;	
 }
   
+td.tight {
+ padding:15px;
+}
+
+tr.over td {
+    background:#ff8040;  /*这个将是鼠标高亮行的背景background:#bcd4ec色*/
+	cursor: pointer;
+}

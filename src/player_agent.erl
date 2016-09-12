@@ -37,32 +37,48 @@ handle_tcp_data(TcpData, State=#state{status = wait_enter_room}) ->
 					Notify = io_lib:format("player ~p enter room failed, reason ~p~n", [NickName, Reason]),
 					send_message({notify, Notify}, State),
 					{ok, State}
-			end;			
+			end;	
+		{observe, NickName, RoomID} ->
+			case room_mgr:enter(RoomID) of
+				{ok, NewRoomPid} ->
+					room:observe(NewRoomPid, {self(), NickName}),
+					{ok, State#state{status = enter_room, room = NewRoomPid}};
+				Reason ->
+					Notify = io_lib:format("player ~p observe room failed, reason ~p~n", [NickName, Reason]),
+					send_message({notify, Notify}, State),
+					{ok, State}
+			end;		
+
 		Unexpected ->
 			Notify = io_lib:format("Unexpected is ~p when wait_enter_room ~n", [Unexpected]),
 			send_message({notify, Notify}, State),
 			{ok, State}
 	end;	
+
 handle_tcp_data(TcpData, State=#state{status = enter_room, room = RoomPid}) ->
     case binary_to_term(TcpData) of
 		{echo, Msg} ->
 			send_message({echo, Msg}, State);
 		{enter_room, NickName, RoomID} ->
 			case room_mgr:enter(RoomID) of
-				{ok, NewRoomPid} ->
-					case NewRoomPid =:= RoomPid of
-						true ->
-							{ok, State};
-						false ->
-							room:leave(RoomPid, self()),
-							room:enter(NewRoomPid, {self(), NickName}),
-							{ok, State#state{room = NewRoomPid}}
-					end;
+				{ok, NewRoomPid} ->			
+					room:enter(NewRoomPid, {self(), NickName}),
+					{ok, State#state{room = NewRoomPid}};
 				Reason ->
 					Notify = io_lib:format("player ~p enter room ~p failed, reason ~p~n", [NickName, RoomID, Reason]),
 					send_message({notify, Notify}, State),
 					{ok, State}
-			end;						
+			end;	
+		{observe, NickName, RoomID} ->
+			case room_mgr:enter(RoomID) of
+				{ok, NewRoomPid} ->
+					room:observe(NewRoomPid, {self(), NickName}),
+					{ok, State#state{status = enter_room, room = NewRoomPid}};
+				Reason ->
+					Notify = io_lib:format("player ~p observe room failed, reason ~p~n", [NickName, Reason]),
+					send_message({notify, Notify}, State),
+					{ok, State}
+			end;									
 		{leave_room, NickName} ->
 			room:leave(RoomPid, self()),
 			Notify = io_lib:format("player ~p leave room~n", [NickName]),

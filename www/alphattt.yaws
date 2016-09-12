@@ -5,25 +5,67 @@
 out(A) ->
     yaws_rpc:handler_session(A, {?MODULE, handle}).
 
-handle(_State, {call, get_state, _Arg}, #session{pid_str = PidStr}) ->
+handle(_State, {call, get_move, _Arg}, #session{pid_str = PidStr}) ->
     Pid = web_agent_mgr:get_agent_pid(PidStr),
-	Response = web_agent:get_state(Pid), 
+	Response = web_agent:get_move(Pid), 
+    {true, 0, #session{pid_str = pid_to_list(Pid)}, {response, Response}};
+
+handle(_State, {call, poll_get_move, _Arg}, #session{pid_str = PidStr}) ->
+    Pid = web_agent_mgr:get_agent_pid(PidStr),
+
+    IsMove = web_agent:is_move(Pid),   
+    {PlayerID, LegalMoves} = web_agent:get_legal_moves(Pid),
+    LegalMovesArrayJson = [ json2:obj_from_list([{"R", R}, {"C", C}, {"r", R1}, {"c", 
+              C1}])          || {R, C, R1, C1} <- LegalMoves ],
+
+    Response = json2:obj_from_list([{"is_get_move", IsMove},
+                                    {"player", PlayerID},
+                                    {"legal_moves", {array, LegalMovesArrayJson}}]),
+    {true, 0, #session{pid_str = pid_to_list(Pid)}, {response, Response}};
+
+
+handle(_State, {call, poll_display, _Arg}, #session{pid_str = PidStr}) ->
+    Pid = web_agent_mgr:get_agent_pid(PidStr),
+
+    IsUpdateDisplayMove = web_agent:is_display_move(Pid),
+    MovesJson = case IsUpdateDisplayMove of
+                    true ->
+                        Moves  = web_agent:get_display_move(Pid),                    
+                        [ begin
+                            MoveJson = json2:obj_from_list([{"R", R}, {"C", C}, {"r", R1}, {"c", C1}]), 
+                            json2:obj_from_list([{"player", Player},
+                                                 {"move", MoveJson}])
+                          end || {Player, {R, C, R1, C1}} <- Moves];
+                    _ -> []
+                 end,       
+    Response = json2:obj_from_list([{"is_update_display", IsUpdateDisplayMove},
+                                    {"moves", {array, MovesJson}}]),
+    {true, 0, #session{pid_str = pid_to_list(Pid)}, {response, Response}};    
+
+handle(_State, {call, get_legal_moves, _Arg}, #session{pid_str = PidStr}) ->
+    Pid = web_agent_mgr:get_agent_pid(PidStr),
+    Response = web_agent:get_legal_moves(Pid), 
     {true, 0, #session{pid_str = pid_to_list(Pid)}, {response, Response}};
 
 handle(_State, {call, set_move, {array, [R, C, R1, C1]}}, #session{pid_str = PidStr}) ->	
 	Move = {R, C, R1, C1},
-	io:format("Webplayer Move ~p~n", [Move]),
     Pid = web_agent_mgr:get_agent_pid(PidStr),   
 	ok = web_agent:set_move(Pid, Move),	
     Response = json2:obj_from_list([{"value", true},
                                 {"reason", ""}]),    
     {true, 0, #session{pid_str = pid_to_list(Pid)}, {response, Response}};
 
-handle(_State, {call, start_robot, _Value}, #session{pid_str = PidStr}) ->
+
+handle(_State, {call, start_game, _}, #session{pid_str = PidStr}) ->
+    Pid = web_agent_mgr:get_agent_pid(PidStr),
+    web_agent:enter_room(Pid),
+    Response = json2:obj_from_list([{"value", true}]),
+    {true, 0, #session{pid_str = pid_to_list(Pid)}, {response, Response}};
+
+handle(_State, {call, start_robot, _}, #session{pid_str = PidStr}) ->
     Pid = web_agent_mgr:get_agent_pid(PidStr),
 	ok = web_agent:start_robot(Pid, "mcts", mcts),
-    Response = json2:obj_from_list([{"value", true},
-                                {"reason", ""}]),     
+    Response = json2:obj_from_list([{"value", true}]),     
     {true, 0, #session{pid_str = pid_to_list(Pid)}, {response, Response}};
 
 handle(_State, {call, Func, _Args}, Session = #session{pid_str = PidStr}) ->

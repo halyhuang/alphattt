@@ -1,20 +1,21 @@
 
 
 var jsonrpc = imprt("jsonrpc");
-var service = new jsonrpc.ServiceProxy("alphattt.yaws", ["start_robot", "get_state", "set_move"]);
-
-var hall_service = new jsonrpc.ServiceProxy("hall.yaws", ["leave_room"]);
+var service = new jsonrpc.ServiceProxy("alphattt.yaws", ["poll_get_move", "poll_display", "start_game", "start_robot", "get_move", "get_legal_moves", "set_move"]);
+var hall_service = new jsonrpc.ServiceProxy("hall.yaws", ["get_room", "leave_room"]);
+var auth_service = new jsonrpc.ServiceProxy("auth.yaws", ["is_login"]);
 
 var grids;
-var timerID;
-var player_background_color = '#00FFFF';
-var opponent_move_color = '#53FF53';
-var background_color = 'white';
-var legal_moves;
-var	is_playing = false;
+var timerID = 0;
+var poll_display_timerID = 0;
 
-var auth_jsonrpc = imprt("jsonrpc");
-var auth_service = new auth_jsonrpc.ServiceProxy("auth.yaws", ["is_login"]);
+var players = new Array();
+players[0] = {color:"white", innerHTML:""};
+players[1] = {color:"#00FFFF", innerHTML:"X"};
+players[2] = {color:"#53FF53", innerHTML:"O"};
+var player = 1;
+
+var legal_moves;
 
 function is_login()
 {
@@ -30,42 +31,86 @@ function check_login()
 	}
 }
 
+function check_room()
+{
+	var result = hall_service.get_room();
+	if (result.room_id == 0)
+	{
+		alert("roomID invalid,please select a room");
+		location.href = "hall.html";
+	}
+}
+
 window.onload = function() {  
 	check_login();
+	check_room();
 	init_botton();	
+	init_board();		
 };  
+
 window.onbeforeunload = function(event) 
 { 
-	var is_leave = true;
-	if (is_playing)
+	var	is_leave = confirm("确定离开此页面吗？");
+	if (is_leave)
 	{
-		is_leave = confirm("确定离开此页面吗？");
-		if (is_leave)
-		{
-			hall_service.leave_room();
-		}
+		hall_service.leave_room();
 	}
 	return is_leave;
 }
 
-function poll()
+function poll_get_move()
 {
-    try {
-			var state = service.get_state();
-			if (state.is_update_move)
+    try {			
+			var result = service.poll_get_move();
+			if (result.is_get_move)
 			{
-				legal_moves = state.legal_moves;			
-				set_legal_move();			
-				update_move(state.move);
-			}	
+				legal_moves = result.legal_moves;
+				player = result.player;
+				set_legal_move();	
+			}				
      } catch(e) {
         alert(e);
      }	
 	
 }
 
+function poll_display()
+{
+    try {			
+			var result = service.poll_display();
+			if (result.is_update_display)
+			{
+				update_display(result.moves[0].player, result.moves[0].move);	
+			}
+     } catch(e) {
+        alert(e);
+     }	
+	
+}
+
+function grid_pos(move)
+{
+	return ((move.R * 3 + move.r) * 9 + (move.C * 3 + move.c));
+}
+
+function update_display(player, move)
+{
+	var index = grid_pos(move);
+	grids[index].state = player;
+	grids[index].innerHTML = players[player].innerHTML;
+	grids[index].style.background = players[player].color;
+	info("move(" + move.R + "," + move.C + "," + move.r + "," + move.c + ")");
+}
+
+function opponent(id)
+{
+	return 3 - id;
+}
+
 function init_botton()
 {
+    var bn_start = document.getElementById('start_game');  
+	bn_start.onclick = start_game; 
     var bn_robot = document.getElementById('start_robot');  
 	bn_robot.onclick = start_robot; 	
     var bn_witness = document.getElementById('start_witness');  
@@ -77,6 +122,7 @@ function init_botton()
 
 function init_board()
 {
+	is_get_move = false;
 	grids = document.querySelectorAll('.grid');
 	for (var i=0; i < grids.length; i++)
 	{ 
@@ -87,27 +133,10 @@ function init_board()
 		grids[i].onclick = click_move;
 	    grids[i].onmouseenter = enter_grid;
 		grids[i].onmouseleave = leave_grid;	
-		grids[i].style.background = background_color;	
-		grids[i].innerHTML = "";
+		grids[i].style.background = players[0].color;	
+		grids[i].innerHTML = players[0].innerHTML;
 		grids[i].state = 0;
 		grids[i].is_legal = false;		
-	}
-}
-
-function grid_pos(move)
-{
-	return ((move.R * 3 + move.r) * 9 + (move.C * 3 + move.c));
-}
-
-function update_move(move)
-{
-	if (move != "")
-	{
-		var index = grid_pos(move);
-		info("move(" + move.R + "," + move.C + "," + move.r + "," + move.c + ")");
-		grids[index].state = 2;
-		grids[index].innerHTML = "O";
-		grids[index].style.background = opponent_move_color;
 	}
 }
 
@@ -115,7 +144,7 @@ function set_backgroud_blank()
 {
 	for (var i=0; i < grids.length; i++)
 	{ 
-		grids[i].style.background = background_color;	
+		grids[i].style.background = players[0].color;	
 	}		
 }
 
@@ -127,11 +156,11 @@ function set_backgroud_opponent(enter_grid, is_show)
 		{
 			if (is_show)
 			{
-				grids[i].style.background = opponent_move_color;			
+				grids[i].style.background = players[opponent(player)].color;			
 			}
 			else
 			{
-				grids[i].style.background = background_color;								
+				grids[i].style.background = players[0].color;								
 			}
 		}
 	}	
@@ -143,21 +172,38 @@ function info(msg)
        "<li>" + msg + "</li>";
 }
 
-function set_timer()
+function set_poll_move_timer()
 {
-	if( timerID == undefined)
+	if (timerID == 0)
 	{	
-		timerID = setInterval(poll, 1000);
+		timerID = setInterval(poll_get_move, 300);
 	}
 }
 
-function start_robot()
+function set_poll_display_timer()
 {
-	is_playing = true;
+	if (poll_display_timerID == 0)
+	{	
+		poll_display_timerID = setInterval(poll_display, 300);
+	}	
+}
+
+function start_game()
+{
 	init_board();
-	var result = service.start_robot();	
+	service.start_game();
+	info("start!");	
+	set_poll_move_timer();
+	set_poll_display_timer();
+}  
+
+function start_robot()
+{	
+	init_board();
+	service.start_robot();	
 	info("robot start!");	
-	set_timer();	
+	set_poll_move_timer();	
+	set_poll_display_timer();	
 }
 
 function start_witness()
@@ -168,7 +214,6 @@ function start_witness()
 function start_hall()
 {
     try {
-			hall_service.leave_room();
 			location.href = "hall.html";
      } catch(e) {
         alert(e);
@@ -195,7 +240,7 @@ function set_backgroud_legal()
 	for (var i=0; i<legal_moves.length; i++)
 	{ 
 		var index = grid_pos(legal_moves[i]);
-		grids[index].style.background = player_background_color;
+		grids[index].style.background = players[player].color;
 		grids[index].is_legal = true;
 	}		
 }
@@ -205,12 +250,7 @@ function click_move()
 	if (this.is_legal)
 	{
 		set_grid_inlegal();
-		set_backgroud_blank();		
 		service.set_move(this.R, this.C, this.r, this.c);	
-		this.state = 1;
-		this.innerHTML = "X";	
-		this.style.background = player_background_color;
-		info("move(" + this.R + "," + this.C + "," + this.r + "," + this.c + ")");
 	}
 }
 
