@@ -53,12 +53,12 @@ public class Board {
 	public int[] next_state(int[] state, int[] move) {
 		int[] res = state.clone(); 
 		if (is_legal(res, move)) {
-			int player = state[22];
+			int player = res[22];
 			int gridIndex = (move[0] * 3 + move[1]) * 2 - 1 + player;
 			int gridValue = posValue[move[2] * 3 + move[3]];
-			res[gridIndex] = state[gridIndex] + gridValue;
-			res[18] = judgeBigWin(1, state);
-			res[19] = judgeBigWin(2, state);
+			res[gridIndex] = res[gridIndex] + gridValue;
+			res[18] = judgeBigWin(1, res);
+			res[19] = judgeBigWin(2, res);
 			res[20] = move[2];
 			res[21] = move[3];
 			res[22] = 3 - player;
