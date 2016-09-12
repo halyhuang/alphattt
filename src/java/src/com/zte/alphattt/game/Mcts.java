@@ -47,30 +47,34 @@ public class Mcts implements Player {
 
 		run_simulation(legalStates);
 		int bestStateIndex = chooseBest(legalMoves, legalStates);
-		return legalMoves[bestStateIndex];
+		int[] move = legalMoves[bestStateIndex];
+		//System.out.println("Choosed move:" + Arrays.toString(move));
+		return move;
 	}
 
 	private int chooseBest(int[][] legalMoves, int[][] legalStates) {
 		double[] winRates = new double[legalStates.length];
-		for(int i = 0; i < winRates.length; i++){
+		for (int i = 0; i < winRates.length; i++) {
 			PlayStats playStats = this.cache.get(new GameState(legalStates[i]));
 			winRates[i] = (playStats == null ? 0 : playStats.winRate());
-			
-			DecimalFormat df = new DecimalFormat("#.00");
-			System.out.println(Arrays.toString(legalMoves[i]) + ":" 
-					+ (playStats == null ? 0 : playStats.wins) + "/" + (playStats == null ? 0 :playStats.plays) + ",(" 
-					+ df.format(winRates[i] * 100) + "%).");
-			 
+
+			//log(legalMoves, winRates, i, playStats);
 		}
-		
+
 		double maxRate = max(winRates);
 		return getIndex(maxRate, winRates);
 	}
 
+	private void log(int[][] legalMoves, double[] winRates, int i, PlayStats playStats) {
+		DecimalFormat df = new DecimalFormat("#.00");
+		System.out.println(Arrays.toString(legalMoves[i]) + ":" + (playStats == null ? 0 : playStats.wins) + "/"
+				+ (playStats == null ? 0 : playStats.plays) + ",(" + df.format(winRates[i] * 100) + "%).");
+	}
+
 	private int getIndex(double maxRate, double[] winRates) {
 		int res = 0;
-		for(int i = 0; i < winRates.length; i++){
-			if(winRates[i] == maxRate){
+		for (int i = 0; i < winRates.length; i++) {
+			if (winRates[i] == maxRate) {
 				return i;
 			}
 		}
@@ -79,8 +83,8 @@ public class Mcts implements Player {
 
 	private double max(double[] winRates) {
 		double max = winRates[0];
-		for(double winRate : winRates){
-			if(winRate > max){
+		for (double winRate : winRates) {
+			if (winRate > max) {
 				max = winRate;
 			}
 		}
@@ -105,10 +109,10 @@ public class Mcts implements Player {
 			propagate_back(state, Board.PlAYER_1_WIN);
 			break;
 		case Board.PLAYER_2_WIN:
-			propagate_back(state, Board.PlAYER_1_WIN);
+			propagate_back(state, Board.PLAYER_2_WIN);
 			break;
 		case Board.DRAW:
-			propagate_back(state, Board.PlAYER_1_WIN);
+			propagate_back(state, Board.DRAW);
 			break;
 		case Board.ON_GOING:
 			int res = randomGame2End(state);
@@ -121,10 +125,10 @@ public class Mcts implements Player {
 
 	private int randomGame2End(int[] state) {
 		int winner = -1;
-		do{
+		do {
 			state = moveOnce(state);
 			winner = this.board.winner(state);
-		}while(winner == Board.ON_GOING);
+		} while (winner == Board.ON_GOING);
 		return winner;
 	}
 
@@ -139,13 +143,12 @@ public class Mcts implements Player {
 		if (!this.cache.containsKey(gameState)) {
 			PlayStats playStats = new PlayStats();
 			playStats.plays++;
-			playStats.wins = (board.currentPlayer(state) == winner ? playStats.wins + 1 : playStats.wins);
+			playStats.wins = ((3-board.currentPlayer(state)) == winner ? (playStats.wins + 1) : playStats.wins);
 			this.cache.put(gameState, playStats);
 		} else {
 			PlayStats playStats = this.cache.get(gameState);
-			playStats.wins = (board.currentPlayer(state) == winner ? playStats.wins + 1 : playStats.wins);
+			playStats.wins = ((3-board.currentPlayer(state)) == winner ? (playStats.wins + 1) : playStats.wins);
 			playStats.plays++;
-			
 		}
 	}
 

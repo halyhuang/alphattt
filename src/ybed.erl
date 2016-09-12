@@ -15,9 +15,9 @@ run() ->
                  {ebin_dir, [YarwsDir ++ "ebin"]},
                  {include_dir, [YarwsDir ++ "include"]}],
     Docroot = YarwsDir ++ "www",
-    SconfList = [{port, 80},
+    SconfList = [{port, 8888},
                  {servername, "alphattt_web_server"},
-                 {listen, {0,0,0,0}},
+                 {listen, {127,0,0,1}},
                  {docroot, Docroot}],
     {ok, SCList, GC, ChildSpecs} =
         yaws_api:embedded_start_conf(Docroot, SconfList, GconfList, Id),
