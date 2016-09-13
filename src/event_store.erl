@@ -24,16 +24,6 @@ show() ->
 next_player(1) -> 2;
 next_player(2) -> 1.
 
-handle_info({update, RoomID, none, _GameState}, State=#state{rooms=Rooms}) ->
-	case lists:keyfind(RoomID, 1, Rooms) of
-		{RoomID, _Moves, Obs} ->
-			NewRooms = lists:keyreplace(RoomID, 1, Rooms, 
-				{RoomID, [], Obs}),
-			{noreply, State#state{rooms = NewRooms}};
-		_ ->
-			{noreply, State}
-	end;
-
 handle_info({update, RoomID, Move, GameState}, State=#state{rooms=Rooms, board = Board}) ->
 	case lists:keyfind(RoomID, 1, Rooms) of
 		{RoomID, Moves, Obs} ->

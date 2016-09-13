@@ -80,7 +80,14 @@ function poll_display()
 			var result = service.poll_display();
 			if (result.is_update_display)
 			{
-				update_display(result.moves[0].player, result.moves[0].move);	
+				if (result.moves.length == 0)
+				{
+					init_board();
+				}		
+				else
+				{
+					update_display(result.moves[0].player, result.moves[0].move);	
+				}
 			}
      } catch(e) {
         alert(e);
@@ -95,6 +102,7 @@ function grid_pos(move)
 
 function update_display(player, move)
 {
+	set_backgroud_blank();
 	var index = grid_pos(move);
 	grids[index].state = player;
 	grids[index].innerHTML = players[player].innerHTML;
@@ -216,6 +224,7 @@ function init_observe(player_moves)
 
 function start_observe()
 {
+	init_board();
 	var result = service.start_observe();	
 	init_observe(result.moves);
 	set_poll_display_timer();	

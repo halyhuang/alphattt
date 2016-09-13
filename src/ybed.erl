@@ -15,7 +15,7 @@ run() ->
                  {ebin_dir, [YarwsDir ++ "ebin"]},
                  {include_dir, [YarwsDir ++ "include"]}],
     Docroot = YarwsDir ++ "www",
-    SconfList = [{port, 8888},
+    SconfList = [{port, 80},
                  {servername, "alphattt_web_server"},
                  {listen, {127,0,0,1}},
                  {docroot, Docroot}],
