@@ -1,6 +1,6 @@
 package com.zte.alphattt;
 
-import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.*;
 
 import java.util.Arrays;
 
@@ -16,12 +16,9 @@ public class BoradTest {
 	public void testHuman() {
 		int[] gameState = new int[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, -1, 1 };
 		assertArrayEquals(gameState, board.start());
-		printMove(board.legal_moves(gameState));
 		
 		gameState = moveAndAssert(gameState, new int[] { 0, 2, 1, 2 },
 				new int[] { 0, 0, 0, 0, 32, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 2 });
-		printMove(board.legal_moves(gameState));
-		
 		gameState = moveAndAssert(gameState, new int[] { 1, 2, 1, 1 },
 				new int[] { 0, 0, 0, 0, 32, 0, 0, 0, 0, 0, 0, 16, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1 });
 		gameState = moveAndAssert(gameState, new int[] { 1, 1, 1, 1 },

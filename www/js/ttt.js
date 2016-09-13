@@ -1,7 +1,7 @@
 
 
 var jsonrpc = imprt("jsonrpc");
-var service = new jsonrpc.ServiceProxy("alphattt.yaws", ["poll_get_move", "poll_display", "start_game", "start_robot", "get_move", "get_legal_moves", "set_move"]);
+var service = new jsonrpc.ServiceProxy("alphattt.yaws", ["poll_get_move", "poll_display", "start_game", "start_robot", "start_observe", "get_move", "get_legal_moves", "set_move"]);
 var hall_service = new jsonrpc.ServiceProxy("hall.yaws", ["get_room", "leave_room"]);
 var auth_service = new jsonrpc.ServiceProxy("auth.yaws", ["is_login"]);
 
@@ -80,7 +80,14 @@ function poll_display()
 			var result = service.poll_display();
 			if (result.is_update_display)
 			{
-				update_display(result.moves[0].player, result.moves[0].move);	
+				if (result.moves.length == 0)
+				{
+					init_board();
+				}		
+				else
+				{
+					update_display(result.moves[0].player, result.moves[0].move);	
+				}
 			}
      } catch(e) {
         alert(e);
@@ -95,6 +102,7 @@ function grid_pos(move)
 
 function update_display(player, move)
 {
+	set_backgroud_blank();
 	var index = grid_pos(move);
 	grids[index].state = player;
 	grids[index].innerHTML = players[player].innerHTML;
@@ -113,8 +121,8 @@ function init_botton()
 	bn_start.onclick = start_game; 
     var bn_robot = document.getElementById('start_robot');  
 	bn_robot.onclick = start_robot; 	
-    var bn_witness = document.getElementById('start_witness');  
-	bn_witness.onclick = start_witness; 	
+    var bn_observe = document.getElementById('start_observe');  
+	bn_observe.onclick = start_observe; 	
     var bn_hall = document.getElementById('start_hall');  
 	bn_hall.onclick = start_hall; 	
 	
@@ -206,9 +214,21 @@ function start_robot()
 	set_poll_display_timer();	
 }
 
-function start_witness()
+function init_observe(player_moves)
 {
-	alert("not finish");
+	for (var i = 0; i < player_moves.length; i++)
+	{
+		update_display(player_moves[i].player, player_moves[i].move);		
+	}
+}
+
+function start_observe()
+{
+	init_board();
+	var result = service.start_observe();	
+	init_observe(result.moves);
+	set_poll_display_timer();	
+	info("robot start!");		
 }
 
 function start_hall()

@@ -17,7 +17,7 @@ run() ->
     Docroot = YarwsDir ++ "www",
     SconfList = [{port, 80},
                  {servername, "alphattt_web_server"},
-                 {listen, {0,0,0,0}},
+                 {listen, {127,0,0,1}},
                  {docroot, Docroot}],
     {ok, SCList, GC, ChildSpecs} =
         yaws_api:embedded_start_conf(Docroot, SconfList, GconfList, Id),

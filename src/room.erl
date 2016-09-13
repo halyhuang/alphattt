@@ -1,22 +1,24 @@
 -module(room).
--export([start/1]).
+-export([start/2]).
 -export([enter/2, leave/2, play/2, get_state/1, observe/2]).
 -export([reset/1]).
 
 -define(ROOM_TIME_OUT, 60 * 10).
 
 -record(state, {board,
+				room_id,
 				status = waiting, % status = waiting ! playing
 				current_player = none,
 				players = [], % players = [{pid, nick_name, monitor_ref}]
-				observers = [],
+				observer = none,
 				game_state,
+				moves = [],
 				steps = []
 				}).
 
 %% APIs
-start(Board) ->
-	Pid = spawn(fun() -> init(Board) end),
+start(Board, RoomID) ->
+	Pid = spawn(fun() -> init(Board, RoomID) end),
 	{ok, Pid}.
 
 enter(Pid, {Player, NickName}) ->
@@ -25,8 +27,8 @@ enter(Pid, {Player, NickName}) ->
 leave(Pid, Player) ->
 	Pid ! {leave, Player}.
 
-observe(Pid, {Observer, NickName}) ->
-	Pid ! {observe, Observer, NickName}.	
+observe(Pid, Observer) ->
+	call(Pid, {observe, Observer}).	
 
 play(Pid, {Player, Move}) ->
 	Pid ! {play, Player, Move}.
@@ -45,17 +47,17 @@ call(Pid, Msg) ->
 			Reply
 	end.	
 
-init(Board) ->
+init(Board, RoomID) ->
 	<<A:32, B:32, C:32>> = crypto:rand_bytes(12),
 	random:seed({A, B, C}),
-	loop(#state{board = Board}).	
+	loop(#state{board = Board, room_id = RoomID}).	
 
 select_player(Players) ->
 	N = random:uniform(2),
 	{Pid, NickName, _} = lists:nth(N, Players),
 	{Pid, NickName}.	
 
-loop(State = #state{status = waiting, board = Board, players = Players, observers = Obs}) ->
+loop(State = #state{status = waiting, board = Board, players = Players}) ->
 	receive
 		{enter, Pid, NickName} ->
 			case Players of
@@ -85,14 +87,7 @@ loop(State = #state{status = waiting, board = Board, players = Players, observer
 					erlang:demonitor(Ref),
 					loop(State#state{players=NewPlayers});
 				false ->
-					case lists:keyfind(Pid, 1, Obs) of
-						{Pid, _, Ref} ->
-							NewObs = lists:keydelete(Pid, 1, Obs),
-							erlang:demonitor(Ref),
-							loop(State#state{observers = NewObs});
-						false ->
-							loop(State)
-					end
+					loop(State)
 			end;
 		{get_state, Ref, From} ->
 			PlayerNickNames = [ NickName || {_Pid, NickName, _Ref} <- Players],
@@ -101,13 +96,12 @@ loop(State = #state{status = waiting, board = Board, players = Players, observer
 		reset ->
 			loop(State#state{status=waiting,
 				 players=[],
-				 observers=[],
+				 observer=[],
 				 current_player=none});			
 
-		{observe, Pid, NickName} ->
-			notify_user(Pid, greeting(NickName)),		
-			Ref = erlang:monitor(process, Pid),
-			loop(State#state{observers = [{Pid, NickName, Ref} | Obs]});	
+		{{observe, Observer}, Ref, From} ->
+			From ! {Ref, []},
+			loop(State#state{observer = Observer});	
 
 		{'DOWN', _, process, Pid, Reason} ->
 			io:format("~p down @waiting for: ~p~n", [Pid, Reason]),
@@ -119,11 +113,13 @@ loop(State = #state{status = waiting, board = Board, players = Players, observer
 			loop(State)				
 	end;
 loop(State = #state{status = playing,
+					room_id = RoomID,
 					current_player = {Current, CurrentNickName},
 					players = Players,
-					observers = Obs,
+					observer = Observer,
 					board = Board,
 					game_state = GameState, 
+					moves = Moves,
 					steps = Steps}) ->
 	receive 
 		{enter, _Pid, _NickName} ->
@@ -138,20 +134,12 @@ loop(State = #state{status = playing,
 									 current_player = none,
 									 players = NewPlayers});
 				_ ->
-					case lists:keyfind(Pid, 1, Obs) of
-						{Pid, _, Ref} ->
-							NewObs = lists:keydelete(Pid, 1, Obs),
-							erlang:demonitor(Ref),
-							loop(State#state{observers = NewObs});
-						false ->
-							loop(State)
-					end
+					loop(State)
 			end;
 
-		{observe, Pid, NickName} ->
-			notify_user(Pid, greeting(NickName)),		
-			Ref = erlang:monitor(process, Pid),
-			loop(State#state{observers = [{Pid, NickName, Ref} | Obs]});	
+		{{observe, NewObserver}, Ref, From} ->
+			From ! {Ref, Moves},
+			loop(State#state{observer = NewObserver});	
 
 		show ->
 			io:format("status=~p, current_player=~p, players=~p~n", [State#state.status, CurrentNickName, Players]),
@@ -160,13 +148,14 @@ loop(State = #state{status = playing,
 			{Next, NextNickName} = next_player(Current, Players),
 			update(Current, GameState),
 			update(Next, GameState),
-			update(Obs, GameState),			
+			update_observer(Observer, RoomID, GameState, none),
 			play(Current),
 			loop(State#state{steps = [{start, CurrentNickName, NextNickName}]});
 		reset ->
 			loop(State#state{status=waiting,
 				 players=[],
-				 observers=[],
+				 observer=[],
+				 moves = [],
 				 current_player=none});
 		{play, Current, Move} ->
 			case Board:is_legal(GameState, Move) of
@@ -177,15 +166,16 @@ loop(State = #state{status = playing,
 					GameState2 = Board:next_state(GameState, Move),
 					NextPlayer = {Next, NextNickName} = next_player(Current, Players),
 					update(Current, Move, GameState2),
-					update(Next, Move, GameState2),
-                    update(Obs, Move, GameState2),
+					update(Next, Move, GameState2),		
+					update_observer(Observer, RoomID, GameState2, Move),
 					NewSteps = Steps ++ [{move, integer_to_list(Board:current_player(GameState)), Move}],
 					case Board:winner(GameState2) of
 						on_going ->
 							play(Next),
 							loop(State#state{game_state = GameState2,
 											 current_player = NextPlayer,
-											 steps=NewSteps});
+											 steps=NewSteps,
+											 moves=[{Board:current_player(GameState), Move} | Moves]});
 						draw ->
 							NewSteps2 = NewSteps ++ [{finish, draw}],
 							store_data(NewSteps2),
@@ -193,6 +183,7 @@ loop(State = #state{status = playing,
 							loop(State#state{status = waiting,
 											 players=[],
 											 current_player=none,
+											 moves = [],
 											 steps=[]});
 						_ ->
 							[notify_user(Pid, congradulations(CurrentNickName)) || {Pid, _, _} <- Players],
@@ -202,6 +193,7 @@ loop(State = #state{status = playing,
 							loop(State#state{status=waiting,
 											 players=[],
 											 current_player=none,
+											 moves = [],
 											 steps=[]})
 					end
 			end;	
@@ -225,6 +217,11 @@ next_player(Pid, [{Pid, _, _}, {Pid2, NickName, _}]) ->
 	{Pid2, NickName};
 next_player(Pid, [{Pid2, NickName, _}, {Pid, _, _}]) ->
 	{Pid2, NickName}.
+
+update_observer(none, _RoomID, _GameState, _Move) ->
+	ok;
+update_observer(Observer, RoomID, GameState, Move) ->
+	Observer ! {update, RoomID, Move, GameState}.
 
 update(Obs, GameState) when is_list(Obs) ->
 	[Pid ! {update, none, GameState} || {Pid, _, _} <- Obs];

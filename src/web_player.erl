@@ -78,7 +78,7 @@ handle_call({update, GameState}, State=#state{game_states=GSs}) ->
 	{reply, ok, State#state{game_states=[GameState | GSs]}};
 
 handle_call({display, _GameState, none}, State) ->
-	{reply, ok, State};
+	{reply, ok, State#state{is_display_move = true, moves = []}};
 
 handle_call({display, GameState, Move}, State=#state{board = Board, moves = Moves}) ->
 	{reply, ok, State#state{is_display_move = true, moves = [{next_player(Board:current_player(GameState)), Move} | Moves]}};

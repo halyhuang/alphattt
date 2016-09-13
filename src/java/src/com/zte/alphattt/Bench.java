@@ -1,6 +1,7 @@
 package com.zte.alphattt;
 
 import java.text.DecimalFormat;
+import java.util.Arrays;
 
 import com.zte.alphattt.game.Board;
 import com.zte.alphattt.game.Mcts;
@@ -49,16 +50,18 @@ public class Bench {
 			winner = board.winner(state);
 			if(isEnd(winner)){
 				return winner;
-			}		
+			}
 			state = pkOneStep(this.player2, state);
 			winner = board.winner(state);
-		}while(!isEnd(winner));
-		return winner;
+			if(isEnd(winner)){
+				return winner;
+			}
+		}while(true);
 	}
 	
 	private int[] pkOneStep(Player player, int[] state){
-		player1.update(null, state);
-		int[] move = player1.getMove();
+		player.update(null, state);
+		int[] move = player.getMove();
 		state = board.next_state(state, move);
 		//board.display(state);
 		//System.out.println();
@@ -72,7 +75,7 @@ public class Bench {
 	
 	public static void main(String[] args){
 		Bench bench = new Bench(new Mcts(), new RandomPlayer());
-		bench.run(100, 100);
+		bench.run(100, 1000);
 	}
 	
 }
