@@ -1,24 +1,30 @@
 var auth_jsonrpc = imprt("jsonrpc");
-var auth_service = new auth_jsonrpc.ServiceProxy("auth.yaws", ["is_login", "login"]);
-
-function is_login()
-{
-	var r = auth_service.is_login();
-	return r.value;
-}
-
-window.onload = function() {  
-	is_login();
-};  
-
+var auth_service = new auth_jsonrpc.ServiceProxy("auth.yaws", ["is_login", "login", "logout"]);
 
 $(function()
 {
+	var islogin = is_login();
     $("#login").click(function()
     {
+		if (islogin)
+		{
+			auth_service.logout();
+		}
 		var userName = $("#username").val();
 		var password = $("#pw").val();
 
+		if(userName == "" || password == "")
+        {
+            alert("用户名或密码不能为空");
+			return;
+        }
+		
+		if(userName == password)
+        {
+            alert("用户名或密码不能相同");
+			return;
+        }
+		
 		var result = auth_service.login(userName, password);
         if (result.value)
         {
@@ -46,8 +52,12 @@ $(function()
 			var pw = $("#pw").val();
             if(username == "" || pw == "")
             {
-                alert("用户名或密码不能为空！");
+                alert("用户名或密码不能为空");
             }
 		});
-
+	function is_login()
+	{
+		var r = auth_service.is_login();
+		return r.value;
+	}
 });

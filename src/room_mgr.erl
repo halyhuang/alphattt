@@ -1,8 +1,8 @@
--module(roommgr).
+-module(room_mgr).
 
 -behaviour (gen_server).
 
--export([start/2, enter/1, show/0, get_empty_room/0, get_all_rooms/0]).
+-export([start/2, enter/1, observe/1, show/0, get_all_rooms/0, reset/1]).
 
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
 
@@ -17,23 +17,27 @@ init([Board, RoomNum]) ->
 	{ok, #state{board = Board, rooms=Rooms}}.
 
 spawn_room(RoomID, Board) ->
-	{ok, Pid} = room:start(Board),
+	{ok, Pid} = room:start(Board, RoomID),
 	Ref = erlang:monitor(process, Pid),
 	{RoomID, Pid, Ref}.
 
 enter(RoomID) ->
 	gen_server:call({global, ?MODULE}, {enter, RoomID}).
 
+observe(RoomID) ->
+	gen_server:call({global, ?MODULE}, {observe, RoomID, self()}).	
+
+reset(RoomID) ->
+	gen_server:cast({global, ?MODULE}, {reset, RoomID}).
+
 show() ->
 	[io:format("Room ~p is ~p, players ~p~n", [RoomID, RoomState, Players])
-	 || {RoomID, {RoomState, Players}} <- get_all_rooms()],
+	 || {RoomID, RoomState, Players} <- get_all_rooms()],
 	ok.
 
-get_all_rooms() ->
-	gen_server:call({global, ?MODULE}, get_all_rooms).	
 
-get_empty_room() ->
-	gen_server:call({global, ?MODULE}, get_empty_room).			
+get_all_rooms() ->
+	gen_server:call({global, ?MODULE}, get_all_rooms).			
 
 handle_info({'DOWN', _, process, Pid, Reason}, State=#state{board = Board, rooms=Rooms}) ->
 	case lists:keyfind(Pid, 2, Rooms) of
@@ -48,6 +52,15 @@ handle_info({'DOWN', _, process, Pid, Reason}, State=#state{board = Board, rooms
 	end.
 
 
+handle_cast({reset, RoomID}, State=#state{rooms=Rooms}) ->
+	case lists:keyfind(RoomID, 1, Rooms) of
+		{RoomID, RoomPid, _Ref} ->
+			room:reset(RoomPid);
+		_ ->
+			io:format("Room ~p not exist~n", [RoomID])
+	end,
+	{noreply, State};
+
 handle_cast(show, State=#state{rooms=Rooms}) ->
 	[begin
 		{RoomState, Players} = room:get_state(RoomPid),
@@ -56,23 +69,20 @@ handle_cast(show, State=#state{rooms=Rooms}) ->
 	{noreply, State}.
 
 
-handle_call(get_empty_room, _From, State=#state{rooms=Rooms}) ->
-	RoomStates = [ 
-					begin
-						{RoomState, Players} = room:get_state(RoomPid),
-						{{RoomState, length(Players)}, RoomID}
-					end || {RoomID, RoomPid, _Ref} <- Rooms],
-	Reply = case lists:keyfind({waiting, 0}, 1, RoomStates) of
-				{_, RoomID} ->
-					{ok, RoomID};
-				_ ->
-					"no empty room"
-			end,
-	{reply, Reply, State};
-
 handle_call(get_all_rooms, _From, State=#state{rooms=Rooms}) ->
-	RoomStates = [ {RoomID, room:get_state(RoomPid)} || {RoomID, RoomPid, _Ref} <- Rooms],
+	RoomStates = [ begin
+					{Status, Players} = room:get_state(RoomPid),
+					{RoomID, Status, Players} end || {RoomID, RoomPid, _Ref} <- Rooms],
 	{reply, RoomStates, State};
+
+handle_call({observe, RoomID, Observer}, _From, State=#state{rooms=Rooms}) ->
+	case lists:keyfind(RoomID, 1, Rooms) of
+		{RoomID, RoomPid, _Ref} ->
+			Moves = room:observe(RoomPid, Observer),
+			{reply, Moves, State};
+		_ ->
+			{reply, [], State}
+	end;
 
 handle_call({enter, RoomID}, _From, State=#state{rooms=Rooms}) ->
 	Reply = case lists:keyfind(RoomID, 1, Rooms) of

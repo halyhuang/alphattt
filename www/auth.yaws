@@ -18,9 +18,25 @@ handle(_State, {call, is_login, _}, #session{pid_str = PidStr}) ->
     Response = json2:obj_from_list([{"value", IsLogin}]),
     {true, 0, #session{pid_str = pid_to_list(Pid)}, {response, Response}};
 
+handle(_State, {call, register, {array, [UserName, Password, Type]}}, Session) ->
+	io:format("call ~p ~p ~p ~p ~n", [UserName, Password, Type, Session]),
+	Response = case game_auth:register(UserName, Password, list_to_atom(Type)) of
+	                ok ->
+                        json2:obj_from_list([{"value", true},
+                                             {"reason", ""}]);
+                    {error, Reason} ->
+						SendReason = case is_atom(Reason) of
+										true -> atom_to_list(Reason);
+										false -> Reason
+									 end,
+                        json2:obj_from_list([{"value", false},
+                                             {"reason", SendReason}])
+                end,	
+    {true, 0, Session, {response, Response}};	
+	
+		
 handle(_State, {call, login, {array, [UserName, Password]}}, #session{pid_str = PidStr}) ->
     Pid = web_agent_mgr:get_agent_pid(PidStr),
-    io:format("login, web_agent ~p~n", [Pid]),    
     Response = case web_agent:login(Pid, UserName, Password) of
                     ok ->
                         json2:obj_from_list([{"value", true},
@@ -30,6 +46,14 @@ handle(_State, {call, login, {array, [UserName, Password]}}, #session{pid_str = 
                                              {"reason", Reason}])
                 end,
     {true, 0, #session{pid_str = pid_to_list(Pid)}, {response, Response}};
+
+handle(_State, {call, logout, _}, #session{pid_str = PidStr}) ->
+    Pid = web_agent_mgr:get_agent_pid(PidStr),
+    io:format("logout, web_agent ~p~n", [Pid]),    
+    web_agent:logout(Pid),
+    Response = json2:obj_from_list([{"value", true},
+                                    {"reason", ""}]),
+    {true, 0, #session{pid_str = pid_to_list(Pid)}, {response, Response}};    
 
 handle(_State, {call, Func, _Args}, Session = #session{pid_str = PidStr}) ->
     io:format("auth unknown func call ~p, web_agent ~p~n", [Func, PidStr]),

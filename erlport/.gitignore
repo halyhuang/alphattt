@@ -1,0 +1,7 @@
+*.swp
+*.py[co]
+*.beam
+/.eunit
+/sandbox
+/packages
+/testall.log

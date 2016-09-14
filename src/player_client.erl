@@ -1,13 +1,15 @@
 -module(player_client).
 -export([start/5]).
--export([login/2, enter_room/2, leave_room/1, show/1, stop/1]).
+-export([login/2, enter_room/2, leave_room/1, show_room/1, show/1, stop/1]).
 -export([get_player/1]).
 
 -record(state, {nickname,
 				type,
 				player,
 				board,
-				socket}).
+				socket,
+			    ref,
+			    from}).
 start(NickName, PlayerType, Board, SIp, SPort) ->
 	Pid = spawn(fun() -> init(NickName, PlayerType, 
 							  Board, SIp, SPort) end),
@@ -23,6 +25,8 @@ enter_room(Pid, RoomID) ->
 leave_room(Pid) ->
 	Pid ! leave_room,
 	ok.
+show_room(Pid) ->
+	call(Pid, show_room).
 
 stop(Pid) ->
 	Pid ! stop,
@@ -48,6 +52,7 @@ init(NickName, PlayerType, Board, SIp, SPort) ->
 	{ok, Sock} = gen_tcp:connect(SIp, SPort, [binary, {active, true},
 													  {packet, 2}]),
 	Player = player:start(PlayerType, Board),
+	erlang:link(Player),
 	loop(#state{nickname=NickName,
 			    type=PlayerType,
 			    player=Player,
@@ -58,18 +63,26 @@ loop(State = #state{nickname=NickName,
 					type=Type,
 					player=Player,
 					board=_Board,
-					socket=Sock}) ->
+					socket=Sock,
+					ref = StoreRef, 
+					from = StoreFrom}) ->
 	receive
 		{echo, Msg} ->
 			gen_tcp:send(Sock, term_to_binary({echo, Msg}));			
 		{{login, Password}, Ref, From} ->
-			gen_tcp:send(Sock, term_to_binary({login, NickName, Password, Ref, From})),
-			loop(State);			
+			gen_tcp:send(Sock, term_to_binary({login, NickName, Password})),
+			loop(State#state{ref = Ref, from = From});		
 		{enter_room, RoomID} ->
 			gen_tcp:send(Sock, term_to_binary({enter_room, NickName, RoomID})),
 			loop(State);
 		leave_room ->
 			gen_tcp:send(Sock, term_to_binary({leave_room, NickName})),
+			loop(State);
+		{show_room, Ref, From} ->
+			gen_tcp:send(Sock, term_to_binary({show_room, NickName})),
+			loop(State#state{ref = Ref, from = From});	
+		{play, Move} ->
+			gen_tcp:send(Sock, term_to_binary({play, Move})),
 			loop(State);
 		stop ->
 			player:stop(Type, Player);	
@@ -85,22 +98,23 @@ loop(State = #state{nickname=NickName,
 					io:format("ECHO: ~p~n", [Msg]);
 				{notify, Msg} ->
 					io:format("~s~n", [Msg]);
-				{login, Result, Ref, From} ->
+				{login, Result} ->
 					case Result of
 						ok ->
 							io:format("User ~p success login~n", [NickName]);
 						Reason ->
 							io:format("User ~p login failed, reason ~p~n", [NickName, Reason])
 					end,
-					From ! {Ref, Result};					
+					StoreFrom ! {StoreRef, Result};	
+				{show_room, Reply} ->
+					StoreFrom ! {StoreRef, Reply};
 				{update, Move, GameState} ->
 					player:update(Type, Player, GameState),
 					player:display(Type, Player, GameState, Move);
 				stop ->
 					player:stop(Type, Player);
 				play ->
-					{ok, Move} = player:get_move(Type, Player),
-					gen_tcp:send(Sock, term_to_binary({play, Move}));
+					player:get_move(Type, Player);
 				Unexpected ->
 					io:format("client receive unexpected tcp ~p~n", [Unexpected])
 			end,

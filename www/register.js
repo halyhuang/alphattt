@@ -7,16 +7,25 @@ var service = new jsonrpc.ServiceProxy(serviceURL, methods);
 
 $(function()
 {
-    $("#register").click(function()
+    $("#register_human").click(function()
     {
-		var userName = $("#userName").val();
-		var password = $("#userPwd").val();
-        var passwordAgain = $("#confirmUserPwd").val();
-        var type = $("#type").val();
+		register("human");
+    });
+	
+	$("#register_robot").click(function()
+    {
+		register("robot");
+    });
+	
+	function register(type)
+	{
+		var userName = $("#username").val();
+		var password = $("#pw").val();
+        var passwordAgain = $("#pw_agin").val();
 
         if (!(password == passwordAgain))
         {
-            alert("两次密码输入不一致");
+            alert("两次密码输入不一�?);
             return;
         }
 
@@ -26,8 +35,9 @@ $(function()
             alert(result.reason);
             return;
         }
-        window.location.href="login.html"; 
-    });
+        window.location.href="login.html"; 	
+	}
+	
 
     $(".reg-form-input").blur(function () 
     {
@@ -66,7 +76,7 @@ $(function()
     function error() {
         $(this).addClass("error");
         $(this).next().hide();
-        var message = "<span class='n-msg' style='color: #ff0000'>" + $(this).prev().html().replace("：", "") + "不能为空</span>"
+        var message = "<span class='n-msg' style='color: #ff0000'>" + $(this).prev().html().replace("�?, "") + "不能为空</span>"
         $(this).after(message);
     }
 

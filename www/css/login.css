@@ -93,18 +93,24 @@ label{
 	outline: none;
 }
 .submit {
-	padding: 15px;
-	margin-top: 20px;
+	padding: 20px;
+	margin-top: 10px;
 	display: block;
 }
 .act-but{
-	height: 20px;
+	height: 10px;
 	line-height: 20px;
 	text-align: center;
 	font-size: 20px;
 	border-radius: 50px;
 	background: #0096e6;
 }
+
+
+
+
+
+
 /*////*/
 .check{
 	width: 280px;

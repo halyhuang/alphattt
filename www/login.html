@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 	<title>游戏登录</title>
+	<link  rel="shortcut icon" href="image/lecheng.png"/>
 	<link rel="stylesheet" type="text/css" href="css/login.css"> 
     <script src="jsolait/jsolait.js"></script>  
     <script src="jquery/jquery.min.js"></script>
@@ -17,7 +18,8 @@
 	<form action="#" name="f" method="post">
 		<div class="input_outer">
 			<span class="u_user"></span>
-			<input id = "username" name="logname" class="text" onFocus=" if(this.value=='输入用户名') this.value=''" onBlur="if(this.value=='') this.value='输入用户名'" value="输入户名" style="color: #FFFFFF !important" type="text">
+			<label class="l-login login_username" style="color: rgb(255, 255, 255);display: block;">输入用户名</label>
+			<input id = "username" name="logname" class="text" onFocus="$('.login_username').hide()" onBlur="if(this.value=='') $('.login_username').show()" value="" style="color: #FFFFFF !important;position:absolute; z-index:100;" type="text">
 		</div>
 		<div class="input_outer">
 			<span class="us_uer"></span>
@@ -26,34 +28,15 @@
 		</div>
 		<div class="mb2"><a id="login" class="act-but submit" href="javascript:;" style="color: #FFFFFF">登录</a></div>
 		<div class="mb2"><a id="guest" class="act-but submit" href="javascript:;" style="color: #FFFFFF">Guest进入</a></div>
-		<input name="savesid" value="0" id="check-box" class="checkbox" type="checkbox"><span>记住用户名</span>
 	</form>
-	<!--a href="findpassword.html" class="login-fgetpwd" style="color: #FFFFFF">忘记密码？</a-->
-
-	<div class="logins">
-		<!--<div class="qq">
-			<a href="#"><img src="http://qinha.top/oauth/qq/Connect_logo.png"/></a>
-		</div>
-		<div class="wx">
-			<a href="#"><img src="http://qinha.top/weixin/images/logo.png"/></a>
-		</div>-->
-	</div>
+	<!--a href="findpassword.html" class="login-fgetpwd" style="color: #FFFFFF">忘记密码 a-->
 	<div class="sas">
-		还没注册账号?<a href="register.html">立即注册</a>
+	         还没注册账号?
+            <a title="注册" href="register.html">
+                立即注册
+                <span>>></span>
+            </a>
 	</div>
-
 </div>
-<script type="text/javascript">
-    $(function () {
-		$("#sub").click(function () {
-			var username = $("#username").val();
-			var pw = $("#pw").val();
-            if(username == "" || pw == "")
-            {
-                alert("用户名或密码不能为空！");
-            }
-		});
-	});
-</script>
 </body>
 </html>

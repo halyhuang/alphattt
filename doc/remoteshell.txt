@@ -1,0 +1,30 @@
+# erl -name 2@127.0.0.1 -setcookie 123456 
+Erlang R16B02 (erts-5.10.3) [source] [64-bit] [async-threads:10] [hipe] [kernel-poll:false] 
+Eshell V5.10.3 (abort with ^G) 
+(2@127.0.0.1)1> 
+User switch command 
+ --> h 
+   c  [nn]                       - connect to job 
+   i   [nn]                       - interrupt job 
+   k  [nn]                       - kill job 
+   j                                 - list all jobs 
+   s [shell]                    - start local shell 
+   r [node [shell]]        - start remote shell 
+   q                               - quit erlang 
+   ? | h                          - this message 
+ --> r '1@127.0.0.1' 
+ --> j 
+  1 {shell,start,[init]} 
+  2* {'1@127.0.0.1',shell,start,[]} 
+ --> c 2 
+Eshell V5.10.3 (abort with ^G) 
+(1@127.0.0.1)1>
+注意了，windows下要使用werl
+
+连接到远程 shell 后，所有的终端输入解析操作都由本地 shell 完成，不过求值的工作是在远 程完成的。远程求值的结果输出全部被转发给本地 shell。  
+ 
+要退出 shell， 按^G回到 JCL 模式。 终端输入解析操作是在本地进行的， 因此通过^G q 的方式退出 shell  是安全的。
+Eshell V5.10.3 (abort with ^G) 
+(1@127.0.0.1)1> 
+User switch command 
+--> q
