@@ -1,6 +1,6 @@
 -module(web_agent).
 -export([start/0, login/3, logout/1, is_login/1, set_room/2, enter_room/1, leave_room/1, start_robot/3, 
-		start_observe/1, is_move/1, get_legal_moves/1, set_move/2, is_display_move/1, get_display_move/1, get_room/1, show/1, stop/1]).
+		get_info/1, start_observe/1, is_move/1, get_legal_moves/1, set_move/2, is_display_move/1, get_display_move/1, get_room/1, show/1, stop/1]).
 
 -record(state,  {username = none,	
 				 room = none,
@@ -55,6 +55,9 @@ get_legal_moves(Pid) ->
 
 start_observe(Pid) ->
 	call(Pid, start_observe).	
+
+get_info(Pid) ->
+	call(Pid, get_info).		
 
 show(Pid) ->
 	call(Pid, show).
@@ -188,6 +191,10 @@ handle_call({set_move, Move}, State=#state{username = UserName, web_player = Web
 	web_player:set_move(WebPlayer, Move),	
 	{reply, ok, State};
 
+handle_call(get_info, State=#state{web_player = WebPlayer, player = Player, robot_player = RobotPlayer}) ->
+	Infos = get_player_info(Player, RobotPlayer, WebPlayer),			    		
+	{reply, Infos, State};
+
 handle_call(start_observe, State=#state{room = none, username = UserName}) ->
 	io:format("~p observe room invalid!~n", [UserName]),
 	{reply, [], State};
@@ -211,5 +218,20 @@ handle_call({start_robot, RobotName, _RobotType}, State=#state{robot_player = Ro
 	player_client:enter_room(RobotPlayer, RoomID),
 	io:format("~p enter room ~p~n", [RobotName, RoomID]),
 	{reply, ok, State}.
+
+
+get_player_info(none) -> [];
+get_player_info(Player) -> 
+	player_client:get_info(Player).
+
+get_webplayer_info(none) -> [];
+get_webplayer_info(WebPlayer) -> web_player:get_info(WebPlayer).
+
+get_player_info(Player, RobotPlayer, WebPlayer) ->
+	PlayerInfos = get_player_info(Player),
+	RobotPlayerInfos = get_player_info(RobotPlayer),
+	WebPlayerInfos = get_webplayer_info(WebPlayer),
+	PlayerInfos ++ RobotPlayerInfos ++ WebPlayerInfos.
+
 
 

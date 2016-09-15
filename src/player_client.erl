@@ -1,6 +1,6 @@
 -module(player_client).
 -export([start/5]).
--export([login/2, enter_room/2, leave_room/1, show_room/1, show/1, stop/1]).
+-export([login/2, enter_room/2, leave_room/1, show_room/1, get_info/1, show/1, stop/1]).
 -export([get_player/1]).
 
 -record(state, {nickname,
@@ -27,6 +27,9 @@ leave_room(Pid) ->
 	ok.
 show_room(Pid) ->
 	call(Pid, show_room).
+
+get_info(Pid) ->
+	call(Pid, get_info).	
 
 stop(Pid) ->
 	Pid ! stop,
@@ -84,6 +87,12 @@ loop(State = #state{nickname=NickName,
 		{play, Move} ->
 			gen_tcp:send(Sock, term_to_binary({play, Move})),
 			loop(State);
+		{get_info, Ref, From} ->	
+			Infos = player:get_info(Type, Player),
+			From ! {Ref, Infos},
+			[ gen_tcp:send(Sock, term_to_binary({info, PlayerID, Info})) 
+			  || {PlayerID, Info} <- Infos],
+			loop(State);						
 		stop ->
 			player:stop(Type, Player);	
 		{get_player, Ref, From} ->
@@ -97,7 +106,7 @@ loop(State = #state{nickname=NickName,
 				{echo, Msg} ->
 					io:format("ECHO: ~p~n", [Msg]);
 				{notify, Msg} ->
-					io:format("~s~n", [Msg]);
+					player:notify(Type, Player, Msg);
 				{login, Result} ->
 					case Result of
 						ok ->

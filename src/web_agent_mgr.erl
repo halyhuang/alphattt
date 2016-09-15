@@ -56,7 +56,7 @@ handle_cast(show, State=#state{agents=Agents}) ->
 	io:format("~n------------- begin web agent state -----------~n"),	
 	[ begin
 		{ok, WebAgetState} = web_agent:show(Pid),
-		io:format("id:~p, state:~p~n", [ID, WebAgetState])
+		io:format("id:~p, pid:~p, state:~p~n", [ID, self(), WebAgetState])
 	   end || {ID, Pid, _Ref} <- Agents],
 	io:format("~n------------- end web agent state -----------~n"),	
 	{noreply, State};
