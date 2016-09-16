@@ -191,8 +191,8 @@ handle_call({set_move, Move}, State=#state{username = UserName, web_player = Web
 	web_player:set_move(WebPlayer, Move),	
 	{reply, ok, State};
 
-handle_call(get_info, State=#state{web_player = WebPlayer, player = Player, robot_player = RobotPlayer}) ->
-	Infos = get_player_info(Player, RobotPlayer, WebPlayer),			    		
+handle_call(get_info, State=#state{web_player = WebPlayer}) ->
+	Infos = get_player_info(WebPlayer),			    		
 	{reply, Infos, State};
 
 handle_call(start_observe, State=#state{room = none, username = UserName}) ->
@@ -221,17 +221,9 @@ handle_call({start_robot, RobotName, _RobotType}, State=#state{robot_player = Ro
 
 
 get_player_info(none) -> [];
-get_player_info(Player) -> 
-	player_client:get_info(Player).
+get_player_info(WebPlayer) -> 
+	web_player:get_info(WebPlayer).
 
-get_webplayer_info(none) -> [];
-get_webplayer_info(WebPlayer) -> web_player:get_info(WebPlayer).
-
-get_player_info(Player, RobotPlayer, WebPlayer) ->
-	PlayerInfos = get_player_info(Player),
-	RobotPlayerInfos = get_player_info(RobotPlayer),
-	WebPlayerInfos = get_webplayer_info(WebPlayer),
-	PlayerInfos ++ RobotPlayerInfos ++ WebPlayerInfos.
 
 
 

@@ -1,6 +1,6 @@
 -module(mcts_ucb1).
 -export([start/0, start/3]).
--export([get_move/1, update/2, display/3, stop/1]).
+-export([get_move/1, update/2, display/3, notify/2, get_info/1, stop/1]).
 
 -record(state,  {board = board,
 				 max_time = 2000,  % milliseconds
@@ -9,7 +9,8 @@
 				              %             value = {plays::integer(),
                               %			             wins:integer()}
 				 game_states = [],
-				 from
+				 from,
+				 infos = []
 				 }).
 
 % APIs
@@ -30,6 +31,12 @@ display(Pid, GameState, Move) ->
 get_move(Pid) ->
 	call(Pid, get_move).
 
+notify(Pid, Info) ->
+	call(Pid, {notify, Info}).
+
+get_info(Pid) ->
+	call(Pid, get_info).	
+	
 stop(Pid) ->
 	call(Pid, stop).	
 
@@ -43,7 +50,7 @@ init([Board, MaxTime, ExplorationFactor]) ->
 					 },
 	loop(State).
 
-loop(State) ->
+loop(State=#state{infos = Infos}) ->
 	receive
 		{call, Ref, From, Msg} ->
 			case handle_call(Msg, State#state{from = From}) of
@@ -51,9 +58,10 @@ loop(State) ->
 					From ! {Ref, Reply},
 					loop(NewState);
 				stop ->
-					From ! {Ref, stop},
-					stop
-			end
+					From ! {Ref, ok}
+			end;
+		{info, PlayerID, Info} ->
+			loop(State#state{infos = [{PlayerID, Info} | Infos]})
 	end.
 
 call(Pid, Msg) ->
@@ -67,8 +75,20 @@ call(Pid, Msg) ->
 handle_call({update, GameState}, State=#state{game_states=GSs}) ->
 	{reply, ok, State#state{game_states=[GameState | GSs]}};
 handle_call({display, GameState, Move}, State=#state{board=Board}) ->
+	io:format("player move ~p~n", [Move]),
 	io:format("~ts~n", [Board:display(GameState, Move)]),
 	{reply, ok, State};
+
+handle_call({notify, _Info}, State=#state{game_states=[]}) ->
+	{reply, ok, State};
+
+handle_call({notify, Info}, State=#state{game_states=[GS | _GSs], board=Board, infos = Infos}) ->
+	PlayerID = Board:current_player(GS), 
+	{reply, ok, State#state{infos = [{PlayerID, Info} | Infos]}};
+
+handle_call(get_info, State=#state{infos = Infos}) ->
+	{reply, lists:reverse(Infos), State#state{infos = []}};
+	
 handle_call(get_move, State=#state{board=Board, game_states=GSs, from = From}) ->
 	GS = hd(GSs),
 	{Player, LegalStates} = player_legal_states(Board, GS),
@@ -81,15 +101,16 @@ handle_call(get_move, State=#state{board=Board, game_states=GSs, from = From}) -
 			_ ->
 				{Games, MaxDepth, Time}
 					= run_simulation(Player, LegalStates, State),
-%%				io:format("[~p]Games: ~p Time: ~pms~n", [?MODULE, Games, Time]),
-%%				io:format("Maximum depth searched: ~p~n", [MaxDepth]),
+				CurrentPlayerID = Board:current_player(GS),
+				notify_self(CurrentPlayerID, io_lib:format("[~p]Games: ~p Time: ~pms~n", [?MODULE, Games, Time])),
+				notify_self(CurrentPlayerID, io_lib:format("Maximum depth searched: ~p~n", [MaxDepth])),
 
 				%% stats = [{move, percent, wins, plays}]
 				Stats = make_stats(Player, LegalStates,
 									State#state.plays_wins),
 				SortedStats = lists:reverse(lists:keysort(2, Stats)),
-%%				[io:format("~p: ~.2f% (~p / ~p)~n", [Move, Percent, Wins, Plays])
-%%					|| {Move, Percent, Wins, Plays} <- SortedStats],
+				[notify_self(CurrentPlayerID, io_lib:format("~p: ~.2f% (~p / ~p)~n", [Move, Percent, Wins, Plays]))
+					|| {Move, Percent, Wins, Plays} <- SortedStats],
 				[{Move, _, _, _} | _] = SortedStats,
 				Move
 		end,
@@ -97,6 +118,10 @@ handle_call(get_move, State=#state{board=Board, game_states=GSs, from = From}) -
 	{reply, {ok, NextMove}, State};
 handle_call(stop, _State) ->
 	stop.	
+
+notify_self(PlayerID, Info) ->
+	NewInfo = lists:flatten(Info),
+	self() ! {info, PlayerID, NewInfo}.		
 
 player_legal_states(Board, CurGameState) ->
 	Player = Board:current_player(CurGameState),

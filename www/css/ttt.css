@@ -13,6 +13,10 @@ body {
 	width: 500px;
 }
 
+#margin {
+	width: 50px;
+}
+
 .chat-room {
 	width: 800px;
 }

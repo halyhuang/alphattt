@@ -87,11 +87,8 @@ loop(State = #state{nickname=NickName,
 		{play, Move} ->
 			gen_tcp:send(Sock, term_to_binary({play, Move})),
 			loop(State);
-		{get_info, Ref, From} ->	
-			Infos = player:get_info(Type, Player),
-			From ! {Ref, Infos},
-			[ gen_tcp:send(Sock, term_to_binary({info, PlayerID, Info})) 
-			  || {PlayerID, Info} <- Infos],
+		{notify, PlayerID, Info} ->
+			gen_tcp:send(Sock, term_to_binary({notify, PlayerID, Info})),
 			loop(State);						
 		stop ->
 			player:stop(Type, Player);	
@@ -105,8 +102,6 @@ loop(State = #state{nickname=NickName,
 			case binary_to_term(TcpData) of
 				{echo, Msg} ->
 					io:format("ECHO: ~p~n", [Msg]);
-				{notify, Msg} ->
-					player:notify(Type, Player, Msg);
 				{login, Result} ->
 					case Result of
 						ok ->
@@ -120,10 +115,12 @@ loop(State = #state{nickname=NickName,
 				{update, Move, GameState} ->
 					player:update(Type, Player, GameState),
 					player:display(Type, Player, GameState, Move);
-				stop ->
-					player:stop(Type, Player);
+				{notify, Msg} ->
+					player:notify(Type, Player, Msg);
 				play ->
 					player:get_move(Type, Player);
+				stop ->
+					player:stop(Type, Player);
 				Unexpected ->
 					io:format("client receive unexpected tcp ~p~n", [Unexpected])
 			end,
