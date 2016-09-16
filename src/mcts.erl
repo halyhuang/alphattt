@@ -107,7 +107,7 @@ handle_call(stop, _State) ->
 	stop.	
 
 notify_room(PlayerClient, PlayerID, Info) ->
-	io:format("notify room:~p~n", [lists:flatten(Info)]),
+%	io:format("notify room:~p~n", [lists:flatten(Info)]),
 	PlayerClient ! {notify, PlayerID, lists:flatten(Info)}.		
 
 player_legal_states(Board, CurGameState) ->
