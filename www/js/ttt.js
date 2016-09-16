@@ -4,18 +4,19 @@ var jsonrpc = imprt("jsonrpc");
 var service = new jsonrpc.ServiceProxy("alphattt.yaws", ["poll_get_move", "poll_display", "start_game", "start_robot", "start_observe", "get_move", "get_legal_moves", "set_move"]);
 var hall_service = new jsonrpc.ServiceProxy("hall.yaws", ["get_room", "leave_room"]);
 var auth_service = new jsonrpc.ServiceProxy("auth.yaws", ["is_login"]);
-
+	
 var grids;
-var timerID = 0;
-var poll_display_timerID = 0;
+var poll_timerID = 0;
+var is_poll_get_move = false;
+var is_poll_display = false;
 
 var players = new Array();
-players[0] = {color:"white", innerHTML:""};
-players[1] = {color:"#00FFFF", innerHTML:"X"};
-players[2] = {color:"#53FF53", innerHTML:"O"};
+players[0] = {player:'0', color:"white", innerHTML:""};
+players[1] = {player:'1', color:"#00FFFF", innerHTML:"X"};
+players[2] = {player:'2', color:"#53FF53", innerHTML:"O"};
 var player = 1;
 
-var legal_moves;
+var legal_moves = new Array();
 
 function is_login()
 {
@@ -46,11 +47,12 @@ window.onload = function() {
 	check_room();
 	init_botton();	
 	init_board();		
+	init_poll();
 };  
 
 window.onbeforeunload = function(event) 
 { 
-	var	is_leave = confirm("ç¡®å®šç¦»å¼€æ­¤é¡µé¢å—ï¼Ÿ");
+	var	is_leave = confirm("ÊÇ·ñÀë¿ª·¿¼ä");
 	if (is_leave)
 	{
 		hall_service.leave_room();
@@ -58,15 +60,30 @@ window.onbeforeunload = function(event)
 	return is_leave;
 }
 
+function init_poll()
+{
+	poll_timerID = setInterval(poll, 300);	
+}
+
+
+function poll()
+{		
+	poll_display();
+	poll_get_move();
+}
+
+
 function poll_get_move()
 {
     try {			
-			var result = service.poll_get_move();
-			if (result.is_get_move)
+			if (is_poll_get_move)
 			{
-				legal_moves = result.legal_moves;
-				player = result.player;
-				set_legal_move();	
+				var result = service.poll_get_move();
+				if (result.is_get_move)
+				{
+					player = result.player;
+					legal_moves = result.legal_moves;
+				}	
 			}				
      } catch(e) {
         alert(e);
@@ -77,17 +94,29 @@ function poll_get_move()
 function poll_display()
 {
     try {			
-			var result = service.poll_display();
-			if (result.is_update_display)
+			if (is_poll_display)
 			{
-				if (result.moves.length == 0)
+				var result = service.poll_display();
+				if (result.is_update_display)
 				{
-					init_board();
-				}		
-				else
+					if (result.moves.length == 0)
+					{
+						init_board();
+					}		
+					else
+					{
+						update_display(result.moves[0].player, result.moves[0].move);	
+					}
+				}	
+				if (result.infos.length > 0)
 				{
-					update_display(result.moves[0].player, result.moves[0].move);	
-				}
+					for (var i=0; i < result.infos.length; i++)
+					{ 
+						var player = result.infos[i].player;
+						info(players[player].player, result.infos[i].info);
+					}
+				}				
+				set_legal_move(player);		
 			}
      } catch(e) {
         alert(e);
@@ -107,7 +136,7 @@ function update_display(player, move)
 	grids[index].state = player;
 	grids[index].innerHTML = players[player].innerHTML;
 	grids[index].style.background = players[player].color;
-	info("move(" + move.R + "," + move.C + "," + move.r + "," + move.c + ")");
+	info(players[player].player, "move(" + move.R + "," + move.C + "," + move.r + "," + move.c + ")");
 }
 
 function opponent(id)
@@ -174,44 +203,40 @@ function set_backgroud_opponent(enter_grid, is_show)
 	}	
 }
 
-function info(msg)
+function info(player, msg)
 {
-	document.getElementById('result').innerHTML +=
-       "<li>" + msg + "</li>";
-}
-
-function set_poll_move_timer()
-{
-	if (timerID == 0)
-	{	
-		timerID = setInterval(poll_get_move, 300);
-	}
-}
-
-function set_poll_display_timer()
-{
-	if (poll_display_timerID == 0)
-	{	
-		poll_display_timerID = setInterval(poll_display, 300);
-	}	
+    var chatNewThread = document.createElement('li'),
+    	chatNewMessage = document.createTextNode(msg);
+		
+	var att = document.createAttribute('player');
+		att.value = player;
+    // Add message to chat thread and scroll to bottom
+    chatNewThread.appendChild(chatNewMessage);
+	chatNewThread.setAttributeNode(att);
+	var	chatThread = document.getElementById('chat-thread-result');
+    chatThread.appendChild(chatNewThread);
+    chatThread.scrollTop = chatThread.scrollHeight;	
 }
 
 function start_game()
 {
-	init_board();
 	service.start_game();
-	info("start!");	
-	set_poll_move_timer();
-	set_poll_display_timer();
+	is_poll_get_move = true;
+	is_poll_display = true;
 }  
 
 function start_robot()
 {	
-	init_board();
 	service.start_robot();	
-	info("robot start!");	
-	set_poll_move_timer();	
-	set_poll_display_timer();	
+	is_poll_get_move = true;
+	is_poll_display = true;
+}
+
+function start_observe()
+{
+	var result = service.start_observe();	
+	init_observe(result.moves);
+	is_poll_display = true;	
 }
 
 function init_observe(player_moves)
@@ -220,15 +245,6 @@ function init_observe(player_moves)
 	{
 		update_display(player_moves[i].player, player_moves[i].move);		
 	}
-}
-
-function start_observe()
-{
-	init_board();
-	var result = service.start_observe();	
-	init_observe(result.moves);
-	set_poll_display_timer();	
-	info("robot start!");		
 }
 
 function start_hall()
@@ -251,7 +267,6 @@ function set_grid_inlegal()
 function set_legal_move()
 {
 	set_grid_inlegal();
-	set_backgroud_blank();
 	set_backgroud_legal();
 }
 
