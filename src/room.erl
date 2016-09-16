@@ -63,14 +63,17 @@ select_player(Players) ->
 loop(State = #state{status = waiting, board = Board, players = Players, observer = Observer}) ->
 	receive
 		{enter, Pid, NickName} ->
-			notify_user(Pid, {0, greeting(NickName)}),
 			case Players of
 				[] ->
+					notify_user(Pid, {0, greeting(NickName)}),
 					Ref = erlang:monitor(process, Pid),
 					loop(State#state{players = [{Pid, NickName, Ref}]});
 				[{Pid, _, _}] ->
+					notify_user(Pid, {0, "already enter room"}),
 					loop(State);
-				[{_Pid2, _, _}] ->
+				[{Pid2, _, _}] ->
+					notify_user(Pid, {0, greeting(NickName)}),
+					notify_user(Pid2, {0, greeting(NickName)}),
 					Ref = erlang:monitor(process, Pid),
 					NewPlayers = [{Pid, NickName, Ref} | Players],
 					First = select_player(NewPlayers),

@@ -11,7 +11,7 @@ var is_poll_get_move = false;
 var is_poll_display = false;
 
 var players = new Array();
-players[0] = {player:'1', color:"white", innerHTML:""};
+players[0] = {player:'0', color:"white", innerHTML:""};
 players[1] = {player:'1', color:"#00FFFF", innerHTML:"X"};
 players[2] = {player:'2', color:"#53FF53", innerHTML:"O"};
 var player = 1;
