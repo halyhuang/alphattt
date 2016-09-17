@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.ericsson.otp.erlang.OtpErlangAtom;
+import com.ericsson.otp.erlang.OtpErlangInt;
 import com.ericsson.otp.erlang.OtpErlangObject;
 import com.ericsson.otp.erlang.OtpErlangString;
 import com.ericsson.otp.erlang.OtpErlangTuple;
@@ -15,6 +16,8 @@ import com.zte.alphattt.comm.cmd.PlayHandler;
 import com.zte.alphattt.comm.cmd.UpdateHandler;
 import com.zte.alphattt.game.Board;
 import com.zte.alphattt.game.Player;
+
+import static com.zte.alphattt.erlangtools.ErlangUtil.*;
 
 public class PlayerClient {
 	private static final String JAVA_NODE_NAME = "java_ttt_node@127.0.0.1";
@@ -80,9 +83,13 @@ public class PlayerClient {
 		return otpMbox;
 	}
 
-	public void enterRoom(String nickName) {
+	public void enterRoom(String nickName, int roomId) {
 		sendMsg(new OtpErlangTuple(
-				new OtpErlangObject[] { new OtpErlangAtom("enter_room"), new OtpErlangString(nickName) }));
+				new OtpErlangObject[] { new OtpErlangAtom("enter_room"), new OtpErlangString(nickName), new OtpErlangInt(roomId) }));
+	}
+	
+	public void login(String nickName){
+		sendMsg(tuple(atom("login"), string(nickName), string("")));
 	}
 
 	public void LeaveRoom(String nickName) {

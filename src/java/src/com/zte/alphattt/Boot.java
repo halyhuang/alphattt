@@ -10,7 +10,8 @@ public class Boot {
 	public static void main(String[] args) {
 		PlayerClient playerClient = new PlayerClient(new Mcts(), new Board(), "hello");
 		wait(2);
-		playerClient.enterRoom("dairy");
+		playerClient.login("pybot");
+		playerClient.enterRoom("pybot", 5);
 		wait(60 * 60);
 	}
 
