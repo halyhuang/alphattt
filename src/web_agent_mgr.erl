@@ -5,7 +5,7 @@
 
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
 
--export([start/0, start_agent/0, get_agent_pid/1, show/0, stop/1]).
+-export([start/0, start_agent/0, get_agent_pid/1, show/0, get_online_users/0, stop/1]).
 
 -record(state,  {agents = [],
 				 index = 1}).
@@ -32,8 +32,17 @@ get_agent_pid(PidStr) ->
         	Pid
     end.
 
+get_online_users() ->
+	{ok, OnlineUsers} = gen_server:call(?MODULE, get_online_users),
+	OnlineUsers.
+
 show() ->
-	gen_server:cast(?MODULE, show).		
+	OnlineUsers = get_online_users(),
+	io:format("~n------------- begin web agent state -----------~n"),	
+	[ io:format("id:~p, user:~p, room:~p~n", [ID, UserName, RoomID])
+		|| {ID, UserName, RoomID} <- OnlineUsers],
+	io:format("~n------------- end web agent state -----------~n"),
+	ok.
 
 stop(ID) ->
 	gen_server:cast(?MODULE, {stop, ID}).				
@@ -52,15 +61,6 @@ handle_info({'DOWN', _, process, Pid, Reason}, State=#state{agents=Agents}) ->
 			{noreply, State}
 	end.
 
-handle_cast(show, State=#state{agents=Agents}) ->
-	io:format("~n------------- begin web agent state -----------~n"),	
-	[ begin
-		{ok, WebAgetState} = web_agent:show(Pid),
-		io:format("id:~p, pid:~p, state:~p~n", [ID, self(), WebAgetState])
-	   end || {ID, Pid, _Ref} <- Agents],
-	io:format("~n------------- end web agent state -----------~n"),	
-	{noreply, State};
-
 handle_cast({stop, ID}, State=#state{agents=Agents}) ->
 	case lists:keyfind(ID, 1, Agents) of
 		{ID, Pid, _Ref} ->
@@ -73,6 +73,12 @@ handle_cast({stop, ID}, State=#state{agents=Agents}) ->
 			{noreply, State}
 	end.
 	
+handle_call(get_online_users, _From, State=#state{agents=Agents}) ->
+	WebAgentStatus = [ begin
+		{ok, {UserName, RoomID, _Player, _WebPlayer, _RobotPlayer}} = web_agent:show(Pid),
+		{ID, UserName, RoomID}
+	   end || {ID, Pid, _Ref} <- Agents],
+	{reply, {ok, WebAgentStatus}, State};
 
 handle_call(start_agent, _From, State=#state{agents=Agents, index = Index}) ->
 	{ok, Pid} = web_agent:start(),
