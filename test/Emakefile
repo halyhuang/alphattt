@@ -1,0 +1,5 @@
+    {['./*'],
+    [debug_info,verbose,{i,"../include"},
+    {outdir,"./"}
+    ]}.
+    
