@@ -75,5 +75,6 @@ handle_call(get_move, State=#state{board=Board, game_states=GSs, from = From}, P
     NextMove = python:call(Ppy, pybot, get_move, []),
     From ! {play, NextMove},
     {reply, {ok, NextMove}, State};
-handle_call(stop, _State, _) ->
+handle_call(stop, _State, Ppy) ->
+    python:stop(Ppy),
     stop.
