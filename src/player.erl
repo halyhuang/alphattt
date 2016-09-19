@@ -1,5 +1,5 @@
 -module(player).
--export([start/2, update/3, display/4, get_move/2, show/2, stop/2]).
+-export([start/2, update/3, display/4, get_move/2, show/2, stop/2, notify/3]).
 -export([get_legal_move/2, set_move/3, is_move/2, get_opponent_move/2]).
 
 start(Module, Board) ->
@@ -12,7 +12,10 @@ display(Module, Player, GameState, Move) ->
 	Module:display(Player, GameState, Move).
 
 get_move(Module, Player) ->
-	Module:get_move(Player).	
+	Module:get_move(Player).			
+
+notify(Module, Player, Msg) ->
+	Module:notify(Player, Msg).
 
 stop(Module, Player) ->
 	Module:stop(Player).

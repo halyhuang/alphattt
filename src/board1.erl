@@ -50,15 +50,27 @@ update_player_subchessboard_positions(CurrentPlayer, GameState, {LR, LC, R, C}) 
 	update_player_subchessboard_positions(CurrentPlayer, GameState, LR, LC, NewPositions).
 
 %% update states if subchessboard win
+%% include situation of win and draw
 update_player_subchessboard_win_state(CurrentPlayer, GameState, {LR, LC, _R, _C}) ->
 	SubchessboardPositions = get_player_subchessboard_positions(CurrentPlayer, GameState, LR, LC),
 	case is_subchessboard_win(SubchessboardPositions) of
 		true -> 
-			OldWinState = get_player_subchessboard_win_states(CurrentPlayer, GameState),
-			NewWinState = OldWinState bor grid_position(LR, LC),
-			update_subchessboard_win_states(GameState, CurrentPlayer, NewWinState);
-		false -> GameState
+			update_player_subchessboard_win_state(CurrentPlayer, GameState, LR, LC);
+		false ->
+			case is_subchessboard_full(GameState, LR, LC) of
+				true ->  %draw
+					update_player_subchessboard_win_state(next_player(CurrentPlayer), 
+						update_player_subchessboard_win_state(CurrentPlayer, 
+							GameState, LR, LC), LR, LC);
+				false ->
+					GameState
+			end
 	end.	
+
+update_player_subchessboard_win_state(CurrentPlayer, GameState, LR, LC) ->
+	OldWinState = get_player_subchessboard_win_states(CurrentPlayer, GameState),
+	NewWinState = OldWinState bor grid_position(LR, LC),
+	update_subchessboard_win_states(GameState, CurrentPlayer, NewWinState).
 
 %% update last postions with new given rc, if this subchessboard is win or full, set none none
 update_last_move_rc(GameState, {_, _, R, C}) ->
@@ -70,15 +82,17 @@ update_last_move_rc(GameState, {_, _, R, C}) ->
 %% winner
 winner(GameState) -> 
 	{Player1WinStates, Player2WinStates} = get_player_subchessboard_win_states(GameState),
-	Is_player1_win = is_game_win(Player1WinStates),
-	Is_player2_win = is_game_win(Player2WinStates),			
+	Is_player1_win = is_game_win(Player1WinStates, Player2WinStates),
+	Is_player2_win = is_game_win(Player2WinStates, Player1WinStates),			
 	get_winner(Is_player1_win, Is_player2_win, Player1WinStates, Player2WinStates).
 
 get_winner(Is_player1_win, _, _, _) when true =:= Is_player1_win -> 1;
 get_winner(_, Is_player2_win, _, _) when true =:= Is_player2_win -> 2;
-get_winner(_, _, StateOfPlayer1, StateOfPlayer2) when StateOfPlayer1 + StateOfPlayer2 =:= 511 -> draw;
-get_winner(_, _, _, _) -> on_going.
-
+get_winner(_, _, StateOfPlayer1, StateOfPlayer2) ->
+	case is_game_draw(StateOfPlayer1, StateOfPlayer2) of
+		true -> draw;
+		false -> on_going
+	end.
 
 display(GameState) -> {}.
 
@@ -221,7 +235,7 @@ is_subchessboard_full(Positions) ->
 	contain(Positions, 511).
 is_subchessboard_full(GameState, LR, LC) ->
 	is_subchessboard_full(
-		get_player_subchessboard_positions(1, GameState, LR, LC) +
+		get_player_subchessboard_positions(1, GameState, LR, LC) bor 
 		get_player_subchessboard_positions(2, GameState, LR, LC)).
 
 is_subchessboard_win(Positions) ->
@@ -237,53 +251,17 @@ is_subchessboard_aready_win(Player, GameState, LR, LC) ->
 	States = get_player_subchessboard_win_states(Player, GameState),
 	is_subchessboard_aready_win(States, LR, LC).
 
-is_game_win(State) ->
+is_game_win(State1, State2) ->
+	State = remove_draw_state(State1, State2),
 	is_win(State).
 
+is_game_draw(State1, State2) ->
+	State1 bor State2 =:= 511.
 
-test() ->
-	%% test start
-	<<A:32, B:32, C:32>> = crypto:rand_bytes(12),
-	random:seed({A, B, C}),
+remove_draw_state(State1, State2) ->
+	State1 bxor (State1 band State2).
 
-	StateBoard = board:start(),
-	StateBoard = board1:start(),
-	going_on(StateBoard).
 
-going_on(StateBoard) ->	
-	Winner = board:winner(StateBoard),
-	io:format("Winner ~p ~p ~n", [StateBoard, Winner]),
-	Winner1 = board1:winner(StateBoard),
-	io:format("Winner1 ~p ~p ~n", [StateBoard, Winner1]),
-	Winner = Winner1,
 
-	if 
-		Winner =:= 1 -> 1;
-		Winner =:= 2 -> 2;
-		Winner =:= draw -> draw;
-		Winner =:= on_going -> 
-				%% test legal moves
-			LegalMoves = board:legal_moves(StateBoard),
-			io:format("LegalMoves ~p  ~p ~n", [StateBoard, LegalMoves]),
-			LegalMoves1 = board1:legal_moves(StateBoard),
-			io:format("LegalMoves1 ~p  ~p ~n", [StateBoard, LegalMoves1]),
-			LegalMoves = LegalMoves1,
 
-			case [] =:= LegalMoves of
-				true -> empty_legal_move;
-				false -> 
-					Random = random:uniform(length(LegalMoves)),
-					Move = lists:nth(Random, LegalMoves),
-					Is_Legal = board:is_legal(StateBoard, Move),
-					Is_Legal = board1:is_legal(StateBoard, Move),
-
-					NextState = board:next_state(StateBoard, Move),	
-					io:format("next state ~p ~p ~p ~n", [StateBoard, Move, NextState]),
-					NextState1 = board1:next_state(StateBoard, Move),			
-					io:format("next state1 ~p ~p ~p ~n", [StateBoard, Move, NextState1]),
-					NextState = NextState1,
-
-					going_on(NextState)
-			end
-	end.
 

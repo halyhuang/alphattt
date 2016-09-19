@@ -1,6 +1,6 @@
 -module(room).
 -export([start/2]).
--export([enter/2, leave/2, play/2, get_state/1, observe/2]).
+-export([enter/2, leave/2, play/2, get_state/1, observe/2, notify_player/3]).
 -export([reset/1]).
 
 -define(ROOM_TIME_OUT, 60 * 10).
@@ -36,6 +36,9 @@ play(Pid, {Player, Move}) ->
 get_state(Pid) ->
 	call(Pid, get_state).	
 
+notify_player(Pid, PlayerID, Info) ->
+	Pid ! {notify_player, PlayerID, Info}.	
+
 reset(Pid) ->
 	Pid ! reset.
 
@@ -57,19 +60,20 @@ select_player(Players) ->
 	{Pid, NickName, _} = lists:nth(N, Players),
 	{Pid, NickName}.	
 
-loop(State = #state{status = waiting, board = Board, players = Players}) ->
+loop(State = #state{status = waiting, board = Board, players = Players, observer = Observer}) ->
 	receive
 		{enter, Pid, NickName} ->
 			case Players of
 				[] ->
-					notify_user(Pid, greeting(NickName)),
+					notify_user(Pid, {0, greeting(NickName)}),
 					Ref = erlang:monitor(process, Pid),
 					loop(State#state{players = [{Pid, NickName, Ref}]});
 				[{Pid, _, _}] ->
-					notify_user(Pid, greeting(NickName)),				
+					notify_user(Pid, {0, "already enter room"}),
 					loop(State);
-				[{_Pid2, _, _}] ->
-					notify_user(Pid, greeting(NickName)),
+				[{Pid2, _, _}] ->
+					notify_user(Pid, {0, greeting(NickName)}),
+					notify_user(Pid2, {0, greeting(NickName)}),
 					Ref = erlang:monitor(process, Pid),
 					NewPlayers = [{Pid, NickName, Ref} | Players],
 					First = select_player(NewPlayers),
@@ -98,11 +102,9 @@ loop(State = #state{status = waiting, board = Board, players = Players}) ->
 				 players=[],
 				 observer=[],
 				 current_player=none});			
-
 		{{observe, Observer}, Ref, From} ->
 			From ! {Ref, []},
 			loop(State#state{observer = Observer});	
-
 		{'DOWN', _, process, Pid, Reason} ->
 			io:format("~p down @waiting for: ~p~n", [Pid, Reason]),
 			self() ! {leave, Pid},
@@ -186,7 +188,9 @@ loop(State = #state{status = playing,
 											 moves = [],
 											 steps=[]});
 						_ ->
-							[notify_user(Pid, congradulations(CurrentNickName)) || {Pid, _, _} <- Players],
+							[notify_user(Pid, {0, congradulations(CurrentNickName)}) || {Pid, _, _} <- Players],
+							PlayerID = Board:current_player(GameState),
+							notify_observer(Observer, RoomID, {PlayerID, congradulations(CurrentNickName)}),							
 							NewSteps2 = NewSteps ++ [{finish, winner, integer_to_list(Board:current_player(GameState))}], 
 							store_data(NewSteps2),
 							db_api:add_game(CurrentNickName, NextNickName, CurrentNickName, NewSteps2),
@@ -197,6 +201,11 @@ loop(State = #state{status = playing,
 											 steps=[]})
 					end
 			end;	
+		{notify_player, PlayerID, Info} ->
+			{Next, _NextNickName} = next_player(Current, Players),
+			notify_user(Next, {PlayerID, Info}),
+			notify_observer(Observer, RoomID, {PlayerID, Info}),
+			loop(State);
 		{get_state, Ref, From} ->
 			PlayerNickName = [ NickName || {_Pid, NickName, _Ref} <- Players],
 			From ! {Ref, {State#state.status, PlayerNickName}},
@@ -222,6 +231,11 @@ update_observer(none, _RoomID, _GameState, _Move) ->
 	ok;
 update_observer(Observer, RoomID, GameState, Move) ->
 	Observer ! {update, RoomID, Move, GameState}.
+
+notify_observer(none, _RoomID, _Msg) ->
+	ok;
+notify_observer(Observer, RoomID, Msg) ->
+	Observer ! {notify_observer, RoomID, Msg}.	
 
 update(Obs, GameState) when is_list(Obs) ->
 	[Pid ! {update, none, GameState} || {Pid, _, _} <- Obs];

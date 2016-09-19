@@ -1,6 +1,6 @@
 -module(player_client).
 -export([start/5]).
--export([login/2, enter_room/2, leave_room/1, show_room/1, show/1, stop/1]).
+-export([login/2, enter_room/2, leave_room/1, show_room/1, get_info/1, show/1, stop/1]).
 -export([get_player/1]).
 
 -record(state, {nickname,
@@ -27,6 +27,9 @@ leave_room(Pid) ->
 	ok.
 show_room(Pid) ->
 	call(Pid, show_room).
+
+get_info(Pid) ->
+	call(Pid, get_info).	
 
 stop(Pid) ->
 	Pid ! stop,
@@ -84,6 +87,9 @@ loop(State = #state{nickname=NickName,
 		{play, Move} ->
 			gen_tcp:send(Sock, term_to_binary({play, Move})),
 			loop(State);
+		{notify, PlayerID, Info} ->
+			gen_tcp:send(Sock, term_to_binary({notify, PlayerID, Info})),
+			loop(State);						
 		stop ->
 			player:stop(Type, Player);	
 		{get_player, Ref, From} ->
@@ -96,8 +102,6 @@ loop(State = #state{nickname=NickName,
 			case binary_to_term(TcpData) of
 				{echo, Msg} ->
 					io:format("ECHO: ~p~n", [Msg]);
-				{notify, Msg} ->
-					io:format("~s~n", [Msg]);
 				{login, Result} ->
 					case Result of
 						ok ->
@@ -111,10 +115,12 @@ loop(State = #state{nickname=NickName,
 				{update, Move, GameState} ->
 					player:update(Type, Player, GameState),
 					player:display(Type, Player, GameState, Move);
-				stop ->
-					player:stop(Type, Player);
+				{notify, Msg} ->
+					player:notify(Type, Player, Msg);
 				play ->
 					player:get_move(Type, Player);
+				stop ->
+					player:stop(Type, Player);
 				Unexpected ->
 					io:format("client receive unexpected tcp ~p~n", [Unexpected])
 			end,

@@ -33,6 +33,16 @@ handle_info({update, RoomID, Move, GameState}, State=#state{rooms=Rooms, board =
 			{noreply, State#state{rooms = NewRooms}};
 		_ ->
 			{noreply, State}
+	end;
+	
+handle_info({notify_observer, RoomID, Msg}, State=#state{rooms=Rooms}) ->
+	io:format("receive msg ~p~n", [Msg]),
+	case lists:keyfind(RoomID, 1, Rooms) of
+		{RoomID, _Moves, Obs} ->
+			[web_player:notify(WebPlayer, Msg) || WebPlayer <- Obs],			
+			{noreply, State};
+		_ ->
+			{noreply, State}
 	end.
 
 

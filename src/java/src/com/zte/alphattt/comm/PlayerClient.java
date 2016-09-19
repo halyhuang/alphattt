@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.ericsson.otp.erlang.OtpErlangAtom;
+import com.ericsson.otp.erlang.OtpErlangInt;
 import com.ericsson.otp.erlang.OtpErlangObject;
 import com.ericsson.otp.erlang.OtpErlangString;
 import com.ericsson.otp.erlang.OtpErlangTuple;
@@ -16,11 +17,14 @@ import com.zte.alphattt.comm.cmd.UpdateHandler;
 import com.zte.alphattt.game.Board;
 import com.zte.alphattt.game.Player;
 
+import static com.zte.alphattt.erlangtools.ErlangUtil.*;
+
 public class PlayerClient {
 	private static final String JAVA_NODE_NAME = "java_ttt_node@127.0.0.1";
 	private static final String PID_FOR_MALLBOX = "java_ttt";
 	private static final String ERLANG_BRIDGE_NODE = "bridge@127.0.0.1";
 	private static final String ERLANG_BRIDGE_PID = "java_client";
+	private static final String CLUSTER_COOKIE = "hello";
 	
 	public Player player;
 	protected Board board;
@@ -33,10 +37,10 @@ public class PlayerClient {
 		handlers.add(new PlayHandler());
 	}
 
-	public PlayerClient(Player player, Board board, String cookie) {
+	public PlayerClient(Player player, Board board) {
 		this.player = player;
 		this.board = board;
-		this.otpMbox = makeConnection(cookie);
+		this.otpMbox = makeConnection();
 		Thread thread = new Thread(new Runnable() {
 			@Override
 			public void run() {
@@ -63,10 +67,10 @@ public class PlayerClient {
 		}
 	}
 
-	private OtpMbox makeConnection(String cookie) {
+	private OtpMbox makeConnection() {
 		OtpMbox otpMbox = null;
 		try {
-			OtpNode node = new OtpNode(JAVA_NODE_NAME, cookie);
+			OtpNode node = new OtpNode(JAVA_NODE_NAME, CLUSTER_COOKIE);
 			otpMbox = node.createMbox(PID_FOR_MALLBOX);
 			node.registerName(PID_FOR_MALLBOX, otpMbox);
 			if (node.ping(ERLANG_BRIDGE_NODE, 2000)) {
@@ -80,14 +84,25 @@ public class PlayerClient {
 		return otpMbox;
 	}
 
-	public void enterRoom(String nickName) {
-		sendMsg(new OtpErlangTuple(
-				new OtpErlangObject[] { new OtpErlangAtom("enter_room"), new OtpErlangString(nickName) }));
+	public void enterRoom(String nickName, int roomId) {
+		sendMsg(erlangTuple(
+					erlangAtom("enter_room"), erlangString(nickName), erlangInt(roomId)));
+	}
+	
+	public void login(String nickName){
+		sendMsg(erlangTuple(
+					erlangAtom("login"), erlangString(nickName), erlangString("")));
 	}
 
 	public void LeaveRoom(String nickName) {
-		sendMsg(new OtpErlangTuple(
-				new OtpErlangObject[] { new OtpErlangAtom("leave_room"), new OtpErlangString(nickName) }));
+		sendMsg(erlangTuple(
+					erlangAtom("leave_room"), erlangString(nickName)));
+	}
+	
+	public void connect(String remoteIp, int remotePort) {
+		sendMsg(erlangTuple(erlangAtom("connect"),
+				erlangString(remoteIp), erlangInt(remotePort),
+				erlangAtom(PID_FOR_MALLBOX), erlangAtom(JAVA_NODE_NAME)));
 	}
 
 	public void stop() {

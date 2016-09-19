@@ -1,0 +1,27 @@
+AlphaTTT平台Java语言框架发布啦！
+
+使用方法：
+
+1.按照服务器运行手册，运行起game_server应用。
+
+2.windows系统，运行ebin/jerlang.bat脚本；unix系统，运行 bash ebin/jerlang；
+
+3.将src/java/src下java代码编译打包称jar文件，注意依赖 erlang安装目录/lib/Jinterface-1.x.x/priv/OtpErlang.jar文件,然后运行即可。
+
+  a)com.zte.alphattt.Boot的main函数如下定义：
+    PlayerClient playerClient = new PlayerClient(new Mcts(), new Board());
+	...
+    playerClient.connect("127.0.0.1", 8011);//game_server所在的服务器Ip和端口
+    playerClient.login("pybot");//无密码的机器人用户
+	playerClient.enterRoom("pybot", 6);//房间号请服务器查询，也可修改为从命令行传入。
+
+  b)仅需实现com.zte.alphattt.game.Player接口，并在初始化时传入（a步骤中初始化PlayerClient里传入），即可加入人机，机机对战。
+
+  c)提供了一个较快速度的com.zte.alphattt.game.Board，供自己训练时参考。
+
+  d)提供训练台com.zte.alphattt.Bench,供平时训练和测试时使用。
+
+ 4.欢迎加入Java版本的后续优化，和人工智能框架的接入和开发。
+
+
+

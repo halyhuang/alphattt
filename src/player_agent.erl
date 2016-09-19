@@ -47,8 +47,9 @@ handle_tcp_data(TcpData, State=#state{status = wait_enter_room}) ->
 					Notify = io_lib:format("player ~p observe room failed, reason ~p~n", [NickName, Reason]),
 					send_message({notify, Notify}, State),
 					{ok, State}
-			end;		
-
+			end;	
+		{notify, _PlayerID, _Info} ->
+			{ok, State};							
 		Unexpected ->
 			Notify = io_lib:format("Unexpected is ~p when wait_enter_room ~n", [Unexpected]),
 			send_message({notify, Notify}, State),
@@ -86,6 +87,9 @@ handle_tcp_data(TcpData, State=#state{status = enter_room, room = RoomPid}) ->
 			{ok, State#state{status = wait_enter_room}};									
 		{play, Move} ->
 			room:play(RoomPid, {self(), Move}),
+			{ok, State};
+		{notify, PlayerID, Info} ->
+			room:notify_player(RoomPid, PlayerID, Info),
 			{ok, State};
 		Unexpected ->
 			Notify = io_lib:format("Unexpected is ~p when enter_room ~n", [Unexpected]),
