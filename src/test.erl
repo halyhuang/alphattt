@@ -5,15 +5,17 @@
 -export([connect/0]).
 
 robot_vs_robot() ->
+	SIP = "127.0.0.1",
 	NickName = "mcts",
-	{ok, Pid} = player_client:start(NickName, mcts, board, "127.0.0.1", 8011),
+	{ok, Pid} = player_client:start(NickName, mcts, board, SIP, 8011),
 	player_client:login(Pid, ""),
 	RobotNickName = "mcts_ucb1",
-	{ok, RobotPid} = player_client:start(RobotNickName, mcts_ucb1, board, "127.0.0.1", 8011),
+	{ok, RobotPid} = player_client:start(RobotNickName, mcts_ucb1, board, SIP, 8011),
 	player_client:login(RobotPid, ""),
 
 	Rooms = player_client:show_room(Pid),
 	RoomID = get_empty_room(Rooms),
+	io:format("enter room ~p~n", [RoomID]),
 
 	player_client:enter_room(Pid, RoomID),
 	io:format("player ~p enter room ~p~n", [NickName, RoomID]),
