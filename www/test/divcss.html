@@ -1,0 +1,27 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"> 
+<html xmlns="http://www.w3.org/1999/xhtml"> 
+<head> 
+<meta http-equiv="Content-Type" content="text/html; charset=gb2312" /> 
+<title>让div透明 而里面的文字不透明的写法</title> 
+<style type="text/css"> 
+.opacity{ 
+width:244px; 
+height:183px; 
+background:#5b5858; 
+filter:alpha(opacity=50); /*支持IE */ 
+-moz-opacity:0.5; /*支持FF */ 
+opacity:0.5; 
+} 
+.text{ 
+position:relative; 
+height:183px; 
+margin-top:-183px; 
+color:#FFFFFF; 
+} 
+</style> 
+</head> 
+<body> 
+<div class="opacity">透明的层透明的层透明的层透明的层透明的层透明的层透明的层透明的层透明的层透明的层透明的层</div> 
+<div class="text">这里是文字，显示的效果是透明的</div> 
+</body> 
+</html>

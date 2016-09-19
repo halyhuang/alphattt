@@ -4,10 +4,7 @@ body {
       text-align: center;
 	  padding: 0;
 	  margin: 0;
-	  background: -moz-linear-gradient(-45deg, #183850 0, #183850 25%, #192c46 50%, #22254c 75%, #22254c 100%);
-	  background: -webkit-linear-gradient(-45deg, #183850 0, #183850 25%, #192c46 50%, #22254c 75%, #22254c 100%);
-	  background-repeat: no-repeat;
-	  background-attachment: fixed;	
+	  background: url(../image/gh.jpg) fixed center center;
 }  
 .container {
 	width: 500px;
@@ -19,6 +16,7 @@ body {
 
 .chat-room {
 	width: 800px;
+	height: 610px;
 }
 
 .heading{  
@@ -29,22 +27,42 @@ body {
 	color:white;		
 }  
 .botton{
-    width: 100%;  	
-    text-align: center;  
+  width: 45%;  	
+	height: 5%; 
+  text-align: center;  
+	position: absolute;
+	left: 10%;
+	top:720px;
+	opacity:0.7;
 }
 .btns{  
     font-size: 20px;  
     text-align: center;  
-    display: inline-block;  
     width: 150px;  
     height: 27px;  
     margin-right: 5px;  
     line-height: 27px;  
-    background: darkturquoise;  
-    border: 1px solid #eee;  
+    background: url(../image/begin.png) fixed center center;  
+    border: 1px solid yellow;  
     border-radius: 7px;  
+    padding: 9px;  
+    cursor: pointer;  
+} 
+
+.btns_begin{  
+    font: 18px "microsoft yahei",Helvetica,Tahoma,Arial,"Microsoft jhengHei";
+	color: #000000;
+    text-align: center;  
+    width: 120px;  
+    height: 30px;  
+    margin-right: 2px;  
+    line-height: 27px;  
+    background: white;  
+    border: 1px solid white;  
+    border-radius: 2px;  
     padding: 3px;  
     cursor: pointer;  
+	opacity:0.8;
 }  
 
 .icons{  
@@ -67,32 +85,36 @@ body {
 }  
 
 .chessboard {
-    width: 100%;  
-	border:2px solid blue;
-    background: white;  
+  width: 100px;  
+	position: absolute;
+	left: 10%;
+	top:140px;
+	border:2px solid white;
+	opacity:0.8;
+	background: url(../image/qp.jpg) fixed center center;
 }
 
 .chessboardtd {
-	border:2px solid blue;
-    background: white;  	
+	border:2px solid black; 
+    background: url(../image/qp.jpg) fixed center center;
 }
 
 .horizontal {
-	border:2px solid #f00078;
+	border:2px solid black;
 }
 
 .vertical {
 	height : 50px;
-	border:2px solid #f00078;
+	border:2px solid black;
 }
 
 .grid {  
     width: 50px;  
     height: 50px;  
 	color:black;		
-    background-color: white;  
     float: center;  
-    font-size: 40px;  	
+    font: 40px "microsoft yahei",Helvetica,Tahoma,Arial,"Microsoft jhengHei";  	
+	background: url(../image/qp.jpg) fixed center center;
 }  
 
   
