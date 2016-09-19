@@ -1,4 +1,4 @@
-
+ï»¿
 
 var jsonrpc = imprt("jsonrpc");
 var service = new jsonrpc.ServiceProxy("alphattt.yaws", ["poll_get_move", "poll_display", "start_game", "start_robot", "start_observe", "get_move", "get_legal_moves", "set_move"]);
@@ -49,16 +49,6 @@ window.onload = function() {
 	init_board();		
 	init_poll();
 };  
-
-window.onbeforeunload = function(event) 
-{ 
-	var	is_leave = confirm("ÊÇ·ñÀë¿ª·¿¼ä");
-	if (is_leave)
-	{
-		hall_service.leave_room();
-	}
-	return is_leave;
-}
 
 function init_poll()
 {
@@ -250,7 +240,11 @@ function init_observe(player_moves)
 function start_hall()
 {
     try {
-			location.href = "hall.html";
+			if (confirm("æ˜¯å¦è¦ç¦»å¼€æˆ¿é—´?"))
+			{
+				hall_service.leave_room();
+				location.href = "hall.html";
+			}	
      } catch(e) {
         alert(e);
      }	
