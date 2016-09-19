@@ -1,0 +1,11 @@
+AlphaTTT平台Python语言框架发布啦！
+
+使用方法：
+
+1.在src/python下增加python对弈程序，实现3个接口 init/get_move/set_move；已提供一个python版本的board程序可供调用。
+
+2.参照pybot.erl编写python与erlang对接的程序。
+
+3.按照服务器运行手册，运行起game_server应用，即可实现对战。
+
+4.欢迎加入Python版本的后续优化，和人工智能框架的接入和开发。
