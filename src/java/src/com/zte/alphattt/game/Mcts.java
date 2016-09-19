@@ -48,7 +48,7 @@ public class Mcts implements Player {
 		run_simulation(legalStates);
 		int bestStateIndex = chooseBest(legalMoves, legalStates);
 		int[] move = legalMoves[bestStateIndex];
-		//System.out.println("Choosed move:" + Arrays.toString(move));
+		System.out.println("Choosed move:" + Arrays.toString(move));
 		return move;
 	}
 
@@ -58,7 +58,7 @@ public class Mcts implements Player {
 			PlayStats playStats = this.cache.get(new GameState(legalStates[i]));
 			winRates[i] = (playStats == null ? 0 : playStats.winRate());
 
-			//log(legalMoves, winRates, i, playStats);
+			log(legalMoves, winRates, i, playStats);
 		}
 
 		double maxRate = max(winRates);

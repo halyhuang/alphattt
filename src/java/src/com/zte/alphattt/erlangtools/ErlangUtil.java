@@ -1,6 +1,7 @@
 package com.zte.alphattt.erlangtools;
 
 import com.ericsson.otp.erlang.OtpErlangAtom;
+import com.ericsson.otp.erlang.OtpErlangInt;
 import com.ericsson.otp.erlang.OtpErlangLong;
 import com.ericsson.otp.erlang.OtpErlangObject;
 import com.ericsson.otp.erlang.OtpErlangRangeException;
@@ -8,16 +9,20 @@ import com.ericsson.otp.erlang.OtpErlangString;
 import com.ericsson.otp.erlang.OtpErlangTuple;
 
 public class ErlangUtil {
-	public static OtpErlangAtom atom(String name) {
+	public static OtpErlangAtom erlangAtom(String name) {
 		return new OtpErlangAtom(name);
 	}
 
-	public static OtpErlangTuple tuple(OtpErlangObject... objs) {
+	public static OtpErlangTuple erlangTuple(OtpErlangObject... objs) {
 		return new OtpErlangTuple(objs);
 	}
 
-	public static OtpErlangString string(String name) {
+	public static OtpErlangString erlangString(String name) {
 		return new OtpErlangString(name);
+	}
+	
+	public static OtpErlangInt erlangInt(int value){
+		return new OtpErlangInt(value);
 	}
 
 	@SuppressWarnings("unchecked")

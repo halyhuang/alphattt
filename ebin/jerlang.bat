@@ -1,0 +1,1 @@
+erl -name bridge@127.0.0.1 -setcookie hello -s java_client go
