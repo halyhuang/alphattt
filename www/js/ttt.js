@@ -151,7 +151,6 @@ function init_botton()
 
 function init_board()
 {
-	is_get_move = false;
 	grids = document.querySelectorAll('.grid');
 	for (var i=0; i < grids.length; i++)
 	{ 
@@ -226,6 +225,7 @@ function start_robot()
 
 function start_observe()
 {
+	init_board();
 	var result = service.start_observe();	
 	init_observe(result.moves);
 	is_poll_display = true;	

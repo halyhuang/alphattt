@@ -230,7 +230,7 @@ next_player(Pid, [{Pid2, NickName, _}, {Pid, _, _}]) ->
 update_observer(none, _RoomID, _GameState, _Move) ->
 	ok;
 update_observer(Observer, RoomID, GameState, Move) ->
-	Observer ! {update, RoomID, Move, GameState}.
+	Observer ! {update, RoomID, GameState, Move}.
 
 notify_observer(none, _RoomID, _Msg) ->
 	ok;
