@@ -11,7 +11,8 @@ body {
 }  
 
 #container {
-	width: 800px;
+	width: 1246px;
+	padding:15px;
 }
 
 #gamehall {
@@ -22,13 +23,13 @@ body {
 td.chessplayer {
  width:40px;
  height:40px;	
- padding:15px;
+ padding:10px;
 }
 
 td.checkdeskimg {
  width:60px;
  height:60px;	
- padding:25px;	
+ padding:15px;	
 }
 
 .datalist {
@@ -38,7 +39,7 @@ td.checkdeskimg {
 
 .gamehall {
     width: 60%;  
-    background: #66b3ff;  	
+    /*background: #66b3ff;  	*/
 }
 
 .onlineuser {
@@ -53,3 +54,5 @@ tr.over td {
     background:#ff8040;  /*这个将是鼠标高亮行的背景background:#bcd4ec色*/
 	cursor: pointer;
 }
+a{color:#ffffff;text-decoration:underline;font-size:18px;}
+a:hover{text-decoration:unerline;}
