@@ -1,1 +1,1 @@
-erl -pa ../erlport -sname gameserver -setcookie alphattt -s game_boot start
+erl -sname gameserver -setcookie alphattt -s game_boot start
