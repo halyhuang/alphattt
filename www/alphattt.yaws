@@ -44,7 +44,7 @@ handle(_State, {call, poll_display, _Arg}, #session{pid_str = PidStr}) ->
                  || {Player, Info} <- Infos],  
     Response = json2:obj_from_list([{"is_update_display", IsUpdateDisplayMove},
                                     {"moves", {array, MovesJson}},
-				    {"infos", {array, InfosJson}}]),
+				                    {"infos", {array, InfosJson}}]),
     {true, 0, #session{pid_str = pid_to_list(Pid)}, {response, Response}};
 
 handle(_State, {call, get_legal_moves, _Arg}, #session{pid_str = PidStr}) ->
