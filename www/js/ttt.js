@@ -144,6 +144,8 @@ function init_botton()
 	bn_observe.onclick = start_observe; 	
     var bn_hall = document.getElementById('start_hall');  
 	bn_hall.onclick = start_hall; 	
+    var bn_rule = document.getElementById('start_rule');  
+	bn_rule.onclick = start_rule; 	
 	
 }  
 
@@ -284,6 +286,11 @@ function click_move()
 		service.set_move(this.R, this.C, this.r, this.c);	
 	}
 }
+
+function start_rule()
+{
+	window.open("alphatttrule.html");
+}  
 
 function enter_grid()
 {

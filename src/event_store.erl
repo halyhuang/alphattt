@@ -23,13 +23,16 @@ show() ->
 
 next_player(1) -> 2;
 next_player(2) -> 1.
-
+		
 handle_info({update, RoomID, Move, GameState}, State=#state{rooms=Rooms, board = Board}) ->
 	case lists:keyfind(RoomID, 1, Rooms) of
 		{RoomID, Moves, Obs} ->
 			[web_player:display(WebPlayer, GameState, Move) || WebPlayer <- Obs],
-			NewRooms = lists:keyreplace(RoomID, 1, Rooms, 
-				{RoomID, [{next_player(Board:current_player(GameState)), Move} | Moves], Obs}),
+			NewMoves = case Move of
+							none -> [];					 
+							_ -> [{next_player(Board:current_player(GameState)), Move} | Moves]
+					   end,
+			NewRooms = lists:keyreplace(RoomID, 1, Rooms, {RoomID, NewMoves, Obs}),		
 			{noreply, State#state{rooms = NewRooms}};
 		_ ->
 			{noreply, State}
