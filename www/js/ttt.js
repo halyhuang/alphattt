@@ -106,7 +106,7 @@ function poll_display()
 						info(players[player].player, result.infos[i].info);
 					}
 				}				
-				set_legal_move(player);		
+				set_legal_move();		
 			}
      } catch(e) {
         alert(e);

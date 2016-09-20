@@ -5,7 +5,8 @@
 body{
 	font-family: "Î¢ÈíÑÅºÚ";
 	font-size: 14px;
-	background: url(../image/lg1.jpg) fixed center center;
+	background: url(../image/lgbb_1.jpg) fixed center center;
+	background-size: cover;
 }
 .logo_box{
 	width: 280px;
