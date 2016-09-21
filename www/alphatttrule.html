@@ -1,29 +1,32 @@
-<!DOCTYPE html> 
-<html> 
-<head> 
-	<meta charset="utf-8"> 
-	<title>Ultimate Tic-Tac-Toe</title> 
-</head> 
-<body> 	
-	<table>
-		<tr>
-			<td>
-				AlphaTTT��Ϸ����
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8" />
+	<title>游戏规则说明</title>
+	<link rel="shortcut icon" href="image/lecheng.png" />
+	<link rel="stylesheet" type="text/css" href="css/alphatttrule.css" /> 
+</head>
+<body>
 
-				1�������̷�Ϊ9��С���̣�3*3��ʽ��ÿһ��С�����ַ�Ϊ9��3*3��ʽ�����������̵�����λ����9*9=81�֡�
-				2��������壨���壩��ĳһ��С���̵��С��л��߶Խ���������3�ӣ�����壨���壩�����С�����ϻ�ʤ��
-				3�����壨���壩ÿһ����ʤ��С���̣���Ϊ���壨���壩�ڴ����������µ�1���ӣ�������壨���壩�ڴ����̵��С��л��߶Խ���������3�ӣ�����壨���壩�������ʤ����
-				4��������������Ϊmove(R, C, r, c)��R/CΪ�����̵���/�кţ�r/cΪС���̵���/�кš��������Ͻǵ���/������Ϊ(0,0)����/�к�ȡֵ��Χ����0��2��������
-				move(0,2,2,0)�� �ڴ����̵�(0,2)���������Ͻǵ�С���̣���С���̵�(2,0)���������½ǣ����ӡ�
-				(0,0) -->   C/c���У�
-				   |
-				  \/
-				  R/r���У�
-				5�����壨���壩��ǰ���ӵ�С��������(r,c)����Ϊ���壨���壩��һ�����ӵĴ���������(R,C)��������
-				���嵱ǰ���ӣ�move(0,2,1,1)���������һ������ֻ���ǣ�move(1,1,x,x)��
-				6���ں��壨���壩���չ���5������ʱ�����Ӧ���ӵ�С��������������С����ʤ���ѷ֣�����壨���壩���������ڿո����ӡ�								
-			</td>
-		</tr>
-	</table>
-</body> 
+<div class="form">
+	<h3>AlphaTTT游戏规则</h3>
+	<div class="text">
+			 <ul>
+				<li>1、大棋盘分为9个小棋盘，3*3格式；每一个小棋盘又分为9格，3*3格式。这样，开盘的落子位置有9*9=81种。</li>
+				<li>2、如果黑棋（白棋）在某一个小棋盘的行、列或者对角线上首先连成3子，则黑棋（白棋）在这个小棋盘上获胜。</li>
+				<li>3、同理，如果黑棋（白棋）获胜的所有小棋盘，在大棋盘的行、列或者对角线上首先连成3个，则黑棋（白棋）获得最终胜利。</li>
+				<li>4、下棋落子描述为move(R, C, r, c)，R/C为大棋盘的行/列号，r/c为小棋盘的行/列号。棋盘左上角的行/列坐标为(0,0)，行/列号取值范围都是0～2。举例：</li>
+						<div class="text_tab">
+							<div>move(0,2,2,0)： 在大棋盘的(0,2)——即右上角的小棋盘，在小棋盘的(2,0)——即左下角，落子。</div>
+							<div>(0,0) -->   C/c（列）</div>
+							<div>   |</div>
+							 <div> \/</div>
+							<div>  R/r（行）</div>
+						</div>
+				<li>5、黑棋（白棋）当前落子的小棋盘坐标(r,c)，作为白棋（黑棋）下一步落子的大棋盘坐标(R,C)。例如：黑棋当前落子：move(0,2,1,1)，则白棋下一步落子只能是：move(1,1,x,x)</li>
+				<li>6、在黑棋（白棋）按照规则“5”落子时，如果应落子的小棋盘已满、或者小棋盘胜负已分，则黑棋（白棋）可以任意在空格落子。	</li>
+           </ul>
+	</div>
+</div>
+</body>
 </html>

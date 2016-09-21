@@ -5,7 +5,8 @@
 body{
 	font-family: "Î¢ÈíÑÅºÚ";
 	font-size: 14px;
-	background: url(../image/56a46b7590f5672af5b8.jpg) fixed center center;
+	background: url(../image/lgbb_1.jpg) fixed center center;
+	background-size: cover;
 }
 .logo_box{
 	width: 280px;
@@ -14,7 +15,7 @@ body{
 	color: #EEE;
 	position: absolute;
 	left: 50%;
-	top:100px;
+	top:320px;
 	margin-left: -175px;
 }
 .logo_box h3{
@@ -93,11 +94,13 @@ label{
 	outline: none;
 }
 .submit {
+	font-family: "Î¢ÈíÑÅºÚ";
 	padding: 20px;
 	margin-top: 10px;
 	display: block;
 }
 .act-but{
+	font-family: "Î¢ÈíÑÅºÚ";
 	height: 10px;
 	line-height: 20px;
 	text-align: center;
@@ -191,6 +194,7 @@ padding-bottom: 30px;
 }
 /*////*/
 .sas{
+	font-family: "Î¢ÈíÑÅºÚ";
 	width: 280px;
 	height: 18px;
 	float: left;
@@ -201,6 +205,7 @@ padding-bottom: 30px;
 	margin-bottom: 50px;
 }
 .sas a{
+	font-family: "Î¢ÈíÑÅºÚ";
 	width: 280px;
 	height: 18px;
 	color: #FFFFFF;

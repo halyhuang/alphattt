@@ -4,8 +4,7 @@ body {
       text-align: center;
 	  padding: 0;
 	  margin: 0;
-	  background: -moz-linear-gradient(-45deg, #183850 0, #183850 25%, #192c46 50%, #22254c 75%, #22254c 100%);
-	  background: -webkit-linear-gradient(-45deg, #183850 0, #183850 25%, #192c46 50%, #22254c 75%, #22254c 100%);
+	  background: url(../image/lg.jpg) fixed center center;
 	  background-repeat: no-repeat;
 	  background-attachment: fixed;	
 }  
@@ -13,17 +12,22 @@ body {
 #container {
 	width: 1246px;
 	padding:15px;
+	position: absolute;
+	left: 10%;
+	top:160px;
 }
 
 #gamehall {
 	width: 60%;	
-    background: #66b3ff; 	
+	opacity:0.7;
+	background: url(../image/gh.jpg) fixed center center;
 }
   
 td.chessplayer {
  width:40px;
  height:40px;	
  padding:10px;
+ background: url(../image/pep.png) fixed center center;
 }
 
 td.checkdeskimg {
@@ -39,7 +43,9 @@ td.checkdeskimg {
 
 .gamehall {
     width: 60%;  
-    /*background: #66b3ff;  	*/
+    background: #FFFFFF;
+	opacity:0.8; 	
+
 }
 
 .onlineuser {

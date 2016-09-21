@@ -1,4 +1,4 @@
-
+Ôªø
 
 var jsonrpc = imprt("jsonrpc");
 var service = new jsonrpc.ServiceProxy("alphattt.yaws", ["poll_get_move", "poll_display", "start_game", "start_robot", "start_observe", "get_move", "get_legal_moves", "set_move"]);
@@ -49,16 +49,6 @@ window.onload = function() {
 	init_board();		
 	init_poll();
 };  
-
-window.onbeforeunload = function(event) 
-{ 
-	var	is_leave = confirm(" «∑Ò¿Îø™∑øº‰");
-	if (is_leave)
-	{
-		hall_service.leave_room();
-	}
-	return is_leave;
-}
 
 function init_poll()
 {
@@ -116,7 +106,7 @@ function poll_display()
 						info(players[player].player, result.infos[i].info);
 					}
 				}				
-				set_legal_move(player);		
+				set_legal_move();		
 			}
      } catch(e) {
         alert(e);
@@ -154,6 +144,8 @@ function init_botton()
 	bn_observe.onclick = start_observe; 	
     var bn_hall = document.getElementById('start_hall');  
 	bn_hall.onclick = start_hall; 	
+    var bn_rule = document.getElementById('start_rule');  
+	bn_rule.onclick = start_rule; 	
 	
 }  
 
@@ -250,7 +242,11 @@ function init_observe(player_moves)
 function start_hall()
 {
     try {
-			location.href = "hall.html";
+			if (confirm("ÊòØÂê¶Ë¶ÅÁ¶ªÂºÄÊàøÈó¥?"))
+			{
+				hall_service.leave_room();
+				location.href = "hall.html";
+			}	
      } catch(e) {
         alert(e);
      }	
@@ -290,6 +286,11 @@ function click_move()
 		service.set_move(this.R, this.C, this.r, this.c);	
 	}
 }
+
+function start_rule()
+{
+	window.open("alphatttrule.html");
+}  
 
 function enter_grid()
 {

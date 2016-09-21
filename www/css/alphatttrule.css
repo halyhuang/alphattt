@@ -1,0 +1,54 @@
+*{
+	margin: 0;
+	padding: 0;
+}
+body{
+	font-family: "Î¢ÈíÑÅºÚ";
+	font-size: 14px;
+	background: url(../image/alphatttrule_back.png) fixed center center;
+	background-repeat: no-repeat;
+	background-size:100%
+}
+.form{
+	width: 680px;
+	height: 490px;
+	padding: 35px;
+	color: #EEE;
+	position: absolute;
+	left: 50%;
+	top:100px;
+	margin-left: -325px;
+}
+.form h3{
+	text-align: center;
+	height: 24px;
+	font: 24px Helvetica,Tahoma,Arial,"Microsoft jhengHei",sans-serif;
+	color: #FFFFFF;
+	height: 20px;
+	line-height: 20px;
+	padding:0 0 35px 0;
+}
+
+.text_tab{
+	width: 630px;
+	height: 46px;
+	outline: none;
+	display: inline-block;
+	font: 18px;
+	margin-left: 50px;
+	border: none;
+	background: none;
+	line-height: 20px;
+}
+
+.text{
+	width: 680px;
+	height: 485px;
+	float: left;
+	color: #FFFFFF;
+	text-align: left;
+	font-size: 18px;
+	line-height: 20px;
+	margin-bottom: 50px;
+}
+
