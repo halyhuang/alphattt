@@ -5,22 +5,21 @@
 out(A) ->
     yaws_rpc:handler_session(A, {?MODULE, handle}).
 
-get_two_player([Player1|[]])->
-	{Player1,""};
-get_two_player([Player1|Rest])->
-	[Player2|_X] = Rest,
-	{Player1,Player2};
+get_two_player([Player1, Player2])->
+	{Player1, Player2};
+get_two_player([Player1])->
+	{Player1, {"", ""}};
 get_two_player([])->
-	{"",""}.
+	{{"",""}, {"", ""}}.
 	
 create_single_room(Room)-> 	
 	{RoomId,_,Players} = Room,
-	{Player1,Player2} = get_two_player(Players),
+	{{Player1, Type1}, {Player2, Type2}} = get_two_player(Players),
 	json2:obj_from_list([{"roomId", RoomId},
 						 {"player1", Player1}, 
-						 {"playertype1", "human"}, 	%TODO
+						 {"playertype1", Type1}, 	
 						 {"player2", Player2}, 
-						 {"playertype2", "robot"}]).	%TODO
+						 {"playertype2", Type2}]).	
 
 create_single_user(User)-> 	
 	{Point,Name,Type} = User,
