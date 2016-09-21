@@ -13,9 +13,9 @@ var hall =
 };
 
 $(document).ready(function() {
-	check_login();
+	//check_login();
 	UpdatePage();
-	timerID = setInterval(UpdatePage, 3000);	
+	//timerID = setInterval(UpdatePage, 3000);	
 	}
 )
 
@@ -112,7 +112,7 @@ function CreateHall(table)
 			if(roomIndex < hall.roomNum)
 			{
 				room = hall.data.rooms[roomIndex];
-				td=$("<td class=\"tight\"><table class=\"gamehall\" id=\"table"+i*hall.lineSize+j+"\">"	+
+				td=$("<td class=\"tight\"><table class=\"gamehall\">"	+
 						"<tr>" + 
 							tdHtmlStart + getPlayerHtml(room.player1,room.playertype1) + getOnClickStr(room.roomId,room.player1)+
 							tdHtmlStart + TableHtml + getOnClickStr(room.roomId,room.player1)+
@@ -122,8 +122,7 @@ function CreateHall(table)
 			   td.appendTo(tr);
 			   roomIndex++;
 		   }
-		   // 
-		   /*else
+		   else
 		   {
 				td=$("<td class=\"tight\"><table class=\"gamehall\">"	+
 						"<tr><td class=\"tight\"><br><img width=\"50px\" height=\"50px\" src=\"./image/none.png\"></td>" + 
@@ -131,7 +130,7 @@ function CreateHall(table)
 						"<td class=\"tight\"><br><img width=\"50px\" height=\"50px\" src=\"./image/none.png\"></td></tr>	"+
 						"</table></td>");
 			   td.appendTo(tr);
-		   }*/
+		   }
 		}
 	}
 }	
