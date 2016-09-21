@@ -157,7 +157,7 @@ handle_call(leave_room, State=#state{username = UserName, room = none}) ->
     io:format("~p room isn't set~n", [UserName]),
 	{reply, ok, State};
 
-handle_call(leave_room, State=#state{username = UserName, room = RoomID, player = Player, robot_player = RobotPlayer}) ->
+handle_call(leave_room, State=#state{username = UserName, room = RoomID, player = Player, robot_player = RobotPlayer, web_player = WebPlayer}) ->
     io:format("~p leave room ~p~n", [UserName, RoomID]),
 	player_client:leave_room(Player),
 	case RobotPlayer of
@@ -166,6 +166,7 @@ handle_call(leave_room, State=#state{username = UserName, room = RoomID, player 
 		RobotPlayer ->
 			player_client:leave_room(RobotPlayer)
 	end,
+	event_store:unsuscribe(WebPlayer),
 	{reply, ok, State#state{room = none}};
 
 handle_call(is_move, State=#state{web_player = WebPlayer}) ->
