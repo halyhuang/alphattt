@@ -17,6 +17,7 @@ players[2] = {player:'2', color:"#53FF53", innerHTML:"O"};
 var player = 1;
 
 var legal_moves = new Array();
+var child_nums = 0;
 
 function is_login()
 {
@@ -206,6 +207,12 @@ function info(player, msg)
 	chatNewThread.setAttributeNode(att);
 	var	chatThread = document.getElementById('chat-thread-result');
     chatThread.appendChild(chatNewThread);
+	child_nums++;
+	if (child_nums >= 20)
+	{
+		var childNode = chatThread.childNodes[0]; //总是删除第一个，是不是更简单 
+		chatThread.removeChild(childNode); 	
+	}
     chatThread.scrollTop = chatThread.scrollHeight;	
 }
 
