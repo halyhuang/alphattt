@@ -35,7 +35,6 @@ show() ->
 	 || {RoomID, RoomState, Players} <- get_all_rooms()],
 	ok.
 
-
 get_all_rooms() ->
 	gen_server:call({global, ?MODULE}, get_all_rooms).			
 
@@ -59,20 +58,16 @@ handle_cast({reset, RoomID}, State=#state{rooms=Rooms}) ->
 		_ ->
 			io:format("Room ~p not exist~n", [RoomID])
 	end,
-	{noreply, State};
-
-handle_cast(show, State=#state{rooms=Rooms}) ->
-	[begin
-		{RoomState, Players} = room:get_state(RoomPid),
-		io:format("Room ~p is ~p, players ~p~n", [RoomID, RoomState, Players])
-	end || {RoomID, RoomPid, _Ref} <- Rooms],
 	{noreply, State}.
-
 
 handle_call(get_all_rooms, _From, State=#state{rooms=Rooms}) ->
 	RoomStates = [ begin
 					{Status, Players} = room:get_state(RoomPid),
-					{RoomID, Status, Players} end || {RoomID, RoomPid, _Ref} <- Rooms],
+					PlayerTypes = [ begin
+										Type = db_api:get_user_type(Player),							
+										 {Player, atom_to_list(Type)}
+								    end || Player <- Players ],					    
+					{RoomID, Status, PlayerTypes} end || {RoomID, RoomPid, _Ref} <- Rooms],
 	{reply, RoomStates, State};
 
 handle_call({observe, RoomID, Observer}, _From, State=#state{rooms=Rooms}) ->
