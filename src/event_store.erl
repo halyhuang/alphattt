@@ -24,7 +24,7 @@ show() ->
 next_player(1) -> 2;
 next_player(2) -> 1.
 		
-handle_info({update, RoomID, Move, GameState}, State=#state{rooms=Rooms, board = Board}) ->
+handle_info({update, RoomID, GameState, Move}, State=#state{rooms=Rooms, board = Board}) ->
 	case lists:keyfind(RoomID, 1, Rooms) of
 		{RoomID, Moves, Obs} ->
 			[web_player:display(WebPlayer, GameState, Move) || WebPlayer <- Obs],
@@ -42,7 +42,7 @@ handle_info({notify_observer, RoomID, Msg}, State=#state{rooms=Rooms}) ->
 	io:format("receive msg ~p~n", [Msg]),
 	case lists:keyfind(RoomID, 1, Rooms) of
 		{RoomID, _Moves, Obs} ->
-			[web_player:notify(WebPlayer, Msg) || WebPlayer <- Obs],			
+			[web_player:notify(WebPlayer, Msg) || WebPlayer <- Obs],
 			{noreply, State};
 		_ ->
 			{noreply, State}
@@ -54,19 +54,23 @@ handle_info({'DOWN', _, process, WebPlayer, _Reason}, State=#state{rooms=Rooms})
 
 
 handle_cast(show, State=#state{rooms=Rooms}) ->
-	[ io:format("Room ~p observers ~p~n", [RoomID, Obs]) || {RoomID, _Moves, Obs} <- Rooms],
+	[ io:format("Room ~p observers ~p, Moves ~p~n", [RoomID, Obs, Moves]) || {RoomID, Moves, Obs} <- Rooms],
 	{noreply, State}.
 
 
 handle_call({observe, RoomID, WebPlayer}, _From, State=#state{rooms=Rooms}) ->
 	case lists:keyfind(RoomID, 1, Rooms) of
-		{RoomID, Moves, Obs} ->					
-			NewRooms = lists:keyreplace(RoomID, 1, Rooms, {RoomID, Moves, [WebPlayer | Obs]}),
+		{RoomID, Moves, Obs} ->
+			NewObs = case lists:member(WebPlayer, Obs) of
+								true -> Obs;
+					 			   _ -> [WebPlayer | Obs]
+					 end,
+			NewRooms = lists:keyreplace(RoomID, 1, Rooms, {RoomID, Moves, NewObs}),
 			{reply, Moves, State#state{rooms = NewRooms}};			
 		_ ->
 			Moves = room_mgr:observe(RoomID),
 			_Ref = erlang:monitor(process, WebPlayer),
-			{reply, Moves, State#state{rooms = [{RoomID, Moves, [WebPlayer]}]}}
+			{reply, Moves, State#state{rooms = [{RoomID, Moves, [WebPlayer]} | Rooms]}}
 	end.
 
 terminate(_Reason, _State) ->

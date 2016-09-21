@@ -1,10 +1,10 @@
 body {  
       font-family: "Î¢ÈíÑÅºÚ";  
-      color: white;  
+      color: blue;  
       text-align: center;
 	  padding: 0;
 	  margin: 0;
-	  background: url(../image/lg.jpg) fixed center center;
+	  background: url(../image/hallbg2.png) fixed center center;
 	  background-repeat: no-repeat;
 	  background-attachment: fixed;	
 }  
@@ -13,37 +13,32 @@ body {
 	width: 800px;
 	position: absolute;
 	left: 10%;
-	top:160px;
+	top:20px;
 }
 
-#gamehall {
-	width: 60%;	
-	opacity:0.7;
-	background: url(../image/gh.jpg) fixed center center;
-}
   
 td.chessplayer {
  width:40px;
  height:40px;	
- padding:15px;
+ padding:10px;
  background: url(../image/pep.png) fixed center center;
 }
 
 td.checkdeskimg {
  width:60px;
  height:60px;	
- padding:25px;	
+ padding:15px;	
 }
 
 .datalist {
- width:300px;
+ width:270px;
+ color:white;
  background: green; 
 }
 
 .gamehall {
-    width: 60%;  
     background: #FFFFFF;
-	opacity:0.8; 	
+	opacity:0.8; 
 }
 
 .onlineuser {

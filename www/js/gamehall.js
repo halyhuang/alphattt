@@ -2,10 +2,20 @@ var jsonrpc = imprt("jsonrpc");
 var service = new jsonrpc.ServiceProxy("hall.yaws", [ "get_hallState","set_room","get_RankList","get_OneLineList" ]);
 var auth_service = new jsonrpc.ServiceProxy("auth.yaws", ["is_login"]);
 
+var hall = 
+{
+	data:null,	//所有游戏房间数据
+	pageSize:4,	//每页显示的游戏房间行数
+	lineSize:3,	//行显示的游戏房间行数
+	curPage:0,	//当前页码
+	pageNum:0,	//总页数
+	roomNum:0	//游戏房间数
+};
+
 $(document).ready(function() {
-	check_login();
+	//check_login();
 	UpdatePage();
-	timerID = setInterval(UpdatePage, 3000);	
+	//timerID = setInterval(UpdatePage, 3000);	
 	}
 )
 
@@ -34,17 +44,18 @@ function UpdatePage()
 
 function ShowHall()
 {
-	CreateHall(getHallState());
+	getHallState();
+	DisplayHall();
 }
 
 function ShowRankList()
 {
-	CreateList(getRankList(),"#ranklist");
+	CreateRankList(getRankList(),"#ranklist");
 }
 
 function ShowOnLineList()
 {
-	CreateList(getOneLineList(),"#onlinelist");
+	CreateOnLineUsersList(getOneLineList(),"#onlinelist");
 }
 
 function enterRoom(tableid)
@@ -61,7 +72,10 @@ function getHallState()
 {
     try 
 	{
-		return service.get_hallState();
+		hall.data = service.get_hallState();		
+		hall.roomNum = hall.data.rooms.length;
+		var lineNum=hall.roomNum % hall.lineSize==0 ? hall.roomNum/hall.lineSize : Math.floor(hall.roomNum/hall.lineSize)+1;//根据记录条数，计算行数
+		hall.pageNum = lineNum % hall.pageSize==0 ? lineNum/hall.pageSize : Math.floor(lineNum/hall.pageSize)+1;//根据记录条数，计算页数
      } catch(e) 
 	 {
         alert(e);
@@ -69,33 +83,80 @@ function getHallState()
 }
 
 // 根据游戏大厅数据生成大厅的HTML脚本
-function CreateHall(hall)
+function DisplayHall()
 { 
-	if( !hall )
+	if( !hall.data )
 		return;
+	var table = $("#gamehalltb");
+	table.empty();
+	CreateHall(table);
+	DisplayPages(table);
+
+}	
+
+// 根据游戏大厅数据生成大厅的HTML脚本
+function CreateHall(table)
+{ 
 	var tdHtmlStart = "<td class=\"tight\">";
-	var roomIndex = 0;
 	var room;
-	var TableHtml = "<input type=\"image\" style=\"width:60px;height:60px;\" src=\"./img/table.jpg";
-	
-	$("#gamehalltb").empty();
-	for( var i=0; i<4; i++ )
+	var TableHtml = "<input type=\"image\" style=\"width:60px;height:60px;\" src=\"./image/table2.jpg";
+	var roomIndex = hall.curPage * hall.pageSize * hall.lineSize;
+	var tr;
+	var td;
+	for( var i=0; i < hall.pageSize; i++ )
 	{
-		var tr=$("<tr></tr>");
-		tr.appendTo("#gamehalltb");
-		for( var j=0; j<3 && roomIndex < hall.rooms.length; j++ )
+		tr=$("<tr></tr>");
+		tr.appendTo(table);
+		for( var j=0; j < hall.lineSize; j++ )
 		{
-			room = hall.rooms[roomIndex];
-			var td=$("<td class=\"tight\"><table class=\"gamehall\" id=\"table"+i*3+j+"\">"	+
-					"<tr>" + 
-						tdHtmlStart + getPlayerHtml(room.player1,"") + getOnClickStr(room.roomId,room.player1)+
-						tdHtmlStart + TableHtml + getOnClickStr(room.roomId,room.player1)+
-						tdHtmlStart + getPlayerHtml(room.player2,"") + getOnClickStr(room.roomId,room.player2)+
-					"</tr>	"+
-					"</table></td>");
-		   td.appendTo(tr);
-		   roomIndex++;
+			if(roomIndex < hall.roomNum)
+			{
+				room = hall.data.rooms[roomIndex];
+				td=$("<td class=\"tight\"><table class=\"gamehall\">"	+
+						"<tr>" + 
+							tdHtmlStart + getPlayerHtml(room.player1,room.playertype1) + getOnClickStr(room.roomId,room.player1)+
+							tdHtmlStart + TableHtml + getOnClickStr(room.roomId,room.player1)+
+							tdHtmlStart + getPlayerHtml(room.player2,room.playertype2) + getOnClickStr(room.roomId,room.player2)+
+						"</tr>	"+
+						"</table></td>");
+			   td.appendTo(tr);
+			   roomIndex++;
+		   }
+		   else
+		   {
+				td=$("<td class=\"tight\"><table class=\"gamehall\">"	+
+						"<tr><td class=\"tight\"><br><img width=\"50px\" height=\"50px\" src=\"./image/none.png\"></td>" + 
+							"<td class=\"tight\"><img width=\"60px\" height=\"60px\" src=\"./image/table.jpg\"></td>"+
+						"<td class=\"tight\"><br><img width=\"50px\" height=\"50px\" src=\"./image/none.png\"></td></tr>	"+
+						"</table></td>");
+			   td.appendTo(tr);
+		   }
 		}
+	}
+}	
+
+function DisplayPages(table)
+{
+	var pages="";
+	for(var i=1; i <= hall.pageNum; i++)
+	{
+		pages += "<a href=\"#\" onclick=\"Jumpto("+i+")\"> "+i+" </a>";
+	}
+	tr=$("<tr></tr>");
+	tr.appendTo(table);
+	td=$("<td class=\"tight\"> 前往 " +pages + "</td>");
+	//td=$("<td class=\"tight\"><font size=\"4\" color=\"blue\"> 前往 </font>" +pages + "</td>");
+	td.appendTo(tr);
+	//tr=$("<tr><td height=\"30px\"></td></tr>");
+	//tr.appendTo(table);
+}	
+
+function Jumpto(page)
+{
+	if( page > 0 && page <= hall.pageNum )
+	{
+		hall.curPage = page-1;
+		DisplayHall();
 	}
 }	
 
@@ -123,7 +184,7 @@ function getOneLineList()
      }	
 }
 
-function CreateList(list,table)
+function CreateRankList(list,table)
 { 
 	if( !list )
 		return;
@@ -134,7 +195,7 @@ function CreateList(list,table)
 	
 	//var tr = $("<tr><th>排名</th><th>积分</th><th>昵称</th><th>类型</th></tr>");
 	//tr.appendTo(table);
-	for( var i=0; i < 10 && i < list.users.length; i++ )
+	for( var i=0; i < list.users.length; i++ )
 	{
 		user = list.users[i];
 		var tr = $("<tr bgcolor=\"" + color[i%3] + "\"></tr>");
@@ -143,6 +204,29 @@ function CreateList(list,table)
 					"<td>"	+ user.point +"</td>" +
 					"<td>"	+ user.name +"</td>" +
 					"<td>"	+ user.type +"</td>");
+		td.appendTo(tr);
+	}
+}
+
+function CreateOnLineUsersList(list,table)
+{ 
+	if( !list )
+		return;
+	var color = new Array("#AFAF61","#6FB7B7","#9999CC");
+	var user;
+	
+	ClearTableButHead(table);
+	
+	//var tr = $("<tr><th>排名</th><th>积分</th><th>昵称</th><th>类型</th></tr>");
+	//tr.appendTo(table);
+	for( var i=0; i < list.users.length; i++ )
+	{
+		user = list.users[i];
+		var tr = $("<tr bgcolor=\"" + color[i%3] + "\"></tr>");
+		tr.appendTo(table);
+		var td=$("<td>"	+ user.id +"</td>" +
+					"<td>"	+ user.name +"</td>" +
+					"<td>"	+ user.roomid +"</td>");
 		td.appendTo(tr);
 	}
 }
@@ -163,13 +247,15 @@ function getOnClickStr(tableid)
 	return "\" onClick=\"enterRoom("+tableid+")\"></td>";
 }
 	
-function getPlayerHtml(player,playerImg)
+function getPlayerHtml(player,playertype)
 {
+	var playerImg;
+	
 	if (player=="")
-		playerImg = "empty.jpg";
+		playerImg = "empty2.jpg";
 	else
-		playerImg = "qq.jpg";
-	return player + "<br><input type=\"image\" style=\"width:50px;height:50px;\" src=\"./img/"+playerImg;
+		playerImg = playertype+".png";
+	return player + "<br><input type=\"image\" style=\"width:50px;height:50px;\" src=\"./image/"+playerImg;
 }
 
 function ClearTableButHead(table)
@@ -192,5 +278,4 @@ function reserved(tablied,player)
 		alert(e);
 	}
 }
-
 

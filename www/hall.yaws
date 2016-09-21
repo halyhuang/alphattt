@@ -5,40 +5,57 @@
 out(A) ->
     yaws_rpc:handler_session(A, {?MODULE, handle}).
 
-get_two_player([Player1|[]])->
-	{Player1,""};
-get_two_player([Player1|Rest])->
-	[Player2|_X] = Rest,
-	{Player1,Player2};
+get_two_player([Player1, Player2])->
+	{Player1, Player2};
+get_two_player([Player1])->
+	{Player1, {"", ""}};
 get_two_player([])->
-	{"",""}.
+	{{"",""}, {"", ""}}.
 	
 create_single_room(Room)-> 	
 	{RoomId,_,Players} = Room,
-	{Player1,Player2} = get_two_player(Players),
+	{{Player1, Type1}, {Player2, Type2}} = get_two_player(Players),
 	json2:obj_from_list([{"roomId", RoomId},
 						 {"player1", Player1}, 
-						 {"player2", Player2}]).
+						 {"playertype1", Type1}, 	
+						 {"player2", Player2}, 
+						 {"playertype2", Type2}]).	
 
 create_single_user(User)-> 	
 	{Point,Name,Type} = User,
 	json2:obj_from_list([{"point", Point},
 						 {"name", Name}, 
 						 {"type", atom_to_list(Type)}]).
+						 
+create_single_online_user(User)-> 	
+	case User of
+    	{ID,Name,none} ->
+    		{ID,Name,_} = User,
+			RoomID = "";
+		{ID,Name,RoomID} ->
+			{ID,Name,RoomID} = User
+    end,
+	json2:obj_from_list([{"id", ID},
+						 {"name", Name}, 
+						 {"type", "human"}, 
+						 {"roomid", RoomID}]).
 						 	
 handle(State, {call, get_hallState, _Arg}, Session = #session{pid_str = PidStr}) ->
+    %io:format("get_hallState~n"),
 	RoomsJason =[ create_single_room(Room) || Room <- room_mgr:get_all_rooms()],
 	StateJson = json2:obj_from_list([{"rooms", {array, RoomsJason}}]), 
     {true, 0, Session, {response, StateJson}};	
 
 handle(State, {call, get_RankList, _Arg} , Session = #session{pid_str = PidStr}) ->
+    %io:format("get_RankList~n"),
 	Ranklist =[ create_single_user(User) || User <- ranklist:top()],
 	StateJson = json2:obj_from_list([{"users", {array, Ranklist}}]), 
     {true, 0, Session, {response, StateJson}};	
 
 handle(State, {call, get_OneLineList, _Arg} , Session = #session{pid_str = PidStr}) ->
-	Ranklist =[ create_single_user(User) || User <- ranklist:top()],	%TODO
-	StateJson = json2:obj_from_list([{"users", {array, Ranklist}}]), 
+    %io:format("get_OneLineList~n"),
+	OnlineUsersklist =[ create_single_online_user(User) || User <- web_agent_mgr:get_online_users()],	
+	StateJson = json2:obj_from_list([{"users", {array, OnlineUsersklist}}]), 
     {true, 0, Session, {response, StateJson}};	
 
 handle(_State, {call, get_room, _}, #session{pid_str = PidStr}) ->    
