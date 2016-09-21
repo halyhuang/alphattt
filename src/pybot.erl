@@ -1,6 +1,6 @@
 -module(pybot).
 -export([start/0, start/3]).
--export([get_move/1, update/2, display/3, stop/1]).
+-export([get_move/1, update/2, display/3, notify/2, stop/1]).
 
 -record(state,  {board = board,
                  max_time = 1000,  % milliseconds
@@ -26,6 +26,9 @@ display(Pid, GameState, Move) ->
 
 get_move(Pid) ->
     call(Pid, get_move).
+
+notify(Pid, Info) ->
+    call(Pid, {notify, Info}).  
     
 stop(Pid) ->
     call(Pid, stop).    
@@ -70,6 +73,8 @@ handle_call({display, GameState, Move}, State=#state{board=Board}, Ppy) ->
             python:call(Ppy, pybot, set_move, [Move])
     end,
     io:format("player move ~p~n", [Move]),
+    {reply, ok, State};
+handle_call({notify, _Info}, State, _) ->
     {reply, ok, State};
 handle_call(get_move, State=#state{board=Board, game_states=GSs, from = From}, Ppy) ->
     NextMove = python:call(Ppy, pybot, get_move, []),

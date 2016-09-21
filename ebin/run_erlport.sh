@@ -1,1 +1,1 @@
-erl -pa ../erlport
+erl -pa ../erlport/ebin
