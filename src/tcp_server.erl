@@ -2,7 +2,7 @@
 -behaviour(gen_server).
 
 %%APIs
--export([start/2]).
+-export([start_link/2]).
 
 %% gen_server callbacks
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
@@ -11,8 +11,8 @@
 
 %%APIs
 
-start(LPort, Agent) ->
-	gen_server:start({local, ?MODULE}, ?MODULE, [LPort, Agent], []).
+start_link(LPort, Agent) ->
+	gen_server:start_link({local, ?MODULE}, ?MODULE, [LPort, Agent], []).
 
 init([LPort, Agent]) ->
 	case gen_tcp:listen(LPort, [binary, {packet, 2}, {active, true}]) of
