@@ -15,7 +15,7 @@ var hall =
 $(document).ready(function() {
 	check_login();
 	UpdatePage();
-	//timerID = setInterval(UpdatePage, 3000);	
+	timerID = setInterval(UpdatePage, 3000);	
 	}
 )
 
@@ -99,7 +99,7 @@ function CreateHall(table)
 { 
 	var tdHtmlStart = "<td class=\"tight\">";
 	var room;
-	var TableHtml = "<input type=\"image\" style=\"width:60px;height:60px;\" src=\"./image/table.jpg";
+	var TableHtml = "<input type=\"image\" style=\"width:60px;height:60px;\" src=\"./image/table2.jpg";
 	var roomIndex = hall.curPage * hall.pageSize * hall.lineSize;
 	var tr;
 	var td;
@@ -122,7 +122,8 @@ function CreateHall(table)
 			   td.appendTo(tr);
 			   roomIndex++;
 		   }
-		   else
+		   // 
+		   /*else
 		   {
 				td=$("<td class=\"tight\"><table class=\"gamehall\">"	+
 						"<tr><td class=\"tight\"><br><img width=\"50px\" height=\"50px\" src=\"./image/none.png\"></td>" + 
@@ -130,7 +131,7 @@ function CreateHall(table)
 						"<td class=\"tight\"><br><img width=\"50px\" height=\"50px\" src=\"./image/none.png\"></td></tr>	"+
 						"</table></td>");
 			   td.appendTo(tr);
-		   }
+		   }*/
 		}
 	}
 }	
@@ -145,9 +146,10 @@ function DisplayPages(table)
 	tr=$("<tr></tr>");
 	tr.appendTo(table);
 	td=$("<td class=\"tight\"> 前往 " +pages + "</td>");
+	//td=$("<td class=\"tight\"><font size=\"4\" color=\"blue\"> 前往 </font>" +pages + "</td>");
 	td.appendTo(tr);
-	tr=$("<tr><td height=\"30px\"></td></tr>");
-	tr.appendTo(table);
+	//tr=$("<tr><td height=\"30px\"></td></tr>");
+	//tr.appendTo(table);
 }	
 
 function Jumpto(page)
@@ -251,7 +253,7 @@ function getPlayerHtml(player,playertype)
 	var playerImg;
 	
 	if (player=="")
-		playerImg = "none.png";
+		playerImg = "empty2.jpg";
 	else
 		playerImg = playertype+".png";
 	return player + "<br><input type=\"image\" style=\"width:50px;height:50px;\" src=\"./image/"+playerImg;

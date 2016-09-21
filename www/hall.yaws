@@ -42,19 +42,19 @@ create_single_online_user(User)->
 						 {"roomid", RoomID}]).
 						 	
 handle(State, {call, get_hallState, _Arg}, Session = #session{pid_str = PidStr}) ->
-    io:format("get_hallState~n"),
+    %io:format("get_hallState~n"),
 	RoomsJason =[ create_single_room(Room) || Room <- room_mgr:get_all_rooms()],
 	StateJson = json2:obj_from_list([{"rooms", {array, RoomsJason}}]), 
     {true, 0, Session, {response, StateJson}};	
 
 handle(State, {call, get_RankList, _Arg} , Session = #session{pid_str = PidStr}) ->
-    io:format("get_RankList~n"),
+    %io:format("get_RankList~n"),
 	Ranklist =[ create_single_user(User) || User <- ranklist:top()],
 	StateJson = json2:obj_from_list([{"users", {array, Ranklist}}]), 
     {true, 0, Session, {response, StateJson}};	
 
 handle(State, {call, get_OneLineList, _Arg} , Session = #session{pid_str = PidStr}) ->
-    io:format("get_OneLineList~n"),
+    %io:format("get_OneLineList~n"),
 	OnlineUsersklist =[ create_single_online_user(User) || User <- web_agent_mgr:get_online_users()],	
 	StateJson = json2:obj_from_list([{"users", {array, OnlineUsersklist}}]), 
     {true, 0, Session, {response, StateJson}};	

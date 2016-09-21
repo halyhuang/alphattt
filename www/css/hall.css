@@ -1,6 +1,6 @@
 body {  
       font-family: "微软雅黑";  
-      color: white;  
+      color: blue;  
       text-align: center;
 	  padding: 0;
 	  margin: 0;
@@ -10,8 +10,7 @@ body {
 }  
 
 #container {
-	width: 1246px;
-	padding:15px;
+	width: 800x;
 	position: absolute;
 	left: 10%;
 	top:160px;
@@ -60,5 +59,3 @@ tr.over td {
     background:#ff8040;  /*这个将是鼠标高亮行的背景background:#bcd4ec色*/
 	cursor: pointer;
 }
-a{color:#ffffff;text-decoration:underline;font-size:18px;}
-a:hover{text-decoration:unerline;}
