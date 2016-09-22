@@ -36,7 +36,7 @@ stop(Pid) ->
 %%
 init([Board, MaxTime, ExplorationFactor]) ->
     {ok, Ppy} = python:start([{python_path,"../src/python"},{python, "python2"}]),
-    python:call(Ppy,pybot,init,[MaxTime]),
+    % python:call(Ppy,pybot,init,[MaxTime]),
     State = #state{board = Board,
                      max_time = MaxTime,
                      exploration_factor = ExplorationFactor
@@ -65,10 +65,10 @@ call(Pid, Msg) ->
 
 handle_call({update, GameState}, State=#state{game_states=GSs}, Ppy) -> 
     {reply, ok, State#state{game_states=[GameState | GSs]}};
-handle_call({display, GameState, Move}, State=#state{board=Board}, Ppy) ->
+handle_call({display, GameState, Move}, State=#state{board=Board, max_time=MaxTime}, Ppy) ->
     case Move of
         none ->
-            body;
+            python:call(Ppy,pybot,init,[MaxTime]);
         _ ->
             python:call(Ppy, pybot, set_move, [Move])
     end,
