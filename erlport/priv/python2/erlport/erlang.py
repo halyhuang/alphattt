@@ -1,4 +1,4 @@
-# Copyright (c) 2009-2015, Dmitry Vasiliev <dima@hlabs.org>
+# Copyright (c) 2009-2013, Dmitry Vasiliev <dima@hlabs.org>
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -29,15 +29,14 @@ from __future__ import with_statement
 
 __author__ = "Dmitry Vasiliev <dima@hlabs.org>"
 
-from inspect import getargspec
 import sys
 from sys import exc_info
 from traceback import extract_tb
+from inspect import getargspec
 from threading import Lock
-import uuid
+from contextlib import contextmanager
 
 from erlport import Atom
-
 
 class Error(Exception):
     """ErlPort Error."""
@@ -95,6 +94,22 @@ class Responses(object):
             self.__responses[response_id] = message
         return default
 
+class MessageId(object):
+
+    def __init__(self):
+        self.__ids = set()
+        self.__lock = Lock()
+
+    @contextmanager
+    def __call__(self):
+        with self.__lock:
+            mid = max(self.__ids) + 1 if self.__ids else 1
+            self.__ids.add(mid)
+        try:
+            yield mid
+        finally:
+            with self.__lock:
+                self.__ids.remove(mid)
 
 class MessageHandler(object):
 
@@ -105,9 +120,7 @@ class MessageHandler(object):
         self.set_default_message_handler()
         self._self = None
         self.responses = Responses()
-
-    def new_message_id(self):
-        return uuid.uuid4().int
+        self.message_id = MessageId()
 
     def set_default_encoder(self):
         self.encoder = lambda o: o
@@ -203,12 +216,10 @@ class MessageHandler(object):
         return self._call(Atom('erlang'), Atom('make_ref'), [], Atom('L'))
 
     def _call(self, module, function, args, context):
-        mid = self.new_message_id()
-        self.port.write((Atom('C'), mid, module, function,
-                         map(self.encoder, args), context))
-
-        response = self._receive(expect_id=mid)
-
+        with self.message_id() as mid:
+            self.port.write((Atom('C'), mid, module, function,
+                map(self.encoder, args), context))
+            response = self._receive(expect_id=mid)
         try:
             mtype, _mid, value = response
         except ValueError:

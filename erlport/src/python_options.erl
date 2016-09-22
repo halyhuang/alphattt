@@ -1,4 +1,4 @@
-%%% Copyright (c) 2009-2015, Dmitry Vasiliev <dima@hlabs.org>
+%%% Copyright (c) 2009-2013, Dmitry Vasiliev <dima@hlabs.org>
 %%% All rights reserved.
 %%%
 %%% Redistribution and use in source and binary forms, with or without
@@ -28,7 +28,7 @@
 %%%
 %%% @doc Python options handling
 %%% @author Dmitry Vasiliev <dima@hlabs.org>
-%%% @copyright 2009-2015 Dmitry Vasiliev <dima@hlabs.org>
+%%% @copyright 2009-2013 Dmitry Vasiliev <dima@hlabs.org>
 %%% @private
 %%%
 
@@ -180,7 +180,7 @@ check_python_version(Python) ->
         {match, StrVersion} ->
             Version = list_to_tuple([list_to_integer(N) || N <- StrVersion]),
             if
-                Version >= {2, 5, 0} ->
+                Version >= {2, 5, 0} andalso Version < {4, 0, 0} ->
                     {ok, Version};
                 true ->
                     {error, {unsupported_python_version, Out}}

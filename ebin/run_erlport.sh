@@ -1,1 +1,1 @@
-erl -env ERL_LIBS ../erlport
+erl -pa ../erlport/ebin

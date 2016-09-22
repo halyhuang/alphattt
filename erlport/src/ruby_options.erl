@@ -1,4 +1,4 @@
-%%% Copyright (c) 2009-2015, Dmitry Vasiliev <dima@hlabs.org>
+%%% Copyright (c) 2009-2013, Dmitry Vasiliev <dima@hlabs.org>
 %%% All rights reserved.
 %%%
 %%% Redistribution and use in source and binary forms, with or without
@@ -28,7 +28,7 @@
 %%%
 %%% @doc Ruby options handling
 %%% @author Dmitry Vasiliev <dima@hlabs.org>
-%%% @copyright 2009-2015 Dmitry Vasiliev <dima@hlabs.org>
+%%% @copyright 2009-2013 Dmitry Vasiliev <dima@hlabs.org>
 %%% @private
 %%%
 
@@ -182,7 +182,7 @@ check_ruby_version(Ruby) ->
             if
                 Version >= {1, 8, 6} andalso Version < {2, 0, 0} ->
                     {ok, Version};
-                Version >= {2, 0, 0} ->
+                Version >= {2, 0, 0} andalso Version < {2, 1, 0} ->
                     {ok, {1, 9, 0}};
                 true ->
                     {error, {unsupported_ruby_version, Out}}

@@ -1,1 +1,1 @@
-erl -sname webserver -setcookie alphattt -s ybed_boot start
+erl -pa ../erlport/ebin -sname webserver -setcookie alphattt -s ybed_boot start
