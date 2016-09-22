@@ -1,19 +1,24 @@
 body {  
       font-family: "Î¢ÈíÑÅºÚ";  
       color: blue;  
+      background: #95caca;
       text-align: center;
 	  padding: 0;
 	  margin: 0;
-	  background: url(../image/hallbg2.png) fixed center center;
-	  background-repeat: no-repeat;
-	  background-attachment: fixed;	
 }  
+#container1 {
+	width: 860px;
+	position: absolute;
+    text-align: center;
+	left: 7%;
+}
 
 #container {
 	width: 800px;
 	position: absolute;
-	left: 10%;
-	top:20px;
+    text-align: center;
+	left: 5%;
+	top:30px;
 }
 
   
@@ -31,7 +36,7 @@ td.checkdeskimg {
 }
 
 .datalist {
- width:270px;
+ width:300px;
  color:white;
  background: green; 
 }

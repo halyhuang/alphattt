@@ -37,15 +37,6 @@ handle_tcp_data(TcpData, State=#state{status = wait_enter_room}) ->
 					io:format("player ~p enter room failed, reason ~p~n", [NickName, Reason]),
 					{ok, State}
 			end;	
-		{observe, NickName, RoomID} ->
-			case room_mgr:enter(RoomID) of
-				{ok, NewRoomPid} ->
-					room:observe(NewRoomPid, {self(), NickName}),
-					{ok, State#state{status = enter_room, room = NewRoomPid}};
-				Reason ->
-					io:format("player ~p observe room failed, reason ~p~n", [NickName, Reason]),
-					{ok, State}
-			end;	
 		{notify, _PlayerID, _Info} ->
 			{ok, State};							
 		Unexpected ->
@@ -66,15 +57,6 @@ handle_tcp_data(TcpData, State=#state{status = enter_room, room = RoomPid}) ->
 					io:format("player ~p enter room ~p failed, reason ~p~n", [NickName, RoomID, Reason]),
 					{ok, State}
 			end;	
-		{observe, NickName, RoomID} ->
-			case room_mgr:enter(RoomID) of
-				{ok, NewRoomPid} ->
-					room:observe(NewRoomPid, {self(), NickName}),
-					{ok, State#state{status = enter_room, room = NewRoomPid}};
-				Reason ->
-					io:format("player ~p observe room failed, reason ~p~n", [NickName, Reason]),
-					{ok, State}
-			end;									
 		{leave_room, NickName} ->
 			room:leave(RoomPid, self()),
 			io:format("player ~p leave room~n", [NickName]),

@@ -11,12 +11,12 @@ start_link() ->
     supervisor:start_link({local, ?MODULE}, ?MODULE, []).
 
 init([]) ->
-    Ranklist = {ranklist, {ranklist,start,[]},
+    Ranklist = {ranklist, {ranklist,start_link,[]},
             				permanent,2000,worker,[ranklist]},
-    Rommmgr = {room_mgr, {room_mgr,start,[board, 32]},
+    Roommgr = {room_mgr, {room_mgr,start_link,[board, 32]},
             				permanent,2000,worker,[room_mgr]},
-    Auth = {game_auth, {game_auth,start,[]},
+    Auth = {game_auth, {game_auth,start_link,[]},
             				permanent,2000,worker,[game_auth]},  
-    TcpServer = {tcp_server, {tcp_server, start,[8011, player_agent]},
+    TcpServer = {tcp_server, {tcp_server, start_link,[8011, player_agent]},
             				permanent,2000,worker,[tcp_server]},        				          				
-    {ok,{{one_for_one, 4, 3600}, [Ranklist, Rommmgr, Auth, TcpServer]}}.
+    {ok,{{one_for_one, 4, 3600}, [Ranklist, Roommgr, Auth, TcpServer]}}.

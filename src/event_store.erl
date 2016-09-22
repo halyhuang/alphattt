@@ -2,7 +2,7 @@
 
 -behaviour (gen_server).
 
--export([start/1, observe/2, show/0]).
+-export([start/1, observe/2, unsuscribe/1, show/0]).
 
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
 
@@ -17,6 +17,9 @@ init([Board]) ->
 
 observe(RoomID, WebPlayer) ->
 	gen_server:call(?MODULE, {observe, RoomID, WebPlayer}).	
+
+unsuscribe(WebPlayer) ->
+	gen_server:cast(?MODULE, {unsuscribe, WebPlayer}).	
 
 show() ->
 	gen_server:cast(?MODULE, show).
@@ -49,14 +52,19 @@ handle_info({notify_observer, RoomID, Msg}, State=#state{rooms=Rooms}) ->
 	end;
 
 handle_info({'DOWN', _, process, WebPlayer, _Reason}, State=#state{rooms=Rooms}) ->
-	NewRooms = [{RoomID, Moves, lists:delete(WebPlayer, Obs)}  || {RoomID, Moves, Obs} <- Rooms],
+	NewRooms = delete_suscriber(Rooms, WebPlayer),
 	{noreply, State#state{rooms = NewRooms}}.	
 
+delete_suscriber(Rooms, WebPlayer) ->
+	[{RoomID, Moves, lists:delete(WebPlayer, Obs)}  || {RoomID, Moves, Obs} <- Rooms].
+
+handle_cast({unsuscribe, WebPlayer}, State=#state{rooms=Rooms}) ->
+	NewRooms = delete_suscriber(Rooms, WebPlayer),
+	{noreply, State#state{rooms =NewRooms}};
 
 handle_cast(show, State=#state{rooms=Rooms}) ->
 	[ io:format("Room ~p observers ~p, Moves ~p~n", [RoomID, Obs, Moves]) || {RoomID, Moves, Obs} <- Rooms],
 	{noreply, State}.
-
 
 handle_call({observe, RoomID, WebPlayer}, _From, State=#state{rooms=Rooms}) ->
 	case lists:keyfind(RoomID, 1, Rooms) of
