@@ -13,7 +13,7 @@ var hall =
 };
 
 $(document).ready(function() {
-	//check_login();
+	check_login();
 	UpdatePage();
 	//timerID = setInterval(UpdatePage, 3000);	
 	}
