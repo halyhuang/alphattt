@@ -15,7 +15,7 @@ var hall =
 $(document).ready(function() {
 	check_login();
 	UpdatePage();
-	//timerID = setInterval(UpdatePage, 3000);	
+	timerID = setInterval(UpdatePage, 3000);	
 	}
 )
 
@@ -122,7 +122,7 @@ function CreateHall(table)
 			   td.appendTo(tr);
 			   roomIndex++;
 		   }
-		   else
+		   else	// 为保证游戏大厅大小不变，补齐一些无效的房间
 		   {
 				td=$("<td class=\"tight\"><table class=\"gamehall\">"	+
 						"<tr><td class=\"tight\"><br><img width=\"50px\" height=\"50px\" src=\"./image/none.png\"></td>" + 
@@ -145,10 +145,8 @@ function DisplayPages(table)
 	tr=$("<tr></tr>");
 	tr.appendTo(table);
 	td=$("<td class=\"tight\"> 前往 " +pages + "</td>");
-	//td=$("<td class=\"tight\"><font size=\"4\" color=\"blue\"> 前往 </font>" +pages + "</td>");
 	td.appendTo(tr);
-	//tr=$("<tr><td height=\"30px\"></td></tr>");
-	//tr.appendTo(table);
+
 }	
 
 function Jumpto(page)
@@ -192,9 +190,7 @@ function CreateRankList(list,table)
 	var user;
 	
 	ClearTableButHead(table);
-	
-	//var tr = $("<tr><th>排名</th><th>积分</th><th>昵称</th><th>类型</th></tr>");
-	//tr.appendTo(table);
+
 	for( var i=0; i < list.users.length; i++ )
 	{
 		user = list.users[i];
@@ -216,9 +212,7 @@ function CreateOnLineUsersList(list,table)
 	var user;
 	
 	ClearTableButHead(table);
-	
-	//var tr = $("<tr><th>排名</th><th>积分</th><th>昵称</th><th>类型</th></tr>");
-	//tr.appendTo(table);
+
 	for( var i=0; i < list.users.length; i++ )
 	{
 		user = list.users[i];
