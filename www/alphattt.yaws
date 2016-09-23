@@ -77,10 +77,10 @@ handle(_State, {call, start_observe, _}, #session{pid_str = PidStr}) ->
     Pid = web_agent_mgr:get_agent_pid(PidStr),
     Moves = web_agent:start_observe(Pid),
     MovesJson = [ begin
-                            MoveJson = json2:obj_from_list([{"R", R}, {"C", C}, {"r", R1}, {"c", C1}]), 
-                            json2:obj_from_list([{"player", Player},
-                                                 {"move", MoveJson}])
-                          end || {Player, {R, C, R1, C1}} <- Moves],    
+                    MoveJson = json2:obj_from_list([{"R", R}, {"C", C}, {"r", R1}, {"c", C1}]), 
+                    json2:obj_from_list([{"player", Player},
+                                         {"move", MoveJson}])
+                end || {Player, {R, C, R1, C1}} <- Moves],    
     Response = json2:obj_from_list([{"is_update_display", true},
                                     {"moves", {array, MovesJson}}]),
     {true, 0, #session{pid_str = pid_to_list(Pid)}, {response, Response}};

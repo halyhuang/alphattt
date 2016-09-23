@@ -5,15 +5,15 @@
 
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
 
--export([start/0, start_agent/0, get_agent_pid/1, show/0, get_online_users/0, stop/1]).
+-export([start_link/0, start_agent/0, get_agent_pid/1, show/0, get_online_users/0, stop/1]).
 
 -record(state,  {agents = [],
 				 index = 1}).
 
 %% APIs.
 
-start() ->
-	{ok, Pid} = gen_server:start({local, ?MODULE}, ?MODULE, [],[]),	
+start_link() ->
+	{ok, Pid} = gen_server:start_link({local, ?MODULE}, ?MODULE, [],[]),	
 	{ok, Pid}.
 
 start_agent() ->

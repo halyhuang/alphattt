@@ -83,7 +83,8 @@ call(Pid, Msg) ->
 	end.
 
 next_player(1) -> 2;
-next_player(2) -> 1.
+next_player(2) -> 1;
+next_player(_) -> 0.
 
 handle_call({update, GameState}, State=#state{game_states=GSs}) -> 
 	{reply, ok, State#state{game_states=[GameState | GSs]}};

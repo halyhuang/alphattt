@@ -2,14 +2,14 @@
 
 -behaviour (gen_server).
 
--export([start/1, observe/2, unsuscribe/1, show/0]).
+-export([start_link/1, observe/2, unsuscribe/1, show/0, get_all_rooms/0]).
 
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
 
 -record(state, {board, rooms = []}).
 
-start(Board) ->
-	{ok, Pid} = gen_server:start({local, ?MODULE}, ?MODULE, [Board], []),	
+start_link(Board) ->
+	{ok, Pid} = gen_server:start_link({local, ?MODULE}, ?MODULE, [Board], []),	
 	{ok, Pid}.
 
 init([Board]) ->
@@ -21,8 +21,13 @@ observe(RoomID, WebPlayer) ->
 unsuscribe(WebPlayer) ->
 	gen_server:cast(?MODULE, {unsuscribe, WebPlayer}).	
 
+get_all_rooms() ->
+	gen_server:call(?MODULE, get_all_rooms).	
+
 show() ->
-	gen_server:cast(?MODULE, show).
+	Rooms = get_all_rooms(),
+	[ io:format("Room ~p observers ~p, Moves ~p~n", [RoomID, Obs, Moves]) || {RoomID, Moves, Obs} <- Rooms],
+	ok.
 
 next_player(1) -> 2;
 next_player(2) -> 1.
@@ -60,11 +65,10 @@ delete_suscriber(Rooms, WebPlayer) ->
 
 handle_cast({unsuscribe, WebPlayer}, State=#state{rooms=Rooms}) ->
 	NewRooms = delete_suscriber(Rooms, WebPlayer),
-	{noreply, State#state{rooms =NewRooms}};
+	{noreply, State#state{rooms =NewRooms}}.
 
-handle_cast(show, State=#state{rooms=Rooms}) ->
-	[ io:format("Room ~p observers ~p, Moves ~p~n", [RoomID, Obs, Moves]) || {RoomID, Moves, Obs} <- Rooms],
-	{noreply, State}.
+handle_call(get_all_rooms, _From, State=#state{rooms=Rooms}) ->
+	{reply, Rooms, State};
 
 handle_call({observe, RoomID, WebPlayer}, _From, State=#state{rooms=Rooms}) ->
 	case lists:keyfind(RoomID, 1, Rooms) of

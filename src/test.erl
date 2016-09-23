@@ -5,7 +5,7 @@
 -export([connect/0]).
 
 robot_vs_robot() ->
-	SIP = "127.0.0.1",
+	SIP = "10.8.39.80",
 	NickName = "mcts",
 	{ok, Pid} = player_client:start(NickName, mcts, board, SIP, 8011),
 	player_client:login(Pid, ""),
