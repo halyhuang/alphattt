@@ -90,7 +90,7 @@ handle_call({update, GameState}, State=#state{game_states=GSs}) ->
 	{reply, ok, State#state{game_states=[GameState | GSs]}};
 
 handle_call({display, _GameState, none}, State) ->
-	{reply, ok, State#state{is_display_move = true, moves = []}};
+	{reply, ok, State#state{is_display_move = true, moves = [{0, {0,0,0,0}}]}};
 
 handle_call({display, GameState, Move}, State=#state{board = Board, moves = Moves}) ->
 	{reply, ok, State#state{is_display_move = true, moves = [{next_player(Board:current_player(GameState)), Move} | Moves]}};
@@ -99,7 +99,7 @@ handle_call(is_display_move, State=#state{is_display_move = IsDisplayMove}) ->
 	{reply, {ok, IsDisplayMove}, State};
 
 handle_call(get_display_move, State=#state{moves = Moves}) ->
-	{reply, {ok, Moves}, State#state{is_display_move = false}};
+	{reply, {ok, lists:reverse(Moves)}, State#state{is_display_move = false, moves = []}};
 
 handle_call({notify, Info}, State=#state{infos = Infos}) ->
 	io:format("webplayer notify:~p~n", [Info]),

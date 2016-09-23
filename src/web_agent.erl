@@ -202,8 +202,8 @@ handle_call(start_observe, State=#state{room = none, username = UserName}) ->
 
 handle_call(start_observe, State=#state{room = RoomID, username = UserName, web_player = WebPlayer}) when is_integer(RoomID) ->
 	io:format("~p observe room ~p~n", [UserName, RoomID]),
-	Moves = event_store:observe(RoomID, WebPlayer),
-	{reply, Moves, State};	
+	event_store:observe(RoomID, WebPlayer),
+	{reply, ok, State};	
 
 handle_call({start_robot, RobotName, _RobotType}, State=#state{room = none}) ->
     io:format("~p room isn't set~n", [RobotName]),

@@ -1,7 +1,7 @@
 ﻿
 
 var jsonrpc = imprt("jsonrpc");
-var service = new jsonrpc.ServiceProxy("alphattt.yaws", ["poll_get_move", "poll_display", "start_game", "start_robot", "start_observe", "get_move", "get_legal_moves", "set_move"]);
+var service = new jsonrpc.ServiceProxy("alphattt.yaws", ["poll_get_move", "poll_display", "start_game", "start_robot", "start_observe", "set_move"]);
 var hall_service = new jsonrpc.ServiceProxy("hall.yaws", ["get_room", "leave_room"]);
 var auth_service = new jsonrpc.ServiceProxy("auth.yaws", ["is_login"]);
 	
@@ -14,7 +14,7 @@ var players = new Array();
 players[0] = {player:'0', color:"white", innerHTML:""};
 players[1] = {player:'1', color:"#00FFFF", innerHTML:"X"};
 players[2] = {player:'2', color:"#53FF53", innerHTML:"O"};
-var player = 1;
+var g_player = 1;
 
 var legal_moves = new Array();
 var child_nums = 0;
@@ -47,6 +47,7 @@ window.onload = function() {
 	check_login();
 	check_room();
 	init_botton();	
+	grids = document.querySelectorAll('.grid');	
 	init_board();		
 	init_poll();
 };  
@@ -72,7 +73,7 @@ function poll_get_move()
 				var result = service.poll_get_move();
 				if (result.is_get_move)
 				{
-					player = result.player;
+					g_player = result.player;
 					legal_moves = result.legal_moves;
 				}	
 			}				
@@ -88,25 +89,12 @@ function poll_display()
 			if (is_poll_display)
 			{
 				var result = service.poll_display();
-				if (result.is_update_display)
-				{
-					if (result.moves.length == 0)
-					{
-						init_board();
-					}		
-					else
-					{
-						update_display(result.moves[0].player, result.moves[0].move);	
-					}
-				}	
-				if (result.infos.length > 0)
-				{
-					for (var i=0; i < result.infos.length; i++)
-					{ 
-						var player = result.infos[i].player;
-						info(players[player].player, result.infos[i].info);
-					}
-				}				
+				update_display(result.moves, result.moves);						
+				for (var i=0; i < result.infos.length; i++)
+				{ 
+					var player = result.infos[i].player;
+					info(players[player].player, result.infos[i].info);
+				}
 				set_legal_move();		
 			}
      } catch(e) {
@@ -120,14 +108,26 @@ function grid_pos(move)
 	return ((move.R * 3 + move.r) * 9 + (move.C * 3 + move.c));
 }
 
-function update_display(player, move)
+function update_display(moves)
 {
-	set_backgroud_blank();
-	var index = grid_pos(move);
-	grids[index].state = player;
-	grids[index].innerHTML = players[player].innerHTML;
-	grids[index].style.background = players[player].color;
-	info(players[player].player, "move(" + move.R + "," + move.C + "," + move.r + "," + move.c + ")");
+	for (var i=0; i < moves.length; i++)
+	{ 
+		var move = moves[i].move;
+		var player = moves[i].player;
+		if (player == 0)
+		{
+			init_board();			
+		}
+		else
+		{
+			set_backgroud_blank();
+			var index = grid_pos(move);
+			grids[index].state = player;
+			grids[index].innerHTML = players[player].innerHTML;
+			grids[index].style.background = players[player].color;
+			info(players[player].player, "move(" + move.R + "," + move.C + "," + move.r + "," + move.c + ")");
+		}
+	}	
 }
 
 function opponent(id)
@@ -152,7 +152,6 @@ function init_botton()
 
 function init_board()
 {
-	grids = document.querySelectorAll('.grid');
 	for (var i=0; i < grids.length; i++)
 	{ 
 		grids[i].R = Math.floor((Math.floor(i / 9)) / 3);
@@ -185,7 +184,7 @@ function set_backgroud_opponent(enter_grid, is_show)
 		{
 			if (is_show)
 			{
-				grids[i].style.background = players[opponent(player)].color;			
+				grids[i].style.background = players[opponent(g_player)].color;			
 			}
 			else
 			{
@@ -233,8 +232,7 @@ function start_robot()
 function start_observe()
 {
 	init_board();
-	var result = service.start_observe();	
-	init_observe(result.moves);
+	service.start_observe();	
 	is_poll_display = true;	
 }
 
@@ -278,7 +276,7 @@ function set_backgroud_legal()
 	for (var i=0; i<legal_moves.length; i++)
 	{ 
 		var index = grid_pos(legal_moves[i]);
-		grids[index].style.background = players[player].color;
+		grids[index].style.background = players[g_player].color;
 		grids[index].is_legal = true;
 	}		
 }

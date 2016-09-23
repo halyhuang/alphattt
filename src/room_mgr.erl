@@ -25,7 +25,7 @@ enter(RoomID) ->
 	gen_server:call({global, ?MODULE}, {enter, RoomID}).
 
 observe(RoomID) ->
-	gen_server:call({global, ?MODULE}, {observe, RoomID, self()}).	
+	gen_server:cast({global, ?MODULE}, {observe, RoomID, self()}).	
 
 reset(RoomID) ->
 	gen_server:cast({global, ?MODULE}, {reset, RoomID}).
@@ -60,6 +60,14 @@ handle_cast(test, State=#state{rooms=Rooms}) ->
 			room:reset(RoomPid)
 	end,
 	{noreply, State};
+
+handle_cast({observe, RoomID, Observer}, State=#state{rooms=Rooms}) ->
+	case lists:keyfind(RoomID, 1, Rooms) of
+		{RoomID, RoomPid, _Ref} -> room:observe(RoomPid, Observer);
+		_ -> ok
+	end,
+	{noreply, State};
+
 handle_cast({reset, RoomID}, State=#state{rooms=Rooms}) ->
 	case lists:keyfind(RoomID, 1, Rooms) of
 		{RoomID, RoomPid, _Ref} ->
@@ -78,15 +86,6 @@ handle_call(get_all_rooms, _From, State=#state{rooms=Rooms}) ->
 								    end || Player <- Players ],					    
 					{RoomID, Status, PlayerTypes} end || {RoomID, RoomPid, _Ref} <- Rooms],
 	{reply, RoomStates, State};
-
-handle_call({observe, RoomID, Observer}, _From, State=#state{rooms=Rooms}) ->
-	case lists:keyfind(RoomID, 1, Rooms) of
-		{RoomID, RoomPid, _Ref} ->
-			Moves = room:observe(RoomPid, Observer),
-			{reply, Moves, State};
-		_ ->
-			{reply, [], State}
-	end;
 
 handle_call({enter, RoomID}, _From, State=#state{rooms=Rooms}) ->
 	Reply = case lists:keyfind(RoomID, 1, Rooms) of

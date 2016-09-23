@@ -13,7 +13,7 @@ start_link() ->
 init([]) ->
 	WebAgentMgr = {web_agent_mgr, {web_agent_mgr,start_link,[]},
             			permanent,2000,worker,[web_agent_mgr]},
-	EventStore = {event_store, {event_store,start_link,[board]},
+	EventStore = {event_store, {event_store,start_link,[]},
             			permanent,2000,worker,[event_store]},            			
     YBed = {ybed, {ybed,start,[]},
             permanent,2000,worker,[ybed]},
