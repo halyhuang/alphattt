@@ -1,4 +1,4 @@
--module(ybed_sup).
+﻿-module(ybed_sup).
 -behaviour(supervisor).
 
 %% API
@@ -17,4 +17,4 @@ init([]) ->
             			permanent,2000,worker,[event_store]},            			
     YBed = {ybed, {ybed,start,[]},
             permanent,2000,worker,[ybed]},
-    {ok,{{one_for_all,0,1}, [YBed, WebAgentMgr, EventStore]}}.
+    {ok,{{one_for_one, 4, 3600}, [YBed, WebAgentMgr, EventStore]}}.

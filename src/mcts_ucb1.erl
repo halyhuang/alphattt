@@ -1,4 +1,4 @@
--module(mcts_ucb1).
+﻿-module(mcts_ucb1).
 -export([start/0, start/3]).
 -export([get_move/1, update/2, display/3, notify/2, stop/1]).
 
@@ -70,8 +70,8 @@ call(Pid, Msg) ->
 handle_call({update, GameState}, State=#state{game_states=GSs}) ->
 	{reply, ok, State#state{game_states=[GameState | GSs]}};
 handle_call({display, GameState, Move}, State=#state{board=Board}) ->
-	io:format("player move ~p~n", [Move]),
-	io:format("~ts~n", [Board:display(GameState, Move)]),
+%%	io:format("player move ~p~n", [Move]),
+%%	io:format("~ts~n", [Board:display(GameState, Move)]),
 	{reply, ok, State};
 
 handle_call({notify, _Info}, State) ->

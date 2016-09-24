@@ -1,4 +1,4 @@
-var serviceURL = "alphattt.yaws";
+﻿var serviceURL = "alphattt.yaws";
 var methods = [ "register"];
 
 var jsonrpc = imprt("jsonrpc");
@@ -25,7 +25,7 @@ $(function()
 
         if (!(password == passwordAgain))
         {
-            alert("两次密码输入不一�?);
+            alert("两次密码输入不一致");
             return;
         }
 
@@ -76,7 +76,7 @@ $(function()
     function error() {
         $(this).addClass("error");
         $(this).next().hide();
-        var message = "<span class='n-msg' style='color: #ff0000'>" + $(this).prev().html().replace("�?, "") + "不能为空</span>"
+        var message = "<span class='n-msg' style='color: #ff0000'>" + $(this).prev().html().replace("：", "") + "不能为空</span>"
         $(this).after(message);
     }
 

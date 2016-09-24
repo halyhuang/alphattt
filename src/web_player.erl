@@ -1,4 +1,4 @@
--module(web_player).
+﻿-module(web_player).
 -export([start/1, start/3, update/2, display/3, get_move/1, stop/1]).
 -export([get_legal_moves/1, set_move/2, is_move/1, is_display_move/1, get_display_move/1, get_info/1, notify/2]).
 
@@ -102,7 +102,7 @@ handle_call(get_display_move, State=#state{moves = Moves}) ->
 	{reply, {ok, lists:reverse(Moves)}, State#state{is_display_move = false, moves = []}};
 
 handle_call({notify, Info}, State=#state{infos = Infos}) ->
-	io:format("webplayer notify:~p~n", [Info]),
+%%	io:format("webplayer notify:~p~n", [Info]),
 	{reply, ok, State#state{infos = [ Info | Infos]}};
 
 handle_call(get_info, State=#state{infos = Infos}) ->

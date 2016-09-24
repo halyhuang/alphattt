@@ -1,4 +1,4 @@
--module(web_agent_mgr).
+﻿-module(web_agent_mgr).
 -behaviour (gen_server).
 
 -include("yaws_api.hrl").
@@ -39,8 +39,8 @@ get_online_users() ->
 show() ->
 	OnlineUsers = get_online_users(),
 	io:format("~n------------- begin web agent state -----------~n"),	
-	[ io:format("id:~p, user:~p, room:~p~n", [ID, UserName, RoomID])
-		|| {ID, UserName, RoomID} <- OnlineUsers],
+	[ io:format("id:~p, user:~p, room:~p, pid:~p~n", [ID, UserName, RoomID, Pid])
+		|| {ID, UserName, RoomID, Pid} <- OnlineUsers],
 	io:format("~n------------- end web agent state -----------~n"),
 	ok.
 
@@ -64,7 +64,7 @@ handle_info({'DOWN', _, process, Pid, Reason}, State=#state{agents=Agents}) ->
 handle_cast({stop, ID}, State=#state{agents=Agents}) ->
 	case lists:keyfind(ID, 1, Agents) of
 		{ID, Pid, _Ref} ->
-			web_agent:stop(),
+			web_agent:stop(Pid),
 			io:format("web agent ~p quit~n", [Pid]),
 			NewAgents = lists:keydelete(ID, 1, Agents),
 		    {noreply, State#state{agents = NewAgents}};
@@ -76,7 +76,7 @@ handle_cast({stop, ID}, State=#state{agents=Agents}) ->
 handle_call(get_online_users, _From, State=#state{agents=Agents}) ->
 	WebAgentStatus = [ begin
 		{ok, {UserName, RoomID, _Player, _WebPlayer, _RobotPlayer}} = web_agent:show(Pid),
-		{ID, UserName, RoomID}
+		{ID, UserName, RoomID, Pid}
 	   end || {ID, Pid, _Ref} <- Agents],
 	{reply, {ok, WebAgentStatus}, State};
 
