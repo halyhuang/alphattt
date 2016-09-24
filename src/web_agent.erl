@@ -1,4 +1,4 @@
-﻿-module(web_agent).
+-module(web_agent).
 
 -export([start/0, login/3, logout/1, is_login/1, set_room/2, enter_room/1, leave_room/1, start_robot/3, 
 		get_info/1, start_observe/1, is_move/1, get_legal_moves/1, set_move/2, is_display_move/1, 

@@ -1,4 +1,4 @@
-﻿-module(mcts).
+-module(mcts).
 -export([start/0, start/3]).
 -export([get_move/1, update/2, display/3, notify/2, stop/1]).
 

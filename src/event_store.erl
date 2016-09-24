@@ -1,4 +1,4 @@
-﻿-module(event_store).
+-module(event_store).
 
 -behaviour (gen_server).
 

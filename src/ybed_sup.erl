@@ -1,4 +1,4 @@
-﻿-module(ybed_sup).
+-module(ybed_sup).
 -behaviour(supervisor).
 
 %% API

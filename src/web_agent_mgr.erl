@@ -1,4 +1,4 @@
-﻿-module(web_agent_mgr).
+-module(web_agent_mgr).
 -behaviour (gen_server).
 
 -include("yaws_api.hrl").
