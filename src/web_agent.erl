@@ -1,10 +1,12 @@
 -module(web_agent).
 
 -export([start/0, login/3, logout/1, is_login/1, set_room/2, enter_room/1, leave_room/1, start_robot/3, 
-		get_info/1, start_observe/1, is_move/1, get_legal_moves/1, set_move/2, is_display_move/1, 
-		get_display_move/1, get_room/1, show/1, stop/1, get_state/1]).
+		end_game/1, get_info/1, start_observe/1, is_move/1, get_legal_moves/1, set_move/2,  
+		get_display_move/1, get_room/1, get_room_state/1, stop/1, get_state/1]).
 
--record(state,  {username = none,	
+-record(state,  {
+				 status = waiting_login,
+				 username = none,	
 				 room = none,
 				 web_player = none,
 				 player = none,
@@ -31,12 +33,18 @@ set_room(Pid, RoomID) ->
 get_room(Pid) ->
 	call(Pid, get_room).
 
+get_room_state(Pid) ->	
+	call(Pid, get_room_state).
+
 enter_room(Pid) ->
 	cast(Pid, enter_room).
 
 leave_room(Pid) ->
 	cast(Pid, leave_room).	
 
+end_game(Pid) ->
+	cast(Pid, end_game).	
+	
 start_robot(Pid, RobotName, RobotType) ->
 	cast(Pid, {start_robot, RobotName, RobotType}).
 
@@ -45,9 +53,6 @@ start_observe(Pid) ->
 
 set_move(Pid, Move) ->
 	cast(Pid, {set_move, Move}).
-
-is_display_move(Pid) ->
-	call(Pid, is_display_move).	
 
 get_display_move(Pid) ->
 	call(Pid, get_display_move).
@@ -61,9 +66,6 @@ get_legal_moves(Pid) ->
 get_info(Pid) ->
 	call(Pid, get_info).		
 
-show(Pid) ->
-	get_state(Pid).
-
 get_state(Pid) ->
 	call(Pid, get_state).
 
@@ -75,7 +77,7 @@ cast(Pid, Msg) ->
 
 call(Pid, Msg) ->
 	Ref = make_ref(),
-	Pid ! {call, Ref, self(), Msg},
+	Pid ! {Msg, Ref, self()},
 	receive
 		{Ref, Reply} ->
 			Reply
@@ -84,43 +86,148 @@ call(Pid, Msg) ->
 init() ->
 	loop(#state{}).
 
-loop(State) ->
+loop(State=#state{status = waiting_login}) ->
 	receive
-		{call, Ref, From, Msg} ->
-			case handle_call(Msg, From, State) of
-				{reply, Reply, NewState} ->
-					From ! {Ref, Reply},
-					loop(NewState)
-			end;
+		{login, UserName, Password} ->
+			NewState = handle_cast({login, UserName, Password}, State),
+			loop(NewState);
+		{is_login, Ref, From} ->
+			From ! {Ref, false},
+			loop(State);
+		{get_state, Ref, From} ->
+			From ! {Ref, {waiting_login, "", none, none, none, none}},
+			loop(State);						
+		Unexpected ->
+			io:format("unexpected @waiting_login ~p~n", [Unexpected]),
+			loop(State)	
+	end;
+
+loop(State=#state{status = waiting_enter_room, username = UserName,  
+	player = Player, web_player = WebPlayer}) ->
+	receive
+		{is_login, Ref, From} ->
+			From ! {Ref, true},
+			loop(State);
+		logout ->
+			NewState = handle_cast(logout, State),			
+			loop(NewState);
+		{get_state, Ref, From} ->
+			From ! {Ref, {waiting_enter_room, UserName, none, Player, WebPlayer, none}},
+			loop(State);			
+		{get_room, Ref, From} ->
+			From ! {Ref, 0},
+			loop(State);			
+		{set_room, RoomID} ->
+			io:format("~p enter room ~p~n", [UserName, RoomID]),		
+			event_store:observe(RoomID, WebPlayer),
+			loop(State#state{status = enter_room, room = RoomID});
 		stop ->
 			exit(stop);
-		Msg ->
-			case handle_cast(Msg, State) of
-				{noreply, NewState} ->
-					loop(NewState)
-			end
+		Unexpected ->
+			io:format("unexpected @waiting_enter_room ~p~n", [Unexpected]),
+			loop(State)	
 	    after 10 * 60 * 1000 ->    %% keep state for 60 secs only
-	        exit(time_out)			
+	        exit(time_out)				
+	end;
+
+
+loop(State=#state{status = enter_room, username = UserName, room = RoomID, 
+		player = Player, robot_player = RobotPlayer, web_player = WebPlayer}) ->
+	receive
+		{is_login, Ref, From} ->
+			From ! {Ref, true},
+			loop(State);
+		{get_state, Ref, From} ->
+			From ! {Ref, {enter_room, UserName, RoomID, Player, WebPlayer, RobotPlayer}},
+			loop(State);						
+		{get_room_state, Ref, From} ->
+			RoomState = room_mgr:get_room_state(RoomID),
+			From ! {Ref, RoomState},
+			loop(State);	
+		logout ->
+			NewState = handle_cast(logout, State),			
+			loop(NewState);			
+		{get_room, Ref, From} ->
+			From ! {Ref, RoomID},
+			loop(State);
+		enter_room ->
+ 			io:format("~p enter room ~p~n", [UserName, RoomID]),
+ 			event_store:unsuscribe(WebPlayer),
+			player_client:enter_room(Player, RoomID),
+			loop(State);	
+		end_game ->
+			io:format("~p end_game ~p~n", [UserName, RoomID]),
+			end_game(Player, RobotPlayer),
+			loop(State);									
+		leave_room ->
+			io:format("~p leave room ~p~n", [UserName, RoomID]),
+			end_game(Player, RobotPlayer),
+			event_store:unsuscribe(WebPlayer),			
+			loop(State#state{status = waiting_enter_room, room = none});
+		{start_robot, RobotName, RobotType}	->
+			NewRobotPlayer = case RobotPlayer of
+								none ->
+									{ok, RobotPlayer2} = player_client:start(RobotName, RobotType, board, "127.0.0.1", 8011),	
+									erlang:link(RobotPlayer2),	
+									player_client:login(RobotPlayer2, ""),
+									RobotPlayer2;
+								RobotPlayer -> RobotPlayer
+							 end,
+			player_client:enter_room(NewRobotPlayer, RoomID),
+			io:format("~p enter room ~p~n", [RobotName, RoomID]),
+			loop(State#state{robot_player = NewRobotPlayer});
+		{is_move, Ref, From} ->
+			{ok, IsMove} = web_player:is_move(WebPlayer),		
+			From ! {Ref, IsMove},
+			loop(State);												
+
+		{get_display_move, Ref, From} ->
+			{ok, Moves} = web_player:get_display_move(WebPlayer),					    		
+			From ! {Ref, Moves},
+			loop(State);
+
+		{get_legal_moves, Ref, From} ->
+			{ok, PlayerID, LegalMoves} = web_player:get_legal_moves(WebPlayer),	
+			From ! {Ref, {PlayerID, LegalMoves}},
+			loop(State);
+
+		{get_info, Ref, From} ->
+			Infos = case WebPlayer of
+						none -> [];
+						_ -> web_player:get_info(WebPlayer)
+					end,
+			From ! {Ref, Infos},
+			loop(State);
+
+		{set_move, Move} ->
+			web_player:set_move(WebPlayer, Move),
+			loop(State);
+		stop ->
+			exit(stop);
+		Unexpected ->
+			io:format("unexpected @enter_room ~p~n", [Unexpected]),
+			loop(State)	
+	    after 10 * 60 * 1000 ->    %% keep state for 60 secs only
+	        exit(time_out)				
 	end.
 
-handle_cast({login, UserName, Password}, State=#state{username = none, player = none}) ->
+
+handle_cast({login, UserName, Password}, State) ->
 	{ok, Player} = player_client:start(UserName, web_player, board, "127.0.0.1", 8011),
 	erlang:link(Player),
-	case player_client:login(Player, Password) of
+	NewState = case player_client:login(Player, Password) of
 		ok ->
     		io:format("user ~p login~n", [UserName]),    		
 			WebPlayer = player_client:get_player(Player),
-			{noreply, State#state{username = UserName, player = Player, web_player = WebPlayer}};
+			State#state{status = waiting_enter_room, username = UserName, player = Player, web_player = WebPlayer};
 		Reason ->
 			io:format("user ~p login failed,reason:~p~n", [UserName, Reason]),			
-			{noreply, State}
-	end;
-
-handle_cast({login, UserName, Password}, State=#state{username = UserName}) ->
-	handle_cast(logout, State),
-	handle_cast({login, UserName, Password}, #state{});
-
-handle_cast(logout, #state{username = UserName, player = Player, robot_player = RobotPlayer}) ->
+			State
+	end,
+	NewState;
+handle_cast(logout, #state{status = waiting_enter_room, username = UserName, 
+		player = Player, robot_player = RobotPlayer, web_player = WebPlayer}) ->
+	event_store:unsuscribe(WebPlayer),		
 	erlang:unlink(Player),
 	player_client:stop(Player),
 	case RobotPlayer of 
@@ -129,110 +236,17 @@ handle_cast(logout, #state{username = UserName, player = Player, robot_player = 
 			erlang:unlink(RobotPlayer),
 			player_client:stop(RobotPlayer)
 	end,
-	io:format("user ~p logout~n", [UserName]),
-	{noreply, #state{}};	
+	io:format("user ~p logout~n", [UserName]),	
+	#state{status = waiting_login}.
 
-handle_cast({set_room, RoomID}, State) ->
-    io:format("set room ~p~n", [RoomID]),
-    {noreply, State#state{room = RoomID}};
-
-handle_cast(enter_room, State=#state{username = UserName, room = none}) ->
-    io:format("~p room isn't set~n", [UserName]),
-    {noreply, State};
-
-handle_cast(enter_room, State=#state{username = UserName, room = RoomID, player = Player}) ->
-    io:format("~p enter room ~p~n", [UserName, RoomID]),
-	player_client:enter_room(Player, RoomID),
-	{noreply, State#state{room = RoomID}};	
-
-handle_cast(leave_room, State=#state{username = UserName, room = none}) ->
-    io:format("~p room isn't set~n", [UserName]),
-    {noreply, State};
-
-handle_cast(leave_room, State=#state{username = UserName, room = RoomID, player = Player, robot_player = RobotPlayer, web_player = WebPlayer}) ->
-    io:format("~p leave room ~p~n", [UserName, RoomID]),
+end_game(Player, RobotPlayer) ->
 	player_client:leave_room(Player),
 	case RobotPlayer of
 		none -> 
 			ok;
 		RobotPlayer ->
 			player_client:leave_room(RobotPlayer)
-	end,
-	event_store:unsuscribe(WebPlayer),
-	{noreply, State#state{room = none}};	
-
-handle_cast(start_observe, State=#state{room = none, username = UserName}) ->
-	io:format("~p observe room invalid!~n", [UserName]),
-	{noreply, State};
-
-handle_cast(start_observe, State=#state{room = RoomID, username = UserName, web_player = WebPlayer}) when is_integer(RoomID) ->
-	io:format("~p observe room ~p~n", [UserName, RoomID]),
-	event_store:observe(RoomID, WebPlayer),
-	{noreply, State};
-
-handle_cast({set_move, Move}, State=#state{username = _UserName, web_player = WebPlayer}) ->
-%%	io:format("~p Move ~p~n", [UserName, Move]),
-	web_player:set_move(WebPlayer, Move),
-	{noreply, State};
-	
-handle_cast({start_robot, RobotName, _RobotType}, State=#state{room = none}) ->
-    io:format("~p room isn't set~n", [RobotName]),
-	{noreply, State};
-
-handle_cast({start_robot, RobotName, RobotType}, State=#state{robot_player = none}) ->
-	{ok, RobotPlayer} = player_client:start(RobotName, RobotType, board, "127.0.0.1", 8011),	
-	erlang:link(RobotPlayer),	
-	player_client:login(RobotPlayer, ""),
-	handle_cast({start_robot, RobotName, RobotType}, State#state{robot_player = RobotPlayer});
-
-handle_cast({start_robot, RobotName, _RobotType}, State=#state{robot_player = RobotPlayer, room = RoomID}) ->
-	player_client:enter_room(RobotPlayer, RoomID),
-	io:format("~p enter room ~p~n", [RobotName, RoomID]),
-	{noreply, State}.
-
-
-handle_call(is_login, _From, State=#state{username = none}) ->
-	{reply, false, State};
-
-handle_call(is_login, _From, State) ->
-	{reply, true, State};	
-
-handle_call(get_room, _From, State=#state{room = none}) ->
-	{reply, 0, State};
-
-handle_call(get_room, _From, State=#state{room = RoomID}) ->
-	{reply, RoomID, State};	
-
-handle_call(is_move, _From, State=#state{web_player = WebPlayer}) ->
-	{ok, IsMove} = web_player:is_move(WebPlayer),
-	{reply, IsMove, State};
-
-handle_call(is_display_move, _From, State=#state{web_player = WebPlayer}) ->
-	{ok, IsMove} = web_player:is_display_move(WebPlayer),
-	{reply, IsMove, State};
-
-handle_call(get_display_move, _From, State=#state{web_player = WebPlayer}) ->
-	{ok, Moves} = web_player:get_display_move(WebPlayer),					    		
-	{reply, Moves, State};
-
-handle_call(get_legal_moves, _From, State=#state{web_player = none}) ->
-	{reply, [], State};
-
-handle_call(get_legal_moves, _From, State=#state{web_player = WebPlayer}) ->
-	{ok, PlayerID, LegalMoves} = web_player:get_legal_moves(WebPlayer),	
-	{reply, {PlayerID, LegalMoves}, State};	
-
-handle_call(get_info, _From, State=#state{web_player = WebPlayer}) ->
-	Infos = get_player_info(WebPlayer),			    		
-	{reply, Infos, State};
-
-handle_call(get_state, _From, State=#state{username = UserName, player = Player, 
-		web_player = WebPlayer, robot_player = RobotPlayer, room = RoomID}) ->
-	{reply, {ok, {UserName, RoomID, Player, WebPlayer, RobotPlayer}}, State}.	
-
-get_player_info(none) -> [];
-get_player_info(WebPlayer) -> 
-	web_player:get_info(WebPlayer).
+	end.
 
 
 

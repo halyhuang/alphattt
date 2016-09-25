@@ -1,7 +1,7 @@
 ﻿
 
 var jsonrpc = imprt("jsonrpc");
-var service = new jsonrpc.ServiceProxy("alphattt.yaws", ["poll_get_move", "poll_display", "start_game", "start_robot", "start_observe", "set_move"]);
+var service = new jsonrpc.ServiceProxy("alphattt.yaws", ["poll_get_move", "poll_display", "start_game", "end_game", "start_robot", "set_move", "get_room_state"]);
 var hall_service = new jsonrpc.ServiceProxy("hall.yaws", ["get_room", "leave_room"]);
 var auth_service = new jsonrpc.ServiceProxy("auth.yaws", ["is_login"]);
 	
@@ -18,6 +18,8 @@ var g_player = 1;
 
 var legal_moves = new Array();
 var child_nums = 0;
+var bn_start;
+var bn_robot;
 
 function is_login()
 {
@@ -48,7 +50,7 @@ window.onload = function() {
 	check_room();
 	init_botton();	
 	grids = document.querySelectorAll('.grid');	
-	init_board();		
+	init_board();	
 	init_poll();
 };  
 
@@ -60,6 +62,7 @@ function init_poll()
 
 function poll()
 {		
+	poll_room_state();
 	poll_display();
 	poll_get_move();
 }
@@ -86,21 +89,37 @@ function poll_get_move()
 function poll_display()
 {
     try {			
-			if (is_poll_display)
-			{
-				var result = service.poll_display();
-				update_display(result.moves, result.moves);						
-				for (var i=0; i < result.infos.length; i++)
-				{ 
-					var player = result.infos[i].player;
-					info(players[player].player, result.infos[i].info);
-				}
-				set_legal_move();		
+			var result = service.poll_display();
+			update_display(result.moves, result.moves);						
+			for (var i=0; i < result.infos.length; i++)
+			{ 
+				var player = result.infos[i].player;
+				info(players[player].player, result.infos[i].info);
 			}
+			set_legal_move();					
      } catch(e) {
         alert(e);
      }	
 	
+}
+
+function poll_room_state()
+{
+    try {			
+			var result = service.get_room_state();				
+			if (result.state == "playing")
+			{
+				bn_start.onclick = end_game; 	
+				bn_start.innerHTML = "结束";				
+			}
+			else
+			{
+				bn_start.onclick = start_game; 	
+				bn_start.innerHTML = "我入座";
+			}
+     } catch(e) {
+        alert(e);
+     }		
 }
 
 function grid_pos(move)
@@ -114,13 +133,13 @@ function update_display(moves)
 	{ 
 		var move = moves[i].move;
 		var player = moves[i].player;
+		set_backgroud_blank();
 		if (player == 0)
 		{
-			init_board();			
+			init_board();	
 		}
 		else
 		{
-			set_backgroud_blank();
 			var index = grid_pos(move);
 			grids[index].state = player;
 			grids[index].innerHTML = players[player].innerHTML;
@@ -137,17 +156,30 @@ function opponent(id)
 
 function init_botton()
 {
-    var bn_start = document.getElementById('start_game');  
+    bn_start = document.getElementById('start_game');  
 	bn_start.onclick = start_game; 
-    var bn_robot = document.getElementById('start_robot');  
+	bn_start.onmouseenter = enter_bn;
+	bn_start.onmouseleave = leave_bn;
+	bn_start.disabled = false;
+	
+    bn_robot = document.getElementById('start_robot');  
 	bn_robot.onclick = start_robot; 	
-    var bn_observe = document.getElementById('start_observe');  
-	bn_observe.onclick = start_observe; 	
+	bn_robot.onmouseenter = enter_bn;
+	bn_robot.onmouseleave = leave_bn;
+	bn_robot.disabled = true;
+	
     var bn_hall = document.getElementById('start_hall');  
 	bn_hall.onclick = start_hall; 	
+	bn_hall.onmouseenter = enter_bn;
+	bn_hall.onmouseleave = leave_bn;
+	bn_hall.disabled = false;
+	
+	
     var bn_rule = document.getElementById('start_rule');  
 	bn_rule.onclick = start_rule; 	
-	
+	bn_rule.onmouseenter = enter_bn;
+	bn_rule.onmouseleave = leave_bn;
+	bn_rule.disabled = false;	
 }  
 
 function init_board()
@@ -219,29 +251,19 @@ function start_game()
 {
 	service.start_game();
 	is_poll_get_move = true;
-	is_poll_display = true;
+	bn_robot.disabled = false;
+	bn_start.onclick = end_game; 	
 }  
+
+function end_game()
+{
+	service.end_game();
+}
 
 function start_robot()
 {	
-	service.start_robot();	
-	is_poll_get_move = true;
-	is_poll_display = true;
-}
-
-function start_observe()
-{
-	init_board();
-	service.start_observe();	
-	is_poll_display = true;	
-}
-
-function init_observe(player_moves)
-{
-	for (var i = 0; i < player_moves.length; i++)
-	{
-		update_display(player_moves[i].player, player_moves[i].move);		
-	}
+	bn_robot.disabled = true;
+	service.start_robot();
 }
 
 function start_hall()
@@ -313,4 +335,17 @@ function leave_grid()
 		set_backgroud_opponent(this, false);
 		set_backgroud_legal();	
 	}
+}
+
+function enter_bn()
+{
+	if (!this.disabled)
+	{	
+		this.style.background = "#00FFFF";
+	}
+}
+
+function leave_bn()
+{
+	this.style.background = "#FFFFFF";
 }

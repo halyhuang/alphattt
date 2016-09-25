@@ -39,8 +39,8 @@ get_online_users() ->
 show() ->
 	OnlineUsers = get_online_users(),
 	io:format("~n------------- begin web agent state -----------~n"),	
-	[ io:format("id:~p, user:~p, room:~p, pid:~p~n", [ID, UserName, RoomID, Pid])
-		|| {ID, UserName, RoomID, Pid} <- OnlineUsers],
+	[ io:format("id:~p, user:~p, room:~p, status:~p pid:~p~n", [ID, UserName, RoomID, Status, Pid])
+		|| {ID, UserName, RoomID, Status, Pid} <- OnlineUsers],
 	io:format("~n------------- end web agent state -----------~n"),
 	ok.
 
@@ -75,8 +75,8 @@ handle_cast({stop, ID}, State=#state{agents=Agents}) ->
 	
 handle_call(get_online_users, _From, State=#state{agents=Agents}) ->
 	WebAgentStatus = [ begin
-		{ok, {UserName, RoomID, _Player, _WebPlayer, _RobotPlayer}} = web_agent:show(Pid),
-		{ID, UserName, RoomID, Pid}
+		{Status, UserName, RoomID, _Player, _WebPlayer, _RobotPlayer} = web_agent:get_state(Pid),
+		{ID, UserName, RoomID, Status, Pid}
 	   end || {ID, Pid, _Ref} <- Agents],
 	{reply, {ok, WebAgentStatus}, State};
 

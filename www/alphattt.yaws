@@ -52,10 +52,22 @@ handle(_State, {call, set_move, {array, [R, C, R1, C1]}}, #session{pid_str = Pid
 	web_agent:set_move(Pid, Move),	
     {true, 0, #session{pid_str = pid_to_list(Pid)}, {response, []}};
 
+handle(_State, {call, get_room_state, _}, #session{pid_str = PidStr}) ->
+    Pid = web_agent_mgr:get_agent_pid(PidStr),
+    RoomState = web_agent:get_room_state(Pid),
+    ResponseJson = 
+        json2:obj_from_list([{"state", atom_to_list(RoomState)}]),
+    {true, 0, #session{pid_str = pid_to_list(Pid)}, 
+        {response, ResponseJson}};
 
 handle(_State, {call, start_game, _}, #session{pid_str = PidStr}) ->
     Pid = web_agent_mgr:get_agent_pid(PidStr),
     web_agent:enter_room(Pid),
+    {true, 0, #session{pid_str = pid_to_list(Pid)}, {response, []}};
+
+handle(_State, {call, end_game, _}, #session{pid_str = PidStr}) ->
+    Pid = web_agent_mgr:get_agent_pid(PidStr),
+    web_agent:end_game(Pid),
     {true, 0, #session{pid_str = pid_to_list(Pid)}, {response, []}};
 
 handle(_State, {call, start_robot, _}, #session{pid_str = PidStr}) ->

@@ -3,7 +3,7 @@
 -export([enter/2, leave/2, play/2, get_state/1, observe/2, notify_player/3]).
 -export([reset/1]).
 
--define(ROOM_TIME_OUT, 60 * 1).
+-define(ROOM_TIME_OUT, 60 * 10).
 
 -record(state, {board,
 				room_id,

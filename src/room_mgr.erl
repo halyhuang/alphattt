@@ -2,7 +2,7 @@
 
 -behaviour (gen_server).
 
--export([start_link/2, enter/1, observe/1, show/0, get_all_rooms/0, reset/1, test/0]).
+-export([start_link/2, enter/1, observe/1, show/0, get_all_rooms/0, get_room_state/1, reset/1, test/0]).
 
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
 
@@ -40,6 +40,9 @@ test() ->
 
 get_all_rooms() ->
 	gen_server:call({global, ?MODULE}, get_all_rooms).			
+
+get_room_state(RoomID) ->
+	gen_server:call({global, ?MODULE}, {get_room_state, RoomID}).
 
 handle_info({'DOWN', _, process, Pid, Reason}, State=#state{board = Board, rooms=Rooms}) ->
 	case lists:keyfind(Pid, 2, Rooms) of
@@ -86,6 +89,16 @@ handle_call(get_all_rooms, _From, State=#state{rooms=Rooms}) ->
 								    end || Player <- Players ],					    
 					{RoomID, Status, PlayerTypes} end || {RoomID, RoomPid, _Ref} <- Rooms],
 	{reply, RoomStates, State};
+
+handle_call({get_room_state, RoomID}, _From, State=#state{rooms=Rooms}) ->
+	RoomStatus = case lists:keyfind(RoomID, 1, Rooms) of
+					{RoomID, RoomPid, _Ref} ->
+						{Status, _Players} = room:get_state(RoomPid),
+						Status;
+					_ ->
+						waiting
+			     end,
+	{reply, RoomStatus, State};	
 
 handle_call({enter, RoomID}, _From, State=#state{rooms=Rooms}) ->
 	Reply = case lists:keyfind(RoomID, 1, Rooms) of

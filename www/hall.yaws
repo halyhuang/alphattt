@@ -27,7 +27,7 @@ create_single_user(User)->
 						 {"name", Name}, 
 						 {"type", atom_to_list(Type)}]).
 						 
-create_single_online_user({ID, Name, Room, _Pid})-> 	
+create_single_online_user({ID, Name, Room, Status, _Pid})-> 	
 	RoomID = case Room of
 				none -> "";
 				_ -> Room
