@@ -95,7 +95,7 @@ handle_call(get_display_move, State=#state{moves = Moves}) ->
 	{reply, {ok, lists:reverse(Moves)}, State#state{moves = []}};
 
 handle_call({notify, Info}, State=#state{infos = Infos}) ->
-%%	io:format("webplayer notify:~p~n", [Info]),
+	io:format("webplayer notify:~p~n", [Info]),
 	{reply, ok, State#state{infos = [ Info | Infos]}};
 
 handle_call(get_info, State=#state{infos = Infos}) ->

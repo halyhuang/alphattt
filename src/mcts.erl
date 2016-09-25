@@ -68,7 +68,7 @@ call(Pid, Msg) ->
 
 handle_call({update, GameState}, State=#state{game_states=GSs}) -> 
 	{reply, ok, State#state{game_states=[GameState | GSs]}};
-handle_call({display, GameState, Move}, State=#state{board=Board}) ->
+handle_call({display, _GameState, Move}, State=#state{board=Board}) ->
 %%	io:format("player move ~p~n", [Move]),
 %%	io:format("~ts~n", [Board:display(GameState, Move)]),
 	{reply, ok, State};
@@ -89,15 +89,18 @@ handle_call(get_move, State=#state{board=Board, game_states=GSs, player_client =
 				{Games, MaxDepth, Time}
 					= run_simulation(Player, LegalStates, State),
 				CurrentPlayerID = Board:current_player(GS),
-				notify_room(PlayerClient, CurrentPlayerID, io_lib:format("[~p]Games: ~p Time: ~pms~n", [?MODULE, Games, Time])),
-				notify_room(PlayerClient, CurrentPlayerID, io_lib:format("Maximum depth searched: ~p~n", [MaxDepth])),
+
+				GameTimeMsg = io_lib:format("[~p]Games: ~p Time: ~pms~n", [?MODULE, Games, Time]),
+				MaxDepthMsg = io_lib:format("Maximum depth searched: ~p~n", [MaxDepth]),
 
 				%% stats = [{move, percent, wins, plays}]
 				Stats = make_stats(Player, LegalStates,
 									State#state.plays_wins),
 				SortedStats = lists:reverse(lists:keysort(2, Stats)),
-				[notify_room(PlayerClient, CurrentPlayerID, io_lib:format("~p: ~.2f% (~p / ~p)~n", [Move, Percent, Wins, Plays]))
-					|| {Move, Percent, Wins, Plays} <- SortedStats],
+				SortedStatsMsg = lists:foldl(fun({Move, Percent, Wins, Plays}, Acc) ->
+						Acc ++ io_lib:format("~p: ~.2f% (~p / ~p)~n", [Move, Percent, Wins, Plays])
+						end, [], SortedStats),
+				notify_room(PlayerClient, CurrentPlayerID, GameTimeMsg ++ MaxDepthMsg ++ SortedStatsMsg),
 				[{Move, _, _, _} | _] = SortedStats,
 				Move
 		end,

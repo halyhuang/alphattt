@@ -13,6 +13,8 @@
 }
 
 .chat-thread {  
+  width: 100%;
+  height: 100%;
   margin: 24px auto 0 auto;
   padding: 0 20px 0 0;
   list-style: none;
@@ -127,8 +129,8 @@
 /* Small screens */
 @media all and (max-width: 767px) {
   .chat-thread {
-    width: 90%;
-    height: 260px;
+    width: 100%;
+    height: 400px;
   }
 
   .chat-window {
@@ -140,7 +142,7 @@
 @media all and (min-width: 768px) {
   .chat-thread {
     width: 50%;
-    height: 320px;
+    height: 400px;
   }
 
   .chat-window {
