@@ -24,10 +24,10 @@ def set_move(move):
 
 
 def get_move():
-    move = tree.get_move(board)
+    move, msg_time, msg_pro = tree.get_move(board)
     print "pybot move: ", move
     board.display()
-    return move
+    return move, msg_time, msg_pro
 
 
 class TreeSearch(object):
@@ -53,8 +53,10 @@ class TreeSearch(object):
             paras["time"] = time.time() - paras["begin"]
             if paras["time"] > cal_time:
                 break
-        print "== calculate %d paths using %f seconds ==" % (paras["num"], paras["time"])
-        return self.__search_tree(board, legal_moves)
+        msg_time = "== calculate %d paths using %f seconds ==" % (paras["num"], paras["time"])
+        print msg_time
+        move, msg_pro = self.__search_tree(board, legal_moves)
+        return move, msg_time, msg_pro
 
     def __tree_path(self, board, legal_moves):
         _board = Board(board)
@@ -98,5 +100,6 @@ class TreeSearch(object):
             if wins >= final["per"]:
                 final["per"], final["win"], final["total"], final["move"] = \
                     wins, node["win"], node["total"], move
-        print "== probability is %d. %d/%d ==" % (final["per"], final["win"], final["total"])
-        return final["move"]
+        msg_pro = "== probability is %d. %d/%d ==" % (final["per"], final["win"], final["total"])
+        print msg_pro
+        return final["move"], msg_pro
