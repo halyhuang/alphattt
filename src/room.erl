@@ -55,10 +55,16 @@ init(Board, RoomID) ->
 	random:seed({A, B, C}),
 	loop(#state{board = Board, room_id = RoomID}).	
 
-select_player(Players) ->
+select_player(Players = [Player1, Player2]) ->
 	N = random:uniform(2),
+	NewPlayers = case N of
+					2 ->
+						[Player2, Player1];
+					1 ->
+						Players
+				end,
 	{Pid, NickName, _} = lists:nth(N, Players),
-	{Pid, NickName}.	
+	{{Pid, NickName}, NewPlayers}.	
 
 loop(State = #state{status = waiting, board = Board, players = Players}) ->
 	receive
@@ -76,13 +82,13 @@ loop(State = #state{status = waiting, board = Board, players = Players}) ->
 					notify_user(Pid2, {0, greeting(NickName)}),
 					Ref = erlang:monitor(process, Pid),
 					NewPlayers = [{Pid, NickName, Ref} | Players],
-					First = select_player(NewPlayers),
+					{First, NewPlayers2} = select_player(NewPlayers),
 					GameState = Board:start(),
 					self() ! begin_game,
 					loop(State#state{status = playing,
 									 game_state = GameState,
 									 current_player = First,
-									 players = NewPlayers})
+									 players = NewPlayers2})
 			end;
 		{leave, Pid} ->
 			case lists:keyfind(Pid, 1, Players) of

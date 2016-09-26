@@ -93,10 +93,10 @@ handle_call(get_all_rooms, _From, State=#state{rooms=Rooms}) ->
 handle_call({get_room_state, RoomID}, _From, State=#state{rooms=Rooms}) ->
 	RoomStatus = case lists:keyfind(RoomID, 1, Rooms) of
 					{RoomID, RoomPid, _Ref} ->
-						{Status, _Players} = room:get_state(RoomPid),
-						Status;
+						{ok, room:get_state(RoomPid)};						
 					_ ->
-						waiting
+						error_logger:format("RoomID ~p not exist~n", [RoomID]),
+						room_not_exist
 			     end,
 	{reply, RoomStatus, State};	
 

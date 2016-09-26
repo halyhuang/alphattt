@@ -110,7 +110,7 @@ function poll_room_state()
 			if (result.state == "playing")
 			{
 				bn_robot.disabled = true;
-				bn_start.disabled = true; 			
+				bn_start.disabled = true; 					
 			}
 			else
 			{
