@@ -43,7 +43,7 @@ test_robot() ->
 
 init() ->
 	timer:send_interval(1 * 30 * 1000, robot_interval),
-	SIP = "10.8.39.80",
+	SIP = "127.0.0.1",
 	NickName = "mcts",
 	{ok, Pid} = player_client:start(NickName, mcts, board, SIP, 8011),
 	player_client:login(Pid, ""),
