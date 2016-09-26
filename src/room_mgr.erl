@@ -47,12 +47,12 @@ get_room_state(RoomID) ->
 handle_info({'DOWN', _, process, Pid, Reason}, State=#state{board = Board, rooms=Rooms}) ->
 	case lists:keyfind(Pid, 2, Rooms) of
 		{RoomID, Pid, _Ref} ->
-			io:format("room ~p down, reason ~p~n", [RoomID, Reason]),
+			error_logger:format("room ~p down, reason ~p~n", [RoomID, Reason]),
 			NewRoom = spawn_room(RoomID, Board),
 			NewRooms = lists:keyreplace(Pid, 2, Rooms, NewRoom),
 		    {noreply, State#state{rooms = NewRooms}};
 		_ ->
-			io:format("room ~p down, reason ~p, can't find room~n", [Pid, Reason]),
+			error_logger:format("room ~p down, reason ~p, can't find room~n", [Pid, Reason]),
 			{noreply, State}
 	end.
 
@@ -105,7 +105,7 @@ handle_call({enter, RoomID}, _From, State=#state{rooms=Rooms}) ->
 		{RoomID, RoomPid, _Ref} -> 
 			{ok, RoomPid};
 		_ ->
-			io:format("RoomID ~p not exist~n", [RoomID]),	
+			error_logger:format("RoomID ~p not exist~n", [RoomID]),	
 			room_not_exist
 	end,
 	{reply, Reply, State}.

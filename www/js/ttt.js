@@ -1,7 +1,7 @@
 ﻿
 
 var jsonrpc = imprt("jsonrpc");
-var service = new jsonrpc.ServiceProxy("alphattt.yaws", ["poll_get_move", "poll_display", "start_game", "end_game", "start_robot", "set_move", "get_room_state"]);
+var service = new jsonrpc.ServiceProxy("alphattt.yaws", ["poll_get_move", "poll_display", "start_game", "start_robot", "set_move", "get_room_state"]);
 var hall_service = new jsonrpc.ServiceProxy("hall.yaws", ["get_room", "leave_room"]);
 var auth_service = new jsonrpc.ServiceProxy("auth.yaws", ["is_login"]);
 	
@@ -109,13 +109,13 @@ function poll_room_state()
 			var result = service.get_room_state();				
 			if (result.state == "playing")
 			{
-				bn_start.onclick = end_game; 	
-				bn_start.innerHTML = "结束";				
+				bn_robot.disabled = true;
+				bn_start.disabled = true; 			
 			}
 			else
 			{
-				bn_start.onclick = start_game; 	
-				bn_start.innerHTML = "我入座";
+				bn_start.disabled = false; 			
+				bn_robot.disabled = false;
 			}
      } catch(e) {
         alert(e);
@@ -250,19 +250,11 @@ function info(player, msg)
 function start_game()
 {
 	service.start_game();
-	is_poll_get_move = true;
-	bn_robot.disabled = false;
-	bn_start.onclick = end_game; 	
+	is_poll_get_move = true;	
 }  
-
-function end_game()
-{
-	service.end_game();
-}
 
 function start_robot()
 {	
-	bn_robot.disabled = true;
 	service.start_robot();
 }
 

@@ -65,11 +65,6 @@ handle(_State, {call, start_game, _}, #session{pid_str = PidStr}) ->
     web_agent:enter_room(Pid),
     {true, 0, #session{pid_str = pid_to_list(Pid)}, {response, []}};
 
-handle(_State, {call, end_game, _}, #session{pid_str = PidStr}) ->
-    Pid = web_agent_mgr:get_agent_pid(PidStr),
-    web_agent:end_game(Pid),
-    {true, 0, #session{pid_str = pid_to_list(Pid)}, {response, []}};
-
 handle(_State, {call, start_robot, _}, #session{pid_str = PidStr}) ->
     Pid = web_agent_mgr:get_agent_pid(PidStr),
 	web_agent:start_robot(Pid, "mcts", mcts),

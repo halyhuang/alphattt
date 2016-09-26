@@ -105,12 +105,12 @@ loop(State = #state{status = waiting, board = Board, players = Players}) ->
 		{observe, Observer} ->			
 			loop(State#state{observer = Observer});	
 		{'DOWN', _, process, Pid, Reason} ->
-			io:format("~p down @waiting for: ~p~n", [Pid, Reason]),
+			error_logger:format("~p down @waiting for: ~p~n", [Pid, Reason]),
 			self() ! {leave, Pid},
 			loop(State);
 
 		Unexpected ->
-			io:format("unexpected @waiting ~p~n", [Unexpected]),
+			error_logger:format("unexpected @waiting ~p~n", [Unexpected]),
 			loop(State)				
 	end;
 loop(State = #state{status = playing,
@@ -181,18 +181,20 @@ loop(State = #state{status = playing,
 							NewSteps2 = NewSteps ++ [{finish, draw}],
 							store_data(NewSteps2),
 							db_api:add_game(CurrentNickName, NextNickName, draw, NewSteps2),
+							update_observer(Observer, RoomID, GameState2, none),
 							loop(State#state{status = waiting,
 											 players=[],
 											 current_player=none,
 											 moves = [],
 											 steps=[]});
 						_ ->
-							[notify_user(Pid, {0, congradulations(CurrentNickName)}) || {Pid, _, _} <- Players],
-							PlayerID = Board:current_player(GameState),
-							notify_observer(Observer, RoomID, {PlayerID, congradulations(CurrentNickName)}),							
 							NewSteps2 = NewSteps ++ [{finish, winner, integer_to_list(Board:current_player(GameState))}], 
 							store_data(NewSteps2),
 							db_api:add_game(CurrentNickName, NextNickName, CurrentNickName, NewSteps2),
+							[notify_user(Pid, {0, congradulations(CurrentNickName)}) || {Pid, _, _} <- Players],
+							PlayerID = Board:current_player(GameState),
+							notify_observer(Observer, RoomID, {PlayerID, congradulations(CurrentNickName)}),							
+							update_observer(Observer, RoomID, GameState2, none),
 							loop(State#state{status=waiting,
 											 players=[],
 											 current_player=none,
@@ -210,11 +212,11 @@ loop(State = #state{status = playing,
 			From ! {Ref, {State#state.status, PlayerNickName}},
 			loop(State);				
 		{'DOWN', _, process, Pid, Reason} ->
-			io:format("~p down @waiting for: ~p~n", [Pid, Reason]),
+			error_logger:format("~p down @waiting for: ~p~n", [Pid, Reason]),
 			self() ! {leave, Pid},
 			loop(State);
 		Unexpected ->
-			io:format("unexpected @waiting ~p~n", [Unexpected]),
+			error_logger:format("unexpected @waiting ~p~n", [Unexpected]),
 			loop(State)
 	    after ?ROOM_TIME_OUT * 1000 ->    
 	        exit(time_out)			
