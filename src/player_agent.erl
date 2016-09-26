@@ -37,10 +37,13 @@ handle_tcp_data(TcpData, State=#state{status = wait_enter_room}) ->
 					io:format("player ~p enter room failed, reason ~p~n", [NickName, Reason]),
 					{ok, State}
 			end;	
+		{leave_room, NickName} ->
+			io:format("player ~p already leave room~n", [NickName]),
+			{ok, State};			
 		{notify, _PlayerID, _Info} ->
 			{ok, State};							
 		Unexpected ->
-			io:format("Unexpected is ~p when wait_enter_room ~n", [Unexpected]),
+			io:format("Unexpected is ~p @wait_enter_room ~n", [Unexpected]),
 			{ok, State}
 	end;	
 
@@ -68,7 +71,7 @@ handle_tcp_data(TcpData, State=#state{status = enter_room, room = RoomPid}) ->
 			room:notify_player(RoomPid, PlayerID, Info),
 			{ok, State};
 		Unexpected ->
-			io:format("Unexpected is ~p when enter_room ~n", [Unexpected]),
+			io:format("Unexpected is ~p @enter_room ~n", [Unexpected]),
 			{ok, State}
 	end.
 

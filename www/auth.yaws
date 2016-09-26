@@ -1,4 +1,4 @@
-<erl module=auth_mod>
+﻿<erl module=auth_mod>
 -include("session.hrl").
 -compile(export_all).
 
@@ -37,23 +37,18 @@ handle(_State, {call, register, {array, [UserName, Password, Type]}}, Session) -
 		
 handle(_State, {call, login, {array, [UserName, Password]}}, #session{pid_str = PidStr}) ->
     Pid = web_agent_mgr:get_agent_pid(PidStr),
-    Response = case web_agent:login(Pid, UserName, Password) of
-                    ok ->
-                        json2:obj_from_list([{"value", true},
-                                             {"reason", ""}]);
-                    Reason ->
-                        json2:obj_from_list([{"value", false},
-                                             {"reason", Reason}])
-                end,
+	io:format("login~n"),
+    web_agent:login(Pid, UserName, Password),
+	IsLogin = web_agent:is_login(Pid),
+	io:format("islogin~p~n", [IsLogin]),
+	Response = json2:obj_from_list([{"value", IsLogin}]),
     {true, 0, #session{pid_str = pid_to_list(Pid)}, {response, Response}};
 
 handle(_State, {call, logout, _}, #session{pid_str = PidStr}) ->
     Pid = web_agent_mgr:get_agent_pid(PidStr),
     io:format("logout, web_agent ~p~n", [Pid]),    
     web_agent:logout(Pid),
-    Response = json2:obj_from_list([{"value", true},
-                                    {"reason", ""}]),
-    {true, 0, #session{pid_str = pid_to_list(Pid)}, {response, Response}};    
+    {true, 0, #session{pid_str = pid_to_list(Pid)}, {response, []}};    
 
 handle(_State, {call, Func, _Args}, Session = #session{pid_str = PidStr}) ->
     io:format("auth unknown func call ~p, web_agent ~p~n", [Func, PidStr]),

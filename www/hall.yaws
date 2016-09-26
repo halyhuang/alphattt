@@ -1,4 +1,4 @@
-<erl module=hall_mod>
+﻿<erl module=hall_mod>
 -include("session.hrl").
 -compile(export_all).
 
@@ -27,14 +27,11 @@ create_single_user(User)->
 						 {"name", Name}, 
 						 {"type", atom_to_list(Type)}]).
 						 
-create_single_online_user(User)-> 	
-	case User of
-    	{ID,Name,none} ->
-    		{ID,Name,_} = User,
-			RoomID = "";
-		{ID,Name,RoomID} ->
-			{ID,Name,RoomID} = User
-    end,
+create_single_online_user({ID, Name, Room, Status, _Pid})-> 	
+	RoomID = case Room of
+				none -> "";
+				_ -> Room
+			 end,
 	json2:obj_from_list([{"id", ID},
 						 {"name", Name}, 
 						 {"type", "human"}, 
@@ -66,16 +63,15 @@ handle(_State, {call, get_room, _}, #session{pid_str = PidStr}) ->
     
 handle(_State, {call, set_room, {array, [RoomID]}}, #session{pid_str = PidStr}) ->
     Pid = web_agent_mgr:get_agent_pid(PidStr),
-    ok = web_agent:set_room(Pid, RoomID),
-    Response = json2:obj_from_list([{"value", true}]),
-    {true, 0, #session{pid_str = pid_to_list(Pid)}, {response, Response}};
+    web_agent:set_room(Pid, RoomID),    
+    {true, 0, #session{pid_str = pid_to_list(Pid)}, {response, []}};
 
 handle(_State, {call, leave_room, _}, #session{pid_str = PidStr}) ->
     Pid = web_agent_mgr:get_agent_pid(PidStr),
-    ok = web_agent:leave_room(Pid),
+    web_agent:leave_room(Pid),
     Response = json2:obj_from_list([{"value", true},
                                 {"reason", ""}]),      
-    {true, 0, #session{pid_str = pid_to_list(Pid)}, {response, Response}};
+    {true, 0, #session{pid_str = pid_to_list(Pid)}, {response, []}};
 	
 handle(_State, {call, Func, _Args}, Session = #session{pid_str = PidStr}) ->
     io:format("hall unknown func call ~p, web_agent ~p~n", [Func, PidStr]),

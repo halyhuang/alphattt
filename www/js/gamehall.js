@@ -99,7 +99,6 @@ function CreateHall(table)
 { 
 	var tdHtmlStart = "<td class=\"tight\">";
 	var room;
-	var TableHtml = "<input type=\"image\" style=\"width:60px;height:60px;\" src=\"./image/table2.jpg";
 	var roomIndex = hall.curPage * hall.pageSize * hall.lineSize;
 	var tr;
 	var td;
@@ -115,7 +114,7 @@ function CreateHall(table)
 				td=$("<td class=\"tight\"><table class=\"gamehall\">"	+
 						"<tr>" + 
 							tdHtmlStart + getPlayerHtml(room.player1,room.playertype1) + getOnClickStr(room.roomId,room.player1)+
-							tdHtmlStart + TableHtml + getOnClickStr(room.roomId,room.player1)+
+							tdHtmlStart + getTableHtml(room.roomId) + getOnClickStr(room.roomId,room.player1)+
 							tdHtmlStart + getPlayerHtml(room.player2,room.playertype2) + getOnClickStr(room.roomId,room.player2)+
 						"</tr>	"+
 						"</table></td>");
@@ -125,9 +124,9 @@ function CreateHall(table)
 		   else	// 为保证游戏大厅大小不变，补齐一些无效的房间
 		   {
 				td=$("<td class=\"tight\"><table class=\"gamehall\">"	+
-						"<tr><td class=\"tight\"><br><img width=\"50px\" height=\"50px\" src=\"./image/none.png\"></td>" + 
-							"<td class=\"tight\"><img width=\"60px\" height=\"60px\" src=\"./image/table.jpg\"></td>"+
-						"<td class=\"tight\"><br><img width=\"50px\" height=\"50px\" src=\"./image/none.png\"></td></tr>	"+
+						"<tr><td class=\"tight\"><br><img width=\"50px\" height=\"50px\" src=\"./image/empty2.jpg\"></td>" + 
+							"<td class=\"tight\"><img width=\"60px\" height=\"60px\" src=\"./image/table2.jpg\"></td>"+
+						"<td class=\"tight\"><br><img width=\"50px\" height=\"50px\" src=\"./image/empty2.jpg\"></td></tr>	"+
 						"</table></td>");
 			   td.appendTo(tr);
 		   }
@@ -249,7 +248,12 @@ function getPlayerHtml(player,playertype)
 		playerImg = "empty2.jpg";
 	else
 		playerImg = playertype+".png";
-	return player + "<br><input type=\"image\" style=\"width:50px;height:50px;\" src=\"./image/"+playerImg;
+	return "<input type=\"image\" title=\""+player +"\" style=\"width:50px;height:50px;\" src=\"./image/"+playerImg;
+}
+	
+function getTableHtml(talbeid)
+{
+	return talbeid+"号桌<br><input type=\"image\" style=\"width:60px;height:60px;\" src=\"./image/table2.jpg";
 }
 
 function ClearTableButHead(table)

@@ -16,7 +16,7 @@ body {
 
 .chat-room {
 	width: 800px;
-	height: 610px;
+	height: 850px;
 }
 
 .heading{  
@@ -53,7 +53,7 @@ body {
     font: 18px "microsoft yahei",Helvetica,Tahoma,Arial,"Microsoft jhengHei";
 	color: #000000;
     text-align: center;  
-    width: 120px;  
+    width: 150px;  
     height: 30px;  
     margin-right: 2px;  
     line-height: 27px;  
@@ -80,8 +80,8 @@ body {
     cursor: pointer;  
 } 
 
-#start_game, #start_robot, #start_witness, #start_hall {  
-    width: 110px;  
+#start_game, #start_robot, #start_rule, #start_hall {  
+    width: 80px;  
 }  
 
 .chessboard {

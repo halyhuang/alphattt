@@ -1,13 +1,12 @@
 -module(web_player).
 -export([start/1, start/3, update/2, display/3, get_move/1, stop/1]).
--export([get_legal_moves/1, set_move/2, is_move/1, is_display_move/1, get_display_move/1, get_info/1, notify/2]).
+-export([get_legal_moves/1, set_move/2, is_move/1, get_display_move/1, get_info/1, notify/2]).
 
 -record(state,  {board = board,
 			     game_states = [],
 			     infos = [],
 			     from = none,
 			     is_get_move = false,
-			     is_display_move = false,
 			     moves = [],
 			     player_client,
 			     move}).
@@ -42,9 +41,6 @@ is_move(Pid) ->
 
 get_legal_moves(Pid) ->
 	call(Pid, get_legal_moves).	
-
-is_display_move(Pid) ->
-	call(Pid, is_display_move).	
 
 get_display_move(Pid) ->
 	call(Pid, get_display_move).	
@@ -83,22 +79,20 @@ call(Pid, Msg) ->
 	end.
 
 next_player(1) -> 2;
-next_player(2) -> 1.
+next_player(2) -> 1;
+next_player(_) -> 0.
 
 handle_call({update, GameState}, State=#state{game_states=GSs}) -> 
 	{reply, ok, State#state{game_states=[GameState | GSs]}};
 
 handle_call({display, _GameState, none}, State) ->
-	{reply, ok, State#state{is_display_move = true, moves = []}};
+	{reply, ok, State#state{moves = [{0, {0,0,0,0}}]}};
 
 handle_call({display, GameState, Move}, State=#state{board = Board, moves = Moves}) ->
-	{reply, ok, State#state{is_display_move = true, moves = [{next_player(Board:current_player(GameState)), Move} | Moves]}};
-
-handle_call(is_display_move, State=#state{is_display_move = IsDisplayMove}) ->
-	{reply, {ok, IsDisplayMove}, State};
+	{reply, ok, State#state{moves = [{next_player(Board:current_player(GameState)), Move} | Moves]}};
 
 handle_call(get_display_move, State=#state{moves = Moves}) ->
-	{reply, {ok, Moves}, State#state{is_display_move = false}};
+	{reply, {ok, lists:reverse(Moves)}, State#state{moves = []}};
 
 handle_call({notify, Info}, State=#state{infos = Infos}) ->
 	io:format("webplayer notify:~p~n", [Info]),

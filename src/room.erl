@@ -3,7 +3,7 @@
 -export([enter/2, leave/2, play/2, get_state/1, observe/2, notify_player/3]).
 -export([reset/1]).
 
--define(ROOM_TIME_OUT, 60 * 1).
+-define(ROOM_TIME_OUT, 60 * 10).
 
 -record(state, {board,
 				room_id,
@@ -28,7 +28,7 @@ leave(Pid, Player) ->
 	Pid ! {leave, Player}.
 
 observe(Pid, Observer) ->
-	call(Pid, {observe, Observer}).	
+	Pid ! {observe, Observer}.	
 
 play(Pid, {Player, Move}) ->
 	Pid ! {play, Player, Move}.
@@ -102,8 +102,7 @@ loop(State = #state{status = waiting, board = Board, players = Players}) ->
 				 players=[],
 				 observer=[],
 				 current_player=none});			
-		{{observe, Observer}, Ref, From} ->
-			From ! {Ref, []},
+		{observe, Observer} ->			
 			loop(State#state{observer = Observer});	
 		{'DOWN', _, process, Pid, Reason} ->
 			io:format("~p down @waiting for: ~p~n", [Pid, Reason]),
@@ -140,8 +139,7 @@ loop(State = #state{status = playing,
 					loop(State)
 			end;
 
-		{{observe, NewObserver}, Ref, From} ->
-			From ! {Ref, Moves},
+		{observe, NewObserver} ->			
 			loop(State#state{observer = NewObserver});	
 
 		show ->

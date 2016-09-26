@@ -11,10 +11,10 @@ start_link() ->
     supervisor:start_link({local, ?MODULE}, ?MODULE, []).
 
 init([]) ->
-	WebAgentMgr = {web_agent_mgr, {web_agent_mgr,start,[]},
+	WebAgentMgr = {web_agent_mgr, {web_agent_mgr,start_link,[]},
             			permanent,2000,worker,[web_agent_mgr]},
-	EventStore = {event_store, {event_store,start,[board]},
+	EventStore = {event_store, {event_store,start_link,[]},
             			permanent,2000,worker,[event_store]},            			
     YBed = {ybed, {ybed,start,[]},
             permanent,2000,worker,[ybed]},
-    {ok,{{one_for_all,0,1}, [YBed, WebAgentMgr, EventStore]}}.
+    {ok,{{one_for_one, 4, 3600}, [YBed, WebAgentMgr, EventStore]}}.
