@@ -80,7 +80,8 @@ handle_call(get_move, State=#state{board=Board, game_states=GSs, from = From}, P
     {NextMove, Msg_time, Msg_pro} = python:call(Ppy, pybot, get_move, []),
     GS = hd(GSs),
     CurrentPlayerID = Board:current_player(GS),
-    notify_room(From, CurrentPlayerID, Msg_time ++ Msg_pro),
+    notify_room(From, CurrentPlayerID, Msg_time),
+    notify_room(From, CurrentPlayerID, Msg_pro),
     From ! {play, NextMove},
     {reply, {ok, NextMove}, State};
 handle_call(stop, _State, Ppy) ->
