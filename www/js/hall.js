@@ -1,11 +1,9 @@
-var desks;
+﻿var desks;
 
 var jsonrpc = imprt("jsonrpc");
 
 var service = new jsonrpc.ServiceProxy("hall.yaws", ["set_room"]);
-
-var auth_jsonrpc = imprt("jsonrpc");
-var auth_service = new auth_jsonrpc.ServiceProxy("auth.yaws", ["is_login"]);
+var auth_service = new jsonrpc.ServiceProxy("auth.yaws", ["is_login"]);
 
 function is_login()
 {

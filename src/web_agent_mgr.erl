@@ -5,15 +5,15 @@
 
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
 
--export([start/0, start_agent/0, get_agent_pid/1, show/0, get_online_users/0, stop/1]).
+-export([start_link/0, start_agent/0, get_agent_pid/1, show/0, get_online_users/0, stop/1]).
 
 -record(state,  {agents = [],
 				 index = 1}).
 
 %% APIs.
 
-start() ->
-	{ok, Pid} = gen_server:start({local, ?MODULE}, ?MODULE, [],[]),	
+start_link() ->
+	{ok, Pid} = gen_server:start_link({local, ?MODULE}, ?MODULE, [],[]),	
 	{ok, Pid}.
 
 start_agent() ->
@@ -39,8 +39,8 @@ get_online_users() ->
 show() ->
 	OnlineUsers = get_online_users(),
 	io:format("~n------------- begin web agent state -----------~n"),	
-	[ io:format("id:~p, user:~p, room:~p~n", [ID, UserName, RoomID])
-		|| {ID, UserName, RoomID} <- OnlineUsers],
+	[ io:format("id:~p, user:~p, room:~p, status:~p pid:~p~n", [ID, UserName, RoomID, Status, Pid])
+		|| {ID, UserName, RoomID, Status, Pid} <- OnlineUsers],
 	io:format("~n------------- end web agent state -----------~n"),
 	ok.
 
@@ -53,18 +53,18 @@ init([]) ->
 handle_info({'DOWN', _, process, Pid, Reason}, State=#state{agents=Agents}) ->
 	case lists:keyfind(Pid, 2, Agents) of
 		{_ID, Pid, _Ref} ->
-			io:format("web agent ~p down, reason ~p~n", [Pid, Reason]),
+			error_logger:format("web agent ~p down, reason ~p~n", [Pid, Reason]),
 			NewAgents = lists:keydelete(Pid, 2, Agents),
 		    {noreply, State#state{agents = NewAgents}};
 		_ ->
-			io:format("web agent ~p down, reason ~p, can't find web agent~n", [Pid, Reason]),
+			error_logger:format("web agent ~p down, reason ~p, can't find web agent~n", [Pid, Reason]),
 			{noreply, State}
 	end.
 
 handle_cast({stop, ID}, State=#state{agents=Agents}) ->
 	case lists:keyfind(ID, 1, Agents) of
 		{ID, Pid, _Ref} ->
-			web_agent:stop(),
+			web_agent:stop(Pid),
 			io:format("web agent ~p quit~n", [Pid]),
 			NewAgents = lists:keydelete(ID, 1, Agents),
 		    {noreply, State#state{agents = NewAgents}};
@@ -75,8 +75,8 @@ handle_cast({stop, ID}, State=#state{agents=Agents}) ->
 	
 handle_call(get_online_users, _From, State=#state{agents=Agents}) ->
 	WebAgentStatus = [ begin
-		{ok, {UserName, RoomID, _Player, _WebPlayer, _RobotPlayer}} = web_agent:show(Pid),
-		{ID, UserName, RoomID}
+		{Status, UserName, RoomID, _Player, _WebPlayer, _RobotPlayer} = web_agent:get_state(Pid),
+		{ID, UserName, RoomID, Status, Pid}
 	   end || {ID, Pid, _Ref} <- Agents],
 	{reply, {ok, WebAgentStatus}, State};
 

@@ -3,8 +3,6 @@
 		winner/1, display/1, max_moves/0, 
 		current_player/1, legal_moves/1]).
 
--export([test/0]).
-
 %% inline optimize
 %% contain if not inline,there will be 2 times cosume.
 -compile({inline,[contain/2]}).
@@ -94,7 +92,7 @@ get_winner(_, _, StateOfPlayer1, StateOfPlayer2) ->
 		false -> on_going
 	end.
 
-display(GameState) -> {}.
+display(_GameState) -> {}.
 
 max_moves() -> 81.
 

@@ -1,7 +1,7 @@
 ﻿
 
 var jsonrpc = imprt("jsonrpc");
-var service = new jsonrpc.ServiceProxy("alphattt.yaws", ["poll_get_move", "poll_display", "start_game", "start_robot", "start_observe", "get_move", "get_legal_moves", "set_move"]);
+var service = new jsonrpc.ServiceProxy("alphattt.yaws", ["poll_get_move", "poll_display", "start_game", "start_robot", "set_move", "get_room_state"]);
 var hall_service = new jsonrpc.ServiceProxy("hall.yaws", ["get_room", "leave_room"]);
 var auth_service = new jsonrpc.ServiceProxy("auth.yaws", ["is_login"]);
 	
@@ -14,10 +14,12 @@ var players = new Array();
 players[0] = {player:'0', color:"white", innerHTML:""};
 players[1] = {player:'1', color:"#00FFFF", innerHTML:"X"};
 players[2] = {player:'2', color:"#53FF53", innerHTML:"O"};
-var player = 1;
+var g_player = 1;
 
 var legal_moves = new Array();
 var child_nums = 0;
+var bn_start;
+var bn_robot;
 
 function is_login()
 {
@@ -47,7 +49,8 @@ window.onload = function() {
 	check_login();
 	check_room();
 	init_botton();	
-	init_board();		
+	grids = document.querySelectorAll('.grid');	
+	init_board();	
 	init_poll();
 };  
 
@@ -59,6 +62,7 @@ function init_poll()
 
 function poll()
 {		
+	poll_room_state();
 	poll_display();
 	poll_get_move();
 }
@@ -72,7 +76,7 @@ function poll_get_move()
 				var result = service.poll_get_move();
 				if (result.is_get_move)
 				{
-					player = result.player;
+					g_player = result.player;
 					legal_moves = result.legal_moves;
 				}	
 			}				
@@ -85,34 +89,37 @@ function poll_get_move()
 function poll_display()
 {
     try {			
-			if (is_poll_display)
-			{
-				var result = service.poll_display();
-				if (result.is_update_display)
-				{
-					if (result.moves.length == 0)
-					{
-						init_board();
-					}		
-					else
-					{
-						update_display(result.moves[0].player, result.moves[0].move);	
-					}
-				}	
-				if (result.infos.length > 0)
-				{
-					for (var i=0; i < result.infos.length; i++)
-					{ 
-						var player = result.infos[i].player;
-						info(players[player].player, result.infos[i].info);
-					}
-				}				
-				set_legal_move();		
+			var result = service.poll_display();
+			update_display(result.moves, result.moves);						
+			for (var i=0; i < result.infos.length; i++)
+			{ 
+				var player = result.infos[i].player;
+				info(players[player].player, result.infos[i].info);
 			}
+			set_legal_move();					
      } catch(e) {
         alert(e);
      }	
 	
+}
+
+function poll_room_state()
+{
+    try {			
+			var result = service.get_room_state();				
+			if (result.state == "playing")
+			{
+				bn_robot.disabled = true;
+				bn_start.disabled = true; 					
+			}
+			else
+			{
+				bn_start.disabled = false; 			
+				bn_robot.disabled = false;
+			}
+     } catch(e) {
+        alert(e);
+     }		
 }
 
 function grid_pos(move)
@@ -120,14 +127,26 @@ function grid_pos(move)
 	return ((move.R * 3 + move.r) * 9 + (move.C * 3 + move.c));
 }
 
-function update_display(player, move)
+function update_display(moves)
 {
-	set_backgroud_blank();
-	var index = grid_pos(move);
-	grids[index].state = player;
-	grids[index].innerHTML = players[player].innerHTML;
-	grids[index].style.background = players[player].color;
-	info(players[player].player, "move(" + move.R + "," + move.C + "," + move.r + "," + move.c + ")");
+	for (var i=0; i < moves.length; i++)
+	{ 
+		var move = moves[i].move;
+		var player = moves[i].player;
+		set_backgroud_blank();
+		if (player == 0)
+		{
+			init_board();	
+		}
+		else
+		{
+			var index = grid_pos(move);
+			grids[index].state = player;
+			grids[index].innerHTML = players[player].innerHTML;
+			grids[index].style.background = players[player].color;
+			info(players[player].player, "move(" + move.R + "," + move.C + "," + move.r + "," + move.c + ")");
+		}
+	}	
 }
 
 function opponent(id)
@@ -137,22 +156,34 @@ function opponent(id)
 
 function init_botton()
 {
-    var bn_start = document.getElementById('start_game');  
+    bn_start = document.getElementById('start_game');  
 	bn_start.onclick = start_game; 
-    var bn_robot = document.getElementById('start_robot');  
+	bn_start.onmouseenter = enter_bn;
+	bn_start.onmouseleave = leave_bn;
+	bn_start.disabled = false;
+	
+    bn_robot = document.getElementById('start_robot');  
 	bn_robot.onclick = start_robot; 	
-    var bn_observe = document.getElementById('start_observe');  
-	bn_observe.onclick = start_observe; 	
+	bn_robot.onmouseenter = enter_bn;
+	bn_robot.onmouseleave = leave_bn;
+	bn_robot.disabled = true;
+	
     var bn_hall = document.getElementById('start_hall');  
 	bn_hall.onclick = start_hall; 	
+	bn_hall.onmouseenter = enter_bn;
+	bn_hall.onmouseleave = leave_bn;
+	bn_hall.disabled = false;
+	
+	
     var bn_rule = document.getElementById('start_rule');  
 	bn_rule.onclick = start_rule; 	
-	
+	bn_rule.onmouseenter = enter_bn;
+	bn_rule.onmouseleave = leave_bn;
+	bn_rule.disabled = false;	
 }  
 
 function init_board()
 {
-	grids = document.querySelectorAll('.grid');
 	for (var i=0; i < grids.length; i++)
 	{ 
 		grids[i].R = Math.floor((Math.floor(i / 9)) / 3);
@@ -185,7 +216,7 @@ function set_backgroud_opponent(enter_grid, is_show)
 		{
 			if (is_show)
 			{
-				grids[i].style.background = players[opponent(player)].color;			
+				grids[i].style.background = players[opponent(g_player)].color;			
 			}
 			else
 			{
@@ -219,31 +250,12 @@ function info(player, msg)
 function start_game()
 {
 	service.start_game();
-	is_poll_get_move = true;
-	is_poll_display = true;
+	is_poll_get_move = true;	
 }  
 
 function start_robot()
 {	
-	service.start_robot();	
-	is_poll_get_move = true;
-	is_poll_display = true;
-}
-
-function start_observe()
-{
-	init_board();
-	var result = service.start_observe();	
-	init_observe(result.moves);
-	is_poll_display = true;	
-}
-
-function init_observe(player_moves)
-{
-	for (var i = 0; i < player_moves.length; i++)
-	{
-		update_display(player_moves[i].player, player_moves[i].move);		
-	}
+	service.start_robot();
 }
 
 function start_hall()
@@ -278,7 +290,7 @@ function set_backgroud_legal()
 	for (var i=0; i<legal_moves.length; i++)
 	{ 
 		var index = grid_pos(legal_moves[i]);
-		grids[index].style.background = players[player].color;
+		grids[index].style.background = players[g_player].color;
 		grids[index].is_legal = true;
 	}		
 }
@@ -315,4 +327,17 @@ function leave_grid()
 		set_backgroud_opponent(this, false);
 		set_backgroud_legal();	
 	}
+}
+
+function enter_bn()
+{
+	if (!this.disabled)
+	{	
+		this.style.background = "#00FFFF";
+	}
+}
+
+function leave_bn()
+{
+	this.style.background = "#FFFFFF";
 }
