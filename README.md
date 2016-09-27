@@ -1,6 +1,10 @@
 Alpha Tic Tac Toe Ultimate
 =====
 
+
+About
+-----
+
 Install
 -----
 
