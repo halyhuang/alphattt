@@ -1,11 +1,10 @@
 -module(web_player).
--export([start/1, start/3, update/2, display/3, get_move/1, stop/1]).
+-export([start/1, start/3, update/2, display/3, get_move/1, leave_room/1, stop/1]).
 -export([get_legal_moves/1, set_move/2, is_move/1, get_display_move/1, get_info/1, notify/2]).
 
 -record(state,  {board = board,
 			     game_states = [],
 			     infos = [],
-			     from = none,
 			     is_get_move = false,
 			     moves = [],
 			     player_client,
@@ -22,19 +21,25 @@ start(Board) ->
 		  end).
 
 update(Pid, GameState) ->
-	call(Pid, {update, GameState}).
+	Pid ! {update, GameState}.
 
 display(Pid, GameState, Move) ->
-	call(Pid, {display, GameState, Move}).
+	Pid ! {display, GameState, Move}.
+
+notify(Pid, Info) ->
+	Pid ! {notify, Info}.	
 
 get_move(Pid) ->
-	call(Pid, get_move).
-
-stop(Pid) ->
-	call(Pid, stop).	
+	Pid ! {get_move, self()}.
 
 set_move(Pid, Move) ->
-	call(Pid, {set_move, Move}).
+	Pid ! {set_move, Move}.
+
+leave_room(Pid) ->
+	Pid ! leave_room.	
+
+stop(Pid) ->
+	Pid ! stop.	
 
 is_move(Pid) ->
 	call(Pid, is_move).		
@@ -45,27 +50,26 @@ get_legal_moves(Pid) ->
 get_display_move(Pid) ->
 	call(Pid, get_display_move).	
 
-
-notify(Pid, Info) ->
-	call(Pid, {notify, Info}).
-
 get_info(Pid) ->
 	call(Pid, get_info).	
 
 init([Board]) ->
 	loop(#state{board = Board, game_states = []}).
 
-
 loop(State) ->
 	receive
 		{call, Ref, From, Msg} ->
-			case handle_call(Msg, State#state{from = From}) of
+			case handle_call(Msg, State) of
 				{reply, Reply, NewState} ->
 					From ! {Ref, Reply},
-					loop(NewState);
-				stop ->
-					From ! {Ref, stop},
-					stop
+					loop(NewState)				
+			end;
+		stop ->			
+			stop;			
+		Msg ->
+			case handle_cast(Msg, State) of
+				{noreply, NewState} ->
+					loop(NewState)
 			end
 	end.
 
@@ -82,21 +86,37 @@ next_player(1) -> 2;
 next_player(2) -> 1;
 next_player(_) -> 0.
 
-handle_call({update, GameState}, State=#state{game_states=GSs}) -> 
-	{reply, ok, State#state{game_states=[GameState | GSs]}};
 
-handle_call({display, _GameState, none}, State) ->
-	{reply, ok, State#state{moves = [{0, {0,0,0,0}}]}};
+handle_cast({update, GameState}, State=#state{game_states=GSs}) -> 
+	{noreply, State#state{game_states=[GameState | GSs]}};
 
-handle_call({display, GameState, Move}, State=#state{board = Board, moves = Moves}) ->
-	{reply, ok, State#state{moves = [{next_player(Board:current_player(GameState)), Move} | Moves]}};
+handle_cast({display, _GameState, none}, State) ->
+	{noreply, State#state{moves = [{0, {0,0,0,0}}]}};
+
+handle_cast({display, GameState, Move}, State=#state{board = Board, moves = Moves}) ->
+	{noreply, State#state{moves = [{next_player(Board:current_player(GameState)), Move} | Moves]}};
+
+handle_cast({notify, Info}, State=#state{infos = Infos}) ->
+%%	io:format("webplayer notify:~p~n", [Info]),
+	{noreply, State#state{infos = [ Info | Infos]}};
+
+handle_cast(leave_room, _State) ->
+	{noreply, #state{}};	
+
+handle_cast({get_move, From}, State) ->
+	{noreply, State#state{player_client = From, is_get_move = true}};	
+
+handle_cast({set_move, Move}, State=#state{player_client = PlayerClient}) ->
+	case PlayerClient of
+		[] -> ok;
+		PlayerClient ->	
+			PlayerClient ! {play, Move}
+	end,
+	{noreply, State}.	
 
 handle_call(get_display_move, State=#state{moves = Moves}) ->
 	{reply, {ok, lists:reverse(Moves)}, State#state{moves = []}};
 
-handle_call({notify, Info}, State=#state{infos = Infos}) ->
-	io:format("webplayer notify:~p~n", [Info]),
-	{reply, ok, State#state{infos = [ Info | Infos]}};
 
 handle_call(get_info, State=#state{infos = Infos}) ->
 	{reply, lists:reverse(Infos), State#state{infos = []}};
@@ -108,19 +128,8 @@ handle_call(get_legal_moves, State=#state{board=Board, game_states=[CurGameState
 	Moves  = Board:legal_moves(CurGameState),
 	{reply, {ok, Board:current_player(CurGameState), Moves}, State#state{is_get_move = false}};
 
-handle_call(get_move, State=#state{from = From}) ->
-	{reply, ok, State#state{player_client = From, is_get_move = true}};
-
 handle_call(is_move, State=#state{is_get_move = IsMove}) ->
 	{reply, {ok, IsMove}, State};
-
-handle_call({set_move, Move}, State=#state{player_client = PlayerClient}) ->
-	case PlayerClient of
-		[] -> ok;
-		PlayerClient ->	
-			PlayerClient ! {play, Move}
-	end,
-	{reply, ok, State};
 
 handle_call(stop, _State) ->
 	stop.

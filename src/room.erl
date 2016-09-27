@@ -55,10 +55,16 @@ init(Board, RoomID) ->
 	random:seed({A, B, C}),
 	loop(#state{board = Board, room_id = RoomID}).	
 
-select_player(Players) ->
+select_player(Players = [Player1, Player2]) ->
 	N = random:uniform(2),
+	NewPlayers = case N of
+					2 ->
+						[Player2, Player1];
+					1 ->
+						Players
+				end,
 	{Pid, NickName, _} = lists:nth(N, Players),
-	{Pid, NickName}.	
+	{{Pid, NickName}, NewPlayers}.	
 
 loop(State = #state{status = waiting, board = Board, players = Players}) ->
 	receive
@@ -76,13 +82,13 @@ loop(State = #state{status = waiting, board = Board, players = Players}) ->
 					notify_user(Pid2, {0, greeting(NickName)}),
 					Ref = erlang:monitor(process, Pid),
 					NewPlayers = [{Pid, NickName, Ref} | Players],
-					First = select_player(NewPlayers),
+					{First, NewPlayers2} = select_player(NewPlayers),
 					GameState = Board:start(),
 					self() ! begin_game,
 					loop(State#state{status = playing,
 									 game_state = GameState,
 									 current_player = First,
-									 players = NewPlayers})
+									 players = NewPlayers2})
 			end;
 		{leave, Pid} ->
 			case lists:keyfind(Pid, 1, Players) of
@@ -105,12 +111,12 @@ loop(State = #state{status = waiting, board = Board, players = Players}) ->
 		{observe, Observer} ->			
 			loop(State#state{observer = Observer});	
 		{'DOWN', _, process, Pid, Reason} ->
-			io:format("~p down @waiting for: ~p~n", [Pid, Reason]),
+			error_logger:format("~p down @waiting for: ~p~n", [Pid, Reason]),
 			self() ! {leave, Pid},
 			loop(State);
 
 		Unexpected ->
-			io:format("unexpected @waiting ~p~n", [Unexpected]),
+			error_logger:format("unexpected @waiting ~p~n", [Unexpected]),
 			loop(State)				
 	end;
 loop(State = #state{status = playing,
@@ -187,12 +193,12 @@ loop(State = #state{status = playing,
 											 moves = [],
 											 steps=[]});
 						_ ->
-							[notify_user(Pid, {0, congradulations(CurrentNickName)}) || {Pid, _, _} <- Players],
-							PlayerID = Board:current_player(GameState),
-							notify_observer(Observer, RoomID, {PlayerID, congradulations(CurrentNickName)}),							
 							NewSteps2 = NewSteps ++ [{finish, winner, integer_to_list(Board:current_player(GameState))}], 
 							store_data(NewSteps2),
 							db_api:add_game(CurrentNickName, NextNickName, CurrentNickName, NewSteps2),
+							[notify_user(Pid, {0, congradulations(CurrentNickName)}) || {Pid, _, _} <- Players],
+							PlayerID = Board:current_player(GameState),
+							notify_observer(Observer, RoomID, {PlayerID, congradulations(CurrentNickName)}),							
 							loop(State#state{status=waiting,
 											 players=[],
 											 current_player=none,
@@ -210,11 +216,11 @@ loop(State = #state{status = playing,
 			From ! {Ref, {State#state.status, PlayerNickName}},
 			loop(State);				
 		{'DOWN', _, process, Pid, Reason} ->
-			io:format("~p down @waiting for: ~p~n", [Pid, Reason]),
+			error_logger:format("~p down @waiting for: ~p~n", [Pid, Reason]),
 			self() ! {leave, Pid},
 			loop(State);
 		Unexpected ->
-			io:format("unexpected @waiting ~p~n", [Unexpected]),
+			error_logger:format("unexpected @waiting ~p~n", [Unexpected]),
 			loop(State)
 	    after ?ROOM_TIME_OUT * 1000 ->    
 	        exit(time_out)			

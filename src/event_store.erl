@@ -43,7 +43,7 @@ handle_info({update, RoomID, GameState, Move}, State=#state{rooms=Rooms}) ->
 	{noreply, State#state{rooms = NewRooms}};
 	
 handle_info({notify_observer, RoomID, Msg}, State=#state{rooms=Rooms}) ->
-	io:format("receive msg ~p~n", [Msg]),
+%%	io:format("receive msg ~p~n", [Msg]),
 	case lists:keyfind(RoomID, 1, Rooms) of
 		{RoomID, _Moves, Obs} ->
 			[web_player:notify(WebPlayer, Msg) || WebPlayer <- Obs];
@@ -51,7 +51,8 @@ handle_info({notify_observer, RoomID, Msg}, State=#state{rooms=Rooms}) ->
 	end,
 	{noreply, State};
 
-handle_info({'DOWN', _, process, WebPlayer, _Reason}, State=#state{rooms=Rooms}) ->
+handle_info({'DOWN', _, process, WebPlayer, Reason}, State=#state{rooms=Rooms}) ->
+	error_logger:format("web player ~p down, reason ~p~n", [WebPlayer, Reason]),
 	NewRooms = delete_suscriber(Rooms, WebPlayer),
 	{noreply, State#state{rooms = NewRooms}}.	
 

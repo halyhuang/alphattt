@@ -1,7 +1,7 @@
 -module(web_agent).
 
 -export([start/0, login/3, logout/1, is_login/1, set_room/2, enter_room/1, leave_room/1, start_robot/3, 
-		end_game/1, get_info/1, start_observe/1, is_move/1, get_legal_moves/1, set_move/2,  
+		get_info/1, start_observe/1, is_move/1, get_legal_moves/1, set_move/2,  
 		get_display_move/1, get_room/1, get_room_state/1, stop/1, get_state/1]).
 
 -define(TIME_OUT, 60 * 10).
@@ -44,9 +44,6 @@ enter_room(Pid) ->
 leave_room(Pid) ->
 	cast(Pid, leave_room).	
 
-end_game(Pid) ->
-	cast(Pid, end_game).	
-	
 start_robot(Pid, RobotName, RobotType) ->
 	cast(Pid, {start_robot, RobotName, RobotType}).
 
@@ -126,7 +123,7 @@ loop(State=#state{status = waiting_enter_room, username = UserName,
 		stop ->
 			exit(stop);
 		Unexpected ->
-			io:format("unexpected @waiting_enter_room ~p~n", [Unexpected]),
+			error_logger:format("unexpected @waiting_enter_room ~p~n", [Unexpected]),
 			loop(State)	
 	    after ?TIME_OUT * 1000 ->    %% keep state for 60 secs only
 	        exit(time_out)				
@@ -156,13 +153,10 @@ loop(State=#state{status = enter_room, username = UserName, room = RoomID,
  			io:format("~p enter room ~p~n", [UserName, RoomID]),
  			event_store:unsuscribe(WebPlayer),
 			player_client:enter_room(Player, RoomID),
-			loop(State);	
-		end_game ->
-			io:format("~p end_game ~p~n", [UserName, RoomID]),
-			end_game(Player, RobotPlayer),
 			loop(State);									
 		leave_room ->
 			io:format("~p leave room ~p~n", [UserName, RoomID]),
+			web_player:leave_room(WebPlayer),
 			end_game(Player, RobotPlayer),
 			event_store:unsuscribe(WebPlayer),			
 			loop(State#state{status = waiting_enter_room, room = none});
@@ -207,7 +201,7 @@ loop(State=#state{status = enter_room, username = UserName, room = RoomID,
 		stop ->
 			exit(stop);
 		Unexpected ->
-			io:format("unexpected @enter_room ~p~n", [Unexpected]),
+			error_logger:format("unexpected @enter_room ~p~n", [Unexpected]),
 			loop(State)	
 	    after ?TIME_OUT * 1000 ->    %% keep state for 60 secs only
 	        exit(time_out)				
