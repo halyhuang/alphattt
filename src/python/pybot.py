@@ -8,6 +8,8 @@ cal_time = 1
 board = None
 tree = None
 
+# ==== interfaces ====
+
 
 def init(max_time):
     global tree
@@ -28,6 +30,7 @@ def get_move():
     print "pybot move: ", move
     board.display()
     return move, msg_time, msg_pro
+# =================
 
 
 class TreeSearch(object):

@@ -36,7 +36,6 @@ stop(Pid) ->
 %%
 init([Board, MaxTime, ExplorationFactor]) ->
     {ok, Ppy} = python:start([{python_path,"../src/python"},{python, "python2"}]),
-    % python:call(Ppy,pybot,init,[MaxTime]),
     State = #state{board = Board,
                      max_time = MaxTime,
                      exploration_factor = ExplorationFactor
@@ -89,5 +88,4 @@ handle_call(stop, _State, Ppy) ->
     stop.
 
 notify_room(PlayerClient, PlayerID, Info) ->
-%	io:format("notify room:~p~n", [lists:flatten(Info)]),
 	PlayerClient ! {notify, PlayerID, lists:flatten(Info)}.
