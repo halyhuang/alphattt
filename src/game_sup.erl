@@ -1,4 +1,4 @@
--module(game_sup).
+﻿-module(game_sup).
 -behaviour(supervisor).
 
 %% API
@@ -13,7 +13,7 @@ start_link() ->
 init([]) ->
     Ranklist = {ranklist, {ranklist,start_link,[]},
             				permanent,2000,worker,[ranklist]},
-    Roommgr = {room_mgr, {room_mgr,start_link,[board, 32]},
+    Roommgr = {room_mgr, {room_mgr,start_link,[board, 36]},
             				permanent,2000,worker,[room_mgr]},
     Auth = {game_auth, {game_auth,start_link,[]},
             				permanent,2000,worker,[game_auth]},  

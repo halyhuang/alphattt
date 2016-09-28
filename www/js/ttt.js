@@ -31,6 +31,7 @@ function check_login()
 {
 	if (!is_login())
 	{		
+		clearInterval(poll_timerID);
 		location.href = "login.html";
 	}
 }
@@ -40,9 +41,15 @@ function check_room()
 	var result = hall_service.get_room();
 	if (result.room_id == 0)
 	{
+		clearInterval(poll_timerID);
 		alert("roomID invalid,please select a room");
 		location.href = "hall.html";
 	}
+	else
+	{
+		var title = document.getElementById('title');  	
+		title.innerHTML = "AlphaTTT " + result.room_id + "号桌子";
+	}	
 }
 
 window.onload = function() {  
@@ -110,7 +117,7 @@ function poll_room_state()
 			if (result.state == "playing")
 			{
 				bn_robot.disabled = true;
-				bn_start.disabled = true; 					
+				bn_start.disabled = true; 			
 			}
 			else
 			{
@@ -249,13 +256,19 @@ function info(player, msg)
 
 function start_game()
 {
-	service.start_game();
-	is_poll_get_move = true;	
+	if (!this.disabled)
+	{
+		service.start_game();
+		is_poll_get_move = true;	
+	}
 }  
 
 function start_robot()
 {	
-	service.start_robot();
+	if (!this.disabled)
+	{
+		service.start_robot();
+	}
 }
 
 function start_hall()
@@ -263,6 +276,7 @@ function start_hall()
     try {
 			if (confirm("是否要离开房间?"))
 			{
+				clearInterval(poll_timerID);
 				hall_service.leave_room();
 				location.href = "hall.html";
 			}	

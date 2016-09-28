@@ -79,7 +79,7 @@ call(Pid, Msg) ->
 	Pid ! {call, Ref, self(), Msg},
 	receive
 		{Ref, Reply} ->
-			Reply
+			Reply		
 	end.
 
 next_player(1) -> 2;
