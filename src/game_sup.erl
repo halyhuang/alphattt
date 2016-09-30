@@ -1,4 +1,4 @@
-﻿-module(game_sup).
+-module(game_sup).
 -behaviour(supervisor).
 
 %% API
