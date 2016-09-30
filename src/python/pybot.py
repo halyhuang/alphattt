@@ -1,6 +1,8 @@
 # -*- coding: UTF-8 -*-
 import time
 import random
+import math
+
 
 from board import Board
 
@@ -41,8 +43,26 @@ class TreeSearch(object):
     def __random_choice(self, legal_moves, _):
         return random.choice(legal_moves)
 
+    def __ucb1_choice(self, legal_moves, board):
+        EF = 1.4
+        node = self.tree.get(board.get_board())
+        if node is None or node["total"] < len(legal_moves) * 5:
+            return self.__random_choice(legal_moves, board)
+        logTotal = math.log(node["total"])
+        selected = {"move": None, "cal": 0}
+        for _move in legal_moves:
+            _board = Board(board)
+            _board.move(_move)
+            node = self.tree.get(_board.get_board())
+            if node is None:
+                return self.__random_choice(legal_moves, board)
+            cal = node["per"] + EF * math.sqrt(logTotal / node["total"])
+            if cal >= selected["cal"]:
+                selected = {"move": _move, "cal": cal}
+        return selected["move"]
+
     def __choice(self, legal_moves, board):
-        return self.__random_choice(legal_moves, board)
+        return self.__ucb1_choice(legal_moves, board)
 
     def get_move(self, board):
         paras = {"begin": time.time(), "num": 0, "time": 0}
@@ -82,10 +102,11 @@ class TreeSearch(object):
             try:
                 node = self.tree[item]
             except Exception:
-                self.tree[item] = {"win": 0, "total": 0}
+                self.tree[item] = {"win": 0, "total": 0, "per": 0}
                 node = self.tree[item]
             node["win"] += inc["win"]
             node["total"] += inc["total"]
+            node["per"] = node["win"] / node["total"]
 
     def __search_node(self, board, move):
         _board = Board(board)
