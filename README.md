@@ -72,7 +72,7 @@ bash start_game_server.bat
 ```erlang
 TcpServer = {tcp_server, {tcp_server, start_link,[8011, player_agent]},
             				permanent,2000,worker,[tcp_server]},
-                                                            ```
+```
             				
 请将默认的8011端口修改称为你服务器的可用端口即可。
 修改完毕后，请执行erl -make 重新编译。
