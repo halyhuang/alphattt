@@ -121,7 +121,52 @@ net_adm:ping(gameserver@yourhostname).
 Working With Erlang
 -----
 
+使用Erlang语言可以非常轻松的接入平台，因为这个平台本身就是适用 erlang 语言编写的。
 
+####实现接口
+
+只需要编写一个模块，实现如下接口，
+
+```erlang
+
+-export([start/0]).
+-export([get_move/1, update/2, display/3, notify/2, stop/1]).
+
+update(Pid, GameState) -> tobeimplemented.
+
+display(Pid, GameState, Move) -> tobeimplemented.
+
+get_move(Pid) -> tobeimplemented.
+
+notify(Pid, Info) -> tobeimplemented.
+	
+stop(Pid) -> tobeimplemented.	
+
+```
+然后，在player_client.erl的下面子句中，把mcts换成你实现的用户名，
+
+```erlang
+start() ->
+	{ok, Pid} = start("mcts", mcts, board, "127.0.0.1", 8011),
+	{ok, Pid}.
+```
+
+打开一个命令行终端，进入src目录，键入 erl -make 重新编译。然后，
+运行如下erlang语句, 适当修改RoomID即可，
+```erlang
+	SIP = "10.8.39.80",
+	NickName = "your_registered_name",
+	{ok, Pid} = player_client:start(NickName, your_implementation, board, SIP, 8011),
+	player_client:login(Pid, "your_registered_password"),
+
+	Rooms = player_client:show_room(Pid),
+	RoomID = get_empty_room(Rooms),
+	io:format("enter room ~p~n", [RoomID]),
+
+	player_client:enter_room(Pid, RoomID),
+```
+
+>在哪里注册用户名？ 很简单，在前面提供的Web页面上注册就可以了。
 
 Working With Java
 -----
@@ -129,4 +174,6 @@ Working With Java
 Working With Python
 -----
 
+Working with C/C++
+-----
 
