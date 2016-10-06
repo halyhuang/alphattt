@@ -165,13 +165,13 @@ Working With Java
 -----
 
 ####运行ErlangBridge节点
-windows系统，运行
+打开一个命令行终端，在windows系统，运行
 
 ```bash
 ebin/jerlang.bat
 ```
 
-unix/bash系统，运行
+在unix/bash系统，运行
 ```bash
 bash ebin/jerlang.bat
 ```
@@ -180,7 +180,8 @@ bash ebin/jerlang.bat
 将src/java/src下java代码编译打包称jar文件，注意依赖 erlang/otp安装目录/lib/Jinterface-1.x.x/priv/OtpErlang.jar文件,然后运行即可。
 
 #####运行
-com.zte.alphattt.Boot的main函数如下定义,
+适用Java环境，运行com.zte.alphattt.Boot的main函数。
+如下定义,
 ```java
     PlayerClient playerClient = new PlayerClient(new Mcts(), new Board());
 	...
