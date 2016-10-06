@@ -164,6 +164,41 @@ stop(Pid) -> tobeimplemented.
 Working With Java
 -----
 
+####运行ErlangBridge节点
+windows系统，运行
+
+```bash
+ebin/jerlang.bat
+```
+
+unix/bash系统，运行
+```bash
+bash ebin/jerlang.bat
+```
+
+####编译Java代码
+将src/java/src下java代码编译打包称jar文件，注意依赖 erlang/otp安装目录/lib/Jinterface-1.x.x/priv/OtpErlang.jar文件,然后运行即可。
+
+#####运行
+com.zte.alphattt.Boot的main函数如下定义,
+```java
+    PlayerClient playerClient = new PlayerClient(new Mcts(), new Board());
+	...
+    playerClient.connect("127.0.0.1", 8011);
+    playerClient.login("javarobot", "password");
+    playerClient.enterRoom("javarobot", 6);
+```
+#####扩展
+仅需实现com.zte.alphattt.game.Player接口，并在初始化时传入（a步骤中初始化PlayerClient里传入,如默认已经实现的Mcts类），
+即可加入人机，机机对战。
+
+#####棋盘
+提供了一个较快速度的com.zte.alphattt.game.Board，供自己训练时参考。
+
+#####训练
+提供训练台com.zte.alphattt.Bench,供平时训练和测试时使用。
+
+
 Working With Python
 -----
 
