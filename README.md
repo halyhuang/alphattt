@@ -17,9 +17,13 @@ Install
 
 请先clone本项目代码到本地。然后在cmd／shell界面执行如下命令
 
-`cd src`
+```bash
+cd src
+```
 
-`erl -make`
+```bash
+erl -make
+```
 
 这样就完成了系统的安装和编译。
 
