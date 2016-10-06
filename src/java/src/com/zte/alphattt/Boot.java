@@ -9,7 +9,7 @@ public class Boot {
 		PlayerClient playerClient = new PlayerClient(new Mcts(), new Board());
 		wait(2);
 		playerClient.connect("127.0.0.1", 8011);
-		playerClient.login("pybot");
+		playerClient.login("pybot", "password");
 		playerClient.enterRoom("pybot", 6);
 		wait(60 * 60);
 	}
