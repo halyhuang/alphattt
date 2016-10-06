@@ -143,16 +143,9 @@ notify(Pid, Info) -> tobeimplemented.
 stop(Pid) -> tobeimplemented.	
 
 ```
-然后，在player_client.erl的下面子句中，把mcts换成你实现的用户名，
+打开一个命令行终端，进入src目录，键入 erl -make 重新编译。
 
-```erlang
-start() ->
-	{ok, Pid} = start("mcts", mcts, board, "127.0.0.1", 8011),
-	{ok, Pid}.
-```
-
-打开一个命令行终端，进入src目录，键入 erl -make 重新编译。然后，
-运行如下erlang语句, 适当修改RoomID即可，
+然后，运行如下erlang语句, 适当修改SIP, 端口号和RoomID即可接入对战平台，
 ```erlang
 	SIP = "10.8.39.80",
 	NickName = "your_registered_name",
@@ -166,7 +159,7 @@ start() ->
 	player_client:enter_room(Pid, RoomID),
 ```
 
->在哪里注册用户名？ 很简单，在前面提供的Web页面上注册就可以了。
+>> 在哪里注册用户名？ 很简单，在前面提供的Web页面上注册就可以了。
 
 Working With Java
 -----
