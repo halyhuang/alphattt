@@ -33,17 +33,23 @@ Config & Run
 
 打开一个命令行终端，进入 ebin 文件夹，
 
-`cd ebin`
+```bash
+cd ebin
+```
 
 ####初始化数据库
 
 在window环境下，执行
 
-`deploy.bat`
+```bash
+deploy.bat
+```
 
 在unix/bash环境下，执行
 
-`bash deploy.bat`
+```bash
+bash deploy.bat
+```
 
 这个脚本用于初始化数据库，仅需执行一遍。
 
@@ -51,16 +57,22 @@ Config & Run
 
 重新打开一个命令行终端，进入 ebin 文件夹，在window环境下，执行
 
-`start_game_server.bat`
+```
+start_game_server.bat
+```
 
 在unix/bash环境下，执行
 
-`bash start_game_server.bat`
+```
+bash start_game_server.bat
+````
 
 如果启动服务器时报错如端口冲突，请打开 src/game_sup.erl 进行修改，如下
 
-`TcpServer = {tcp_server, {tcp_server, start_link,[8011, player_agent]},
-            				permanent,2000,worker,[tcp_server]},`
+```erlang
+TcpServer = {tcp_server, {tcp_server, start_link,[8011, player_agent]},
+            				permanent,2000,worker,[tcp_server]},
+                                                            ```
             				
 请将默认的8011端口修改称为你服务器的可用端口即可。
 修改完毕后，请执行erl -make 重新编译。
@@ -69,18 +81,24 @@ Config & Run
 
 重新打开一个命令行终端，进入 ebin 文件夹，在window环境下，执行
 
-`start_game_server.bat`
+```bash
+start_game_server.bat
+```
 
 在unix/bash环境下，执行
 
-`bash start_game_server.bat`
+```bash
+bash start_game_server.bat
+```
 
 如果启动服务器时报错如端口和IP冲突，请打开 src/ybed.erl 进行修改，如下
 
-`SconfList = [{port, 8888},
+```erlang
+SconfList = [{port, 8888},
                  {servername, "alphattt_web_server"},
                  {listen, {127,0,0,1}},
-                 {docroot, Docroot}],`
+                 {docroot, Docroot}],
+```
            
 其中，port属性为web服务器端口，默认为8888；listen监听IP地址，默认为127.0.0.1。
 修改完毕后，请执行erl -make 重新编译。
@@ -89,7 +107,9 @@ Config & Run
 
 在Web服务器的命令行终端中，输入
 
-`net_adm:ping(gameserver@yourhostname).`
+```erlang
+net_adm:ping(gameserver@yourhostname).
+```
 
 其中，yourhostname为你记起的主机名，你可以在gameserver的命令行终端的提示符中查看到。
 
