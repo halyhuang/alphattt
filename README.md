@@ -82,13 +82,13 @@ TcpServer = {tcp_server, {tcp_server, start_link,[8011, player_agent]},
 重新打开一个命令行终端，进入 ebin 文件夹，在window环境下，执行
 
 ```bash
-start_game_server.bat
+start_web_server.bat
 ```
 
 在unix/bash环境下，执行
 
 ```bash
-bash start_game_server.bat
+bash start_web_server.bat
 ```
 
 如果启动服务器时报错如端口和IP冲突，请打开 src/ybed.erl 进行修改，如下
