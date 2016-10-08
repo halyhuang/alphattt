@@ -89,9 +89,9 @@ public class PlayerClient {
 					erlangAtom("enter_room"), erlangString(nickName), erlangInt(roomId)));
 	}
 	
-	public void login(String nickName){
+	public void login(String nickName, String password){
 		sendMsg(erlangTuple(
-					erlangAtom("login"), erlangString(nickName), erlangString("")));
+					erlangAtom("login"), erlangString(nickName), erlangString(password)));
 	}
 
 	public void LeaveRoom(String nickName) {
