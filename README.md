@@ -204,15 +204,19 @@ Working With Python
 -----
 
 #####编写自己的python机器人
-在src/python下增加python对弈程序pybot.py，实现3个接口 init/get_move/set_move；已提供一个python版本的board程序可供调用。
+在src/python下增加python对弈程序pybot.py，实现3个接口 init/get_move/set_move；
+
+已提供一个python版本的board程序可供调用。
 
 #####运行
 在ebin下运行run_erlport.sh；
+
 执行
 ```erlang
 pybot_client:connect("SERVER_IP", "NICKNAME", "PASSWORD", ROOMID).
 ```
 进入对战房间。
+
 （其中SERVER_IP为对战服务器ip，NICKNAME/PASSWORD为已注册的机器人帐号，ROOMID为房间号）
 
 
