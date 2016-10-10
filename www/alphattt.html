@@ -2,11 +2,12 @@
 <html> 
 <head> 
 	<meta charset="utf-8"/> 
-	<title id="title">Ultimate Tic Tac Toe</title> 
+	<title>AlphaTTT Game</title> 
 	<link rel="shortcut icon" href="image/lecheng.png"/>
 	<link rel="stylesheet" type="text/css" href="css/ttt.css" /> 
 	<link rel="stylesheet" type="text/css" href="css/chatstyle.css" /> 
 	<script src="jsolait/jsolait.js"></script>	
+	<script src="jquery/jquery.min.js"></script>
     <script src="js/ttt.js"></script>  
 </head> 
 <body> 	
@@ -183,7 +184,8 @@
 									<td><div id="start_game" class="btns_begin">我入座</div></td>								
 									<td><div id="start_rule" class="btns_begin">规则</div></td>								
 									<td><div id="start_hall" class="btns_begin">大厅</div></td>								
-									<td><div id="start_robot" class="btns_begin">AI入座</div></td>
+									<td><div id="start_robot" class="btns_begin">AI入座</div></td>						
+									<td><div id="div_robotlist" style="display:none;"><select class="combox" id="robotlist" onchange="select_robot()"></select></div></td>
 								</tr>
 							</table>
 						</td>

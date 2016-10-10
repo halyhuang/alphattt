@@ -143,7 +143,9 @@ function DisplayPages(table)
 	}
 	tr=$("<tr></tr>");
 	tr.appendTo(table);
-	td=$("<td class=\"tight\"> 前往 " +pages + "</td>");
+	td=$("<td style=\"padding-top: 0px;\" class=\"tight\"> 前往 " +pages + "</td>");
+	td.appendTo(tr);
+	td=$("<td style=\"padding-top: 0px;\" class=\"tight\"> <img src=\"image/lecheng_touming.png\" width=\"30px\" height=\"40px\">乐橙团队出品</td>");
 	td.appendTo(tr);
 
 }	
