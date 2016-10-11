@@ -170,7 +170,7 @@ function init_botton()
 	bn_start.disabled = false;
 	
     bn_robot = document.getElementById('start_robot');  
-	bn_robot.onclick = start_robot; 	
+	bn_robot.onclick = show_robotlist; 	
 	bn_robot.onmouseenter = enter_bn;
 	bn_robot.onmouseleave = leave_bn;
 	bn_robot.disabled = true;
@@ -271,6 +271,41 @@ function start_robot()
 	}
 }
 
+
+function select_robot()
+{
+	var robot = $("#robotlist").children('option:selected').val();
+	if(!this.disabled && robot!="请选择机器人")
+	{
+		if(confirm("确定要选择"+robot+"吗？"))
+		{
+			service.start_robot();
+			$("#div_robotlist").hide();
+		}
+	}
+}
+
+function show_robotlist()
+{
+	// TODO
+	var result = {
+		"robotlist":["robot1","robot2","robot3","robot4","robot5"]
+	};
+
+	//var result = hall_service.get_RobotList();
+	var robotlist = result.robotlist;
+	var list = $("#robotlist");
+	list.empty();
+	list.append("<option value=\"请选择机器人\">请选择机器人</option>");
+	for (var i = 0; i < robotlist.length; i++) {
+		list.append("<option value=\"" + robotlist[i] + "\">" + robotlist[i] + "</option>");
+	}
+    $("#div_robotlist").show();
+}
+function start_robot()
+{	
+	show_robotlist();
+}
 function start_hall()
 {
     try {

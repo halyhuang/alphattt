@@ -147,16 +147,16 @@ stop(Pid) -> tobeimplemented.
 
 然后，运行如下erlang语句, 适当修改SIP, 端口号和RoomID即可接入对战平台，
 ```erlang
-	SIP = "10.8.39.80",
-	NickName = "your_registered_name",
-	{ok, Pid} = player_client:start(NickName, your_implementation, board, SIP, 8011),
-	player_client:login(Pid, "your_registered_password"),
+SIP = "10.8.39.80",
+NickName = "your_registered_name",
+{ok, Pid} = player_client:start(NickName, your_implementation, board, SIP, 8011),
+player_client:login(Pid, "your_registered_password"),
 
-	Rooms = player_client:show_room(Pid),
-	RoomID = get_empty_room(Rooms),
-	io:format("enter room ~p~n", [RoomID]),
-
-	player_client:enter_room(Pid, RoomID),
+Rooms = player_client:show_room(Pid),
+RoomID = get_empty_room(Rooms),
+io:format("enter room ~p~n", [RoomID]),
+	
+player_client:enter_room(Pid, RoomID),
 ```
 
 >> 在哪里注册用户名？ 很简单，在前面提供的Web页面上注册就可以了。
@@ -182,13 +182,15 @@ bash ebin/jerlang.bat
 #####运行
 适用Java环境，运行com.zte.alphattt.Boot的main函数。
 如下定义,
+
 ```java
-    PlayerClient playerClient = new PlayerClient(new Mcts(), new Board());
+PlayerClient playerClient = new PlayerClient(new Mcts(), new Board());
 	...
-    playerClient.connect("127.0.0.1", 8011);
-    playerClient.login("javarobot", "password");
-    playerClient.enterRoom("javarobot", 6);
+playerClient.connect("127.0.0.1", 8011);
+playerClient.login("javarobot", "password");
+playerClient.enterRoom("javarobot", 6);
 ```
+
 #####扩展
 仅需实现com.zte.alphattt.game.Player接口，并在初始化时传入（a步骤中初始化PlayerClient里传入,如默认已经实现的Mcts类），
 即可加入人机，机机对战。
@@ -203,18 +205,23 @@ bash ebin/jerlang.bat
 Working With Python
 -----
 
-#####编写自己的python机器人
+####编写自己的python机器人
 在src/python下增加python对弈程序pybot.py，实现3个接口 init/get_move/set_move；
-
 已提供一个python版本的board程序可供调用。
 
-#####运行
-在ebin下运行run_erlport.sh；
+####运行
+ebin下运行
 
-执行
+```bash
+run_erlport.sh
+```
+
+####执行
+
 ```erlang
 pybot_client:connect("SERVER_IP", "NICKNAME", "PASSWORD", ROOMID).
 ```
+
 进入对战房间。
 
 （其中SERVER_IP为对战服务器ip，NICKNAME/PASSWORD为已注册的机器人帐号，ROOMID为房间号）

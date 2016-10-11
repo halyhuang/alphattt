@@ -9,16 +9,6 @@ public class Human implements Player {
 	private Board board = new Board();
 
 	@Override
-	public void stop() {
-
-	}
-
-	@Override
-	public void show() {
-
-	}
-
-	@Override
 	public void update(int[] move, int[] gameState) {
 		return;
 	}
@@ -62,7 +52,6 @@ public class Human implements Player {
 		return res;
 	}
 
-	@Override
 	public void display(int[] move, int[] gameState) {
 		board.display(gameState);
 	}

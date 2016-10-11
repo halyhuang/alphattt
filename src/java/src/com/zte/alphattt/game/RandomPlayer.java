@@ -9,16 +9,6 @@ public class RandomPlayer implements Player {
 	private Random random = new Random();
 
 	@Override
-	public void stop() {
-		return;
-	}
-
-	@Override
-	public void show() {
-		return;
-	}
-
-	@Override
 	public void update(int[] move, int[] gameState) {
 		lastState = new GameState(gameState);
 	}
@@ -30,13 +20,13 @@ public class RandomPlayer implements Player {
 	}
 
 	@Override
-	public void display(int[] move, int[] gameState) {
+	public void setThinkMiliSecs(int miliSecs) {
 		// TODO Auto-generated method stub
 		
 	}
 
 	@Override
-	public void setThinkMiliSecs(int miliSecs) {
+	public void display(int[] move, int[] gameState) {
 		// TODO Auto-generated method stub
 		
 	}

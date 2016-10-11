@@ -106,11 +106,9 @@ public class PlayerClient {
 	}
 
 	public void stop() {
-		this.player.stop();
 	}
 
 	public void show() {
-		this.player.show();
 	}
 
 	public void sendMsg(OtpErlangObject o) {

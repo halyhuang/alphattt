@@ -75,7 +75,7 @@ handle(_State, {call, start_observe, _}, #session{pid_str = PidStr}) ->
     Pid = web_agent_mgr:get_agent_pid(PidStr),
     web_agent:start_observe(Pid),    
     {true, 0, #session{pid_str = pid_to_list(Pid)}, {response, []}};
-
+	
 handle(_State, {call, Func, _Args}, Session = #session{pid_str = PidStr}) ->
     io:format("alphattt unknown func call ~p, web_agent ~p~n", [Func, PidStr]),
     Response = json2:obj_from_list([{"value", true},

@@ -15,16 +15,6 @@ public class Mcts implements Player {
 	private Random random = new Random();
 
 	@Override
-	public void stop() {
-		return;
-	}
-
-	@Override
-	public void show() {
-		return;
-	}
-
-	@Override
 	public void update(int[] move, int[] gameState) {
 		lastState = new GameState(gameState);
 	}
@@ -157,7 +147,6 @@ public class Mcts implements Player {
 		return list[random.nextInt(length)];
 	}
 
-	@Override
 	public void display(int[] move, int[] gameState) {
 		board.display(gameState);
 	}
