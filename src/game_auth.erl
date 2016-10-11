@@ -3,7 +3,7 @@
 
 -behaviour (gen_server).
 
--export([start_link/0, login/2, register/1, register/3]).
+-export([start_link/0, login/2, register/1, register/3, get_all_robots/0]).
 
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
 
@@ -20,6 +20,10 @@ register(UserName) ->
 
 register(UserName, Password, Type) ->
 	gen_server:call({global, ?MODULE}, {register, UserName, Password, Type}).
+
+get_all_robots() ->
+	gen_server:call({global, ?MODULE}, get_all_robots).
+
 
 init([]) ->
 	{ok, #state{}}.
@@ -47,7 +51,10 @@ handle_call({register, UserName, Password, Type}, _From, State) ->
 		_ ->
 			{error, user_already_register}
 	end,
-	{reply, Reply, State}.
+	{reply, Reply, State};
+handle_call(get_all_robots, _From, State) ->
+	Reply = [{User#user.name, User#user.password} || User <- db_api:get_all_robots()],
+	{reply, Reply, State}.	
 
 terminate(_Reason, _State) ->
 	ok.

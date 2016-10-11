@@ -1,7 +1,7 @@
 ﻿
 
 var jsonrpc = imprt("jsonrpc");
-var service = new jsonrpc.ServiceProxy("alphattt.yaws", ["poll_get_move", "poll_display", "start_game", "start_robot", "set_move", "get_room_state"]);
+var service = new jsonrpc.ServiceProxy("alphattt.yaws", ["poll_get_move", "poll_display", "start_game", "start_robot", "get_all_robots", "set_move", "get_room_state"]);
 var hall_service = new jsonrpc.ServiceProxy("hall.yaws", ["get_room", "leave_room"]);
 var auth_service = new jsonrpc.ServiceProxy("auth.yaws", ["is_login"]);
 	
@@ -277,9 +277,9 @@ function select_robot()
 	var robot = $("#robotlist").children('option:selected').val();
 	if(!this.disabled && robot!="请选择机器人")
 	{
-		if(confirm("确定要选择"+robot+"吗？"))
+		if (confirm("确定要选择"+robot+"吗？"))
 		{
-			service.start_robot();
+			service.start_robot(robot);
 			$("#div_robotlist").hide();
 		}
 	}
@@ -287,13 +287,8 @@ function select_robot()
 
 function show_robotlist()
 {
-	// TODO
-	var result = {
-		"robotlist":["robot1","robot2","robot3","robot4","robot5"]
-	};
-
-	//var result = hall_service.get_RobotList();
-	var robotlist = result.robotlist;
+        var result = service.get_all_robots();
+	var robotlist = result.robot;
 	var list = $("#robotlist");
 	list.empty();
 	list.append("<option value=\"请选择机器人\">请选择机器人</option>");

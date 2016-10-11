@@ -3,7 +3,7 @@
 -include_lib("stdlib/include/qlc.hrl").
 -include("db_table.hrl").
 
--export([add_user/3, get_user/1, get_all_users/0, del_user/1, get_user_type/1]).
+-export([add_user/3, get_user/1, get_all_users/0, del_user/1, get_user_type/1, get_all_robots/0]).
 
 -export([add_game/4, get_all_games/0]).
 
@@ -12,6 +12,9 @@ get_all_users() ->
 
 get_user(Name) ->	
 	do_qeury(qlc:q([X || X <- mnesia:table(user), X#user.name =:= Name])).
+
+get_all_robots() ->
+	do_qeury(qlc:q([X || X <- mnesia:table(user), X#user.type =:= robot])).	
 
 player_result(Player, Opponent, draw) ->
 	[PlayerResult]   = get_user(Player),
@@ -50,9 +53,7 @@ add_game(Player, Opponent, Result, Steps) ->
 			{PlayerResult, OpponentResult} = player_result(Player, Opponent, Result),
 			mnesia:write(PlayerResult),
 			mnesia:write(OpponentResult),
-			mnesia:write(#game{player = Player, opponent = Opponent, 
-					time = now(), 
-					result = Result, steps = Steps})
+			mnesia:write(#game{player = Player, opponent = Opponent, time = now(), result = Result, steps = Steps})
 		end,
 	mnesia:transaction(F).
 

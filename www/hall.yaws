@@ -73,13 +73,6 @@ handle(_State, {call, leave_room, _}, #session{pid_str = PidStr}) ->
                                 {"reason", ""}]),      
     {true, 0, #session{pid_str = pid_to_list(Pid)}, {response, []}};
 
-		
-handle(State, {call, get_RobotList, _Arg} , Session = #session{pid_str = PidStr}) ->
-    %io:format("get_RobotList~n"),
-	robotlist =["robot1","robot2","robot3","robot4","robot5"],	
-	StateJson = json2:obj_from_list([{"robotlist", robotlist}]), 
-    {true, 0, Session, {response, StateJson}};	
-	
 handle(_State, {call, Func, _Args}, Session = #session{pid_str = PidStr}) ->
     io:format("hall unknown func call ~p, web_agent ~p~n", [Func, PidStr]),
     {true, 0, Session, {response, "ok"}}.     
