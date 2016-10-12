@@ -1,8 +1,8 @@
 -module(web_agent).
 
--export([start/0, login/3, logout/1, is_login/1, set_room/2, enter_room/1, leave_room/1, start_robot/3, 
+-export([start/0, login/3, logout/1, is_login/1, set_room/2, enter_room/1, leave_room/1, start_robot/2, 
 		get_info/1, start_observe/1, is_move/1, get_legal_moves/1, set_move/2,  
-		get_display_move/1, get_room/1, get_room_state/1, stop/1, get_state/1]).
+		get_display_move/1, get_room/1, get_room_state/1, stop/1, get_state/1, get_all_robots/1]).
 
 -define(TIME_OUT, 60 * 10).
 
@@ -12,7 +12,8 @@
 				 room = none,
 				 web_player = none,
 				 player = none,
-				 robot_player = none}).
+				 robot_player = none,
+				 robot = []}).
 
 %% APIs.
 
@@ -44,8 +45,8 @@ enter_room(Pid) ->
 leave_room(Pid) ->
 	cast(Pid, leave_room).	
 
-start_robot(Pid, RobotName, RobotType) ->
-	cast(Pid, {start_robot, RobotName, RobotType}).
+start_robot(Pid, RobotName) ->
+	cast(Pid, {start_robot, RobotName}).
 
 start_observe(Pid) ->
 	cast(Pid, start_observe).
@@ -68,6 +69,9 @@ get_info(Pid) ->
 get_state(Pid) ->
 	call(Pid, get_state).
 
+get_all_robots(Pid) ->
+	call(Pid, get_all_robots).	
+
 stop(Pid) ->
 	Pid ! stop.
 
@@ -80,6 +84,8 @@ call(Pid, Msg) ->
 	receive
 		{Ref, Reply} ->
 			Reply
+	after 5 * 1000 ->
+		io:format("web_agent call timeout")
 	end.
 %%
 init() ->
@@ -99,6 +105,8 @@ loop(State=#state{status = waiting_login}) ->
 		Unexpected ->
 			io:format("unexpected @waiting_login ~p~n", [Unexpected]),
 			loop(State)	
+	    after ?TIME_OUT * 1000 ->    %% keep state for 60 secs only
+	        exit(time_out)			
 	end;
 
 loop(State=#state{status = waiting_enter_room, username = UserName,  
@@ -131,7 +139,7 @@ loop(State=#state{status = waiting_enter_room, username = UserName,
 
 
 loop(State=#state{status = enter_room, username = UserName, room = RoomID, 
-		player = Player, robot_player = RobotPlayer, web_player = WebPlayer}) ->
+		player = Player, robot_player = RobotPlayer, web_player = WebPlayer, robot = Robots}) ->
 	receive
 		{is_login, Ref, From} ->
 			From ! {Ref, true},
@@ -160,18 +168,30 @@ loop(State=#state{status = enter_room, username = UserName, room = RoomID,
 			end_game(Player, RobotPlayer),
 			event_store:unsuscribe(WebPlayer),			
 			loop(State#state{status = waiting_enter_room, room = none});
-		{start_robot, RobotName, RobotType}	->
-			NewRobotPlayer = case RobotPlayer of
-								none ->
-									{ok, RobotPlayer2} = player_client:start(RobotName, RobotType, board, "127.0.0.1", 8011),	
-									erlang:link(RobotPlayer2),	
-									player_client:login(RobotPlayer2, ""),
-									RobotPlayer2;
-								RobotPlayer -> RobotPlayer
-							 end,
-			player_client:enter_room(NewRobotPlayer, RoomID),
-			io:format("~p enter room ~p~n", [RobotName, RoomID]),
-			loop(State#state{robot_player = NewRobotPlayer});
+		{get_all_robots, Ref, From} ->
+			RobotList = game_auth:get_all_robots(),	
+			RobotList2 = [RobotName || {RobotName, _RobotPassword} <- RobotList],	
+			From ! {Ref, RobotList2},
+			loop(State#state{robot = RobotList});			
+		{start_robot, RobotName}	->
+			case lists:keyfind(RobotName, 1, Robots) of
+				{RobotName, RobotPassword} ->
+					NewRobotPlayer = case RobotPlayer of
+										none ->
+											{ok, RobotPlayer2} = player_client:start(RobotName, list_to_atom(RobotName), board, "127.0.0.1", 8011),	
+											erlang:link(RobotPlayer2),	
+											player_client:login(RobotPlayer2, RobotPassword),
+											RobotPlayer2;
+										RobotPlayer -> RobotPlayer
+									 end,
+					player_client:enter_room(NewRobotPlayer, RoomID),
+					io:format("~p enter room ~p~n", [RobotName, RoomID]),
+					loop(State#state{robot_player = NewRobotPlayer});
+				_ ->
+					io:format("robot ~p not exist~n", [RobotName]),
+					loop(State)
+			end;
+
 		{is_move, Ref, From} ->
 			{ok, IsMove} = web_player:is_move(WebPlayer),		
 			From ! {Ref, IsMove},
