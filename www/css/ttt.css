@@ -117,4 +117,29 @@ body {
 	background: url(../image/qp.jpg) fixed center center;
 }  
 
+.playerinfoX {  
+    width: 150px;  
+    height: 150px;  
+	  color:solid white;	
+	  opacity:0.8;	
+    float: center;  
+    position: absolute;
+	  left: 10%;
+	  top: 5%;
+    font: 20px "microsoft yahei",Helvetica,Tahoma,Arial,"Microsoft jhengHei";
+} 
+
+.playerinfoO {  
+    width: 150px;  
+    height: 150px;  
+	  color:solid white;
+	  opacity:0.8;		
+    float: center;  
+    position: absolute;
+	  left: 30%;
+	  top: 5%;
+    font: 20px "microsoft yahei",Helvetica,Tahoma,Arial,"Microsoft jhengHei";
+} 
+
+
   
