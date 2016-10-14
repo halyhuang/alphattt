@@ -41,6 +41,9 @@ class Board(object):
     def current_player(self):
         return self.board[20]
 
+    def next_player(self):
+        return Board.NEXT_PLAYER[self.current_player()]
+
     def move(self, (R, C, r, c)):
         player = Board.NEXT_PLAYER[self.board[20]]
         s, n = Board.RC2S[(R, C)], Board.RC2S[(r, c)]

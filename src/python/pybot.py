@@ -70,7 +70,7 @@ class TreeSearch(object):
         legal_moves = board.legal_moves()
         if len(legal_moves) == 0:
             return None
-        expect_winner = Board.NEXT_PLAYER[board.current_player()]
+        expect_winner = board.next_player()
         while True:
             paras["num"] += 1
             self.__inc_tree(self.__tree_path(board, legal_moves), expect_winner)
