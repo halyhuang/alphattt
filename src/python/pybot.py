@@ -62,7 +62,8 @@ class TreeSearch(object):
         return selected["move"]
 
     def __choice(self, legal_moves, board):
-        return self.__ucb1_choice(legal_moves, board)
+        # return self.__ucb1_choice(legal_moves, board)
+        return self.__random_choice(legal_moves, board)
 
     def get_move(self, board):
         paras = {"begin": time.time(), "num": 0, "time": 0}
