@@ -3,7 +3,7 @@
 -export([enter/2, leave/2, play/2, get_state/1, observe/2, notify_player/3]).
 -export([reset/1]).
 
--define(ROOM_TIME_OUT, 600).
+-define(ROOM_TIME_OUT, 600 * 1000).
 
 -record(state, {board,
 				room_id,
@@ -116,7 +116,6 @@ loop(State = #state{status = waiting, board = Board, players = Players}) ->
 			error_logger:format("~p down @waiting for: ~p~n", [Pid, Reason]),
 			self() ! {leave, Pid},
 			loop(State);
-
 		Unexpected ->
 			error_logger:format("unexpected @waiting ~p~n", [Unexpected]),
 			loop(State)				
@@ -224,7 +223,8 @@ loop(State = #state{status = playing,
 		Unexpected ->
 			error_logger:format("unexpected @waiting ~p~n", [Unexpected]),
 			loop(State)
-	    after ?ROOM_TIME_OUT * 1000 ->    
+	    after ?ROOM_TIME_OUT ->  
+			error_logger:format("room ~p time_out~n", [RoomID]),	      
 	        exit(time_out)			
 	end.
 

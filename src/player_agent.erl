@@ -6,6 +6,7 @@
 init(Socket) ->
 	{ok, #state{socket = Socket}}.
 
+
 handle_tcp_data(TcpData, State=#state{status = wait_login}) ->
 	case binary_to_term(TcpData) of
 		{echo, Msg} ->
@@ -14,7 +15,9 @@ handle_tcp_data(TcpData, State=#state{status = wait_login}) ->
 		{login, UserName, Password} ->
 			LoginState = game_auth:login(UserName, Password), 
 			send_message({login, LoginState}, State),
-			{ok, State#state{status = wait_enter_room}};		
+			{ok, State#state{status = wait_enter_room}};
+		tcp_closed ->
+			stop;					
 		Unexpected ->
 			Notify = io_lib:format("Unexpected is ~p before login ~n", [Unexpected]),
 			send_message({notify, lists:flatten(Notify)}, State),
@@ -32,6 +35,7 @@ handle_tcp_data(TcpData, State=#state{status = wait_enter_room}) ->
 			case room_mgr:enter(RoomID) of
 				{ok, NewRoomPid} ->
 					room:enter(NewRoomPid, {self(), NickName}),
+					erlang:link(NewRoomPid),
 					{ok, State#state{status = enter_room, room = NewRoomPid}};
 				Reason ->
 					io:format("player ~p enter room failed, reason ~p~n", [NickName, Reason]),
@@ -41,7 +45,9 @@ handle_tcp_data(TcpData, State=#state{status = wait_enter_room}) ->
 			io:format("player ~p already leave room~n", [NickName]),
 			{ok, State};			
 		{notify, _PlayerID, _Info} ->
-			{ok, State};							
+			{ok, State};	
+		tcp_closed ->
+			stop;									
 		Unexpected ->
 			io:format("Unexpected is ~p @wait_enter_room ~n", [Unexpected]),
 			{ok, State}
@@ -70,6 +76,9 @@ handle_tcp_data(TcpData, State=#state{status = enter_room, room = RoomPid}) ->
 		{notify, PlayerID, Info} ->
 			room:notify_player(RoomPid, PlayerID, Info),
 			{ok, State};
+		tcp_closed ->
+			room:leave(RoomPid, self()),
+			stop;
 		Unexpected ->
 			io:format("Unexpected is ~p @enter_room ~n", [Unexpected]),
 			{ok, State}
