@@ -206,26 +206,34 @@ Working With Python
 -----
 
 ####编写自己的python机器人
-在src/python下增加python对弈程序pybot.py，实现3个接口 init/get_move/set_move；
+在src/python下增加python对弈算法pybot.py，实现1个接口 get_move；
+
 已提供一个python版本的board程序可供调用。
 
-####运行
-ebin下运行
+####配置
+client.py提供了连接对战平台的客户端程序；
+修改
 
-```bash
-run_erlport.sh
+```python
+if __name__ == '__main__':
+    pybot = Pybot(1, Board)
+    state = {"state": Board.start()}
+    socket_client = init("10.9.88.20", 8011)
+    socket_client.set_recv_callback(make_recv(pybot, state, socket_client))
+    login(socket_client, "pybot", "1234")
+    enter_room(socket_client, "pybot", 3)
+    time.sleep(10000)
 ```
 
 ####执行
 
-```erlang
-pybot_client:connect("SERVER_IP", "NICKNAME", "PASSWORD", ROOMID).
+执行
+
+```python
+python client.py
 ```
 
 进入对战房间。
-
-（其中SERVER_IP为对战服务器ip，NICKNAME/PASSWORD为已注册的机器人帐号，ROOMID为房间号）
-
 
 Working with C/C++
 -----
