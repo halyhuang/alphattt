@@ -281,13 +281,20 @@ function select_robot()
 		{
 			service.start_robot(robot);
 			$("#div_robotlist").hide();
+			$("#start_robot").show();
 		}
 	}
 }
 
+function discard_select_robot()
+{
+	$("#div_robotlist").hide();
+	$("#start_robot").show();
+}
+
 function show_robotlist()
 {
-        var result = service.get_all_robots();
+    var result = service.get_all_robots();
 	var robotlist = result.robot;
 	var list = $("#robotlist");
 	list.empty();
@@ -295,8 +302,10 @@ function show_robotlist()
 	for (var i = 0; i < robotlist.length; i++) {
 		list.append("<option value=\"" + robotlist[i] + "\">" + robotlist[i] + "</option>");
 	}
-    $("#div_robotlist").show();
+    $("#div_robotlist").show();	
+	$("#start_robot").hide();
 }
+
 function start_robot()
 {	
 	show_robotlist();
