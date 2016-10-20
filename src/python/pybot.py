@@ -29,7 +29,7 @@ class Pybot(object):
             if paras["time"] > self.cal_time:
                 break
         msg_time = "== calculate %d paths using %f seconds ==" % (paras["num"], paras["time"])
-        print msg_time
+        # print msg_time
         move, msg_pro = self.__search_tree(state, legal_moves)
         return move, msg_time, msg_pro
 
@@ -76,5 +76,5 @@ class Pybot(object):
                 final["per"], final["win"], final["total"], final["move"] = \
                     wins, node["win"], node["total"], move
         msg_pro = "== probability is %d. %d/%d ==" % (final["per"], final["win"], final["total"])
-        print msg_pro
+        # print msg_pro
         return final["move"], msg_pro

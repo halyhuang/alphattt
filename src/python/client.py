@@ -41,13 +41,16 @@ def make_recv(player, state, socket_client):
             print "pybot update: ", msg
             if type(msg[1]) is tuple:
                 state["state"] = player.board.next_state(state["state"], msg[1])
+                player.board.display(state["state"])
         elif type(msg) is tuple:
             pass
         elif msg.equals(ErlAtom("play")):
-            print "pybot move start"
-            move, _, _ = player.get_move(state["state"])
+            # print "pybot move start"
+            move, msg_time, msg_pro = player.get_move(state["state"])
             print "pybot move: ", move
-            player.board.display(state["state"])
+            print msg_time
+            print msg_pro
+            # player.board.display(state["state"])
             send_move(socket_client, move)
     return _recv
 
@@ -58,5 +61,5 @@ if __name__ == '__main__':
     socket_client = init("10.9.88.20", 8011)
     socket_client.set_recv_callback(make_recv(pybot, state, socket_client))
     login(socket_client, "pybot", "1234")
-    enter_room(socket_client, "pybot", 3)
+    enter_room(socket_client, "pybot", 17)
     time.sleep(10000)
