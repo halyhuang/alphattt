@@ -1,1 +1,0 @@
-erl -pa ../erlport/ebin

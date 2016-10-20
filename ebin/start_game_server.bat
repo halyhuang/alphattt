@@ -1,1 +1,1 @@
-erl -boot start_sasl -config server.config -env ERL_LIBS ../erlport -sname gameserver -setcookie alphattt -s game_boot start
+erl -boot start_sasl -config server.config -sname gameserver -setcookie alphattt -s game_boot start

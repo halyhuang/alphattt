@@ -4,7 +4,7 @@
 		get_info/1, start_observe/1, is_move/1, get_legal_moves/1, set_move/2,  
 		get_display_move/1, get_room/1, get_room_state/1, stop/1, get_state/1, get_all_robots/1]).
 
--define(TIME_OUT, 60 * 10).
+-define(TIME_OUT, 600).
 
 -record(state,  {
 				 status = waiting_login,

@@ -117,7 +117,9 @@ function poll_room_state()
 			if (result.state == "playing")
 			{
 				bn_robot.disabled = true;
-				bn_start.disabled = true; 			
+				bn_start.disabled = true; 
+				document.getElementById('playerinfoX').innerHTML = "[X]: " + result.players[0];
+	                        document.getElementById('playerinfoO').innerHTML = "[O]: " + result.players[1];					
 			}
 			else
 			{
