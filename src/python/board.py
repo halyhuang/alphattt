@@ -86,15 +86,15 @@ class Board(object):
 
     @staticmethod
     def display(game_state):
-        line = [["0" for i in xrange(9)] for i in xrange(9)]
+        line = [["-" for i in xrange(9)] for i in xrange(9)]
         for N in xrange(9):
             I = game_state[N * 2]
             A = game_state[N * 2 + 1]
             for n in xrange(9):
                 if ((I >> n) & 1) == 1:
-                    line[int(N / 3) * 3 + int(n / 3)][(N % 3) * 3 + n % 3] = "A"
+                    line[int(N / 3) * 3 + int(n / 3)][(N % 3) * 3 + n % 3] = "X"
                 if ((A >> n) & 1) == 1:
-                    line[int(N / 3) * 3 + int(n / 3)][(N % 3) * 3 + n % 3] = "B"
+                    line[int(N / 3) * 3 + int(n / 3)][(N % 3) * 3 + n % 3] = "O"
         for i in xrange(9):
             for j in xrange(9):
                 if j == 8:
