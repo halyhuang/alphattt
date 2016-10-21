@@ -8,6 +8,18 @@
     <script src="jsolait/jsolait.js"></script>  
     <script src="jquery/jquery.min.js"></script>
     <script src="bootstrap/js/bootstrap.min.js"></script>
+    <script type="text/javascript">
+		var userAgent = navigator.userAgent; //取得浏览器的userAgent字符串
+		//判断是否Chrome浏览器
+		if(userAgent.indexOf("Chrome") <= -1)
+		{
+			alert("请用谷歌浏览器 Chrome！");
+			if (window.stop) 
+				window.stop(); 
+			else 
+				document.execCommand("Stop"); 
+		}
+	</script>
 	<script src="./js/jquery.cookie.js"></script>
     <script src="./js/login.js"></script>  
 </head>
