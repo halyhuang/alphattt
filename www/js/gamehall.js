@@ -36,27 +36,27 @@ function check_login()
 
 function UpdatePage()
 {
-	ShowHall();
-	ShowRankList();
-	SetListHover("#ranklist");
-	ShowOnLineList();
-	SetListHover("#onlinelist");
+	ShowHall(hall.now_game_hall);
+	ShowRankList($("#ranklist"));
+	SetListHover($("#ranklist"));
+	ShowOnLineList($("#onlinelist"));
+	SetListHover($("#onlinelist"));
 }
 
-function ShowHall()
+function ShowHall(now_game_hall)
 {
-	getHallState();
-	DisplayHall();
+	getHallState(now_game_hall);
+	DisplayHall(now_game_hall);
 }
 
-function ShowRankList()
+function ShowRankList(table)
 {
-	CreateRankList(getRankList(),"#ranklist");
+	CreateRankList(getRankList(),table);
 }
 
-function ShowOnLineList()
+function ShowOnLineList(table)
 {
-	CreateOnLineUsersList(getOneLineList(),"#onlinelist");
+	CreateOnLineUsersList(getOneLineList(),table);
 }
 
 function enterRoom(tableid)
@@ -69,11 +69,11 @@ function enterRoom(tableid)
      }	
 }
 
-function getHallState(game_hall)
+function getHallState(now_game_hall)
 {
     try 
 	{
-		if(game_hall)
+		if(now_game_hall)
 		{
 			hall.data = service.get_hallState();	// TODO
 		}
@@ -91,34 +91,42 @@ function getHallState(game_hall)
 }
 
 // 根据游戏大厅数据生成大厅的HTML脚本
-function DisplayHall()
+function DisplayHall(now_game_hall)
 { 
 	if( !hall.data )
 		return;
 	var table = $("#gamehalltb");
 	table.empty();
-	CreateHallHead(hall.now_game_hall,table)
+	CreateHallHead(now_game_hall,table)
 	CreateHall(table);
 	DisplayPages(table);
 
 }	
 
-function ChangeHall(game_hall)
+function ChangeHall(goto_game_hall)
 {
-	hall.now_game_hall = game_hall;
+	hall.now_game_hall = goto_game_hall;
 	UpdatePage();
 }
 
-function CreateHallHead(game_hall,table)
+function CreateHallHead(now_game_hall,table)
 {
-	if(game_hall)
+	var nowHall,goto_game_hall,gotoHall;
+	if(now_game_hall)
 	{
-		var tr=$("<tr><th></th><th align=\"center\"><font  size=\"6\" face=\"verdana\" color=\"green\">比赛大厅</font></th><th><a href=\"#\" onclick=\"ChangeHall(false)\">前往练习大厅</a></th></tr>");
+		nowHall="比赛大厅";
+		gotoHall = "练习大厅";
+		goto_game_hall = "false";
 	}
 	else
 	{
-		var tr=$("<tr><th></th><th align=\"center\"><font  size=\"6\" face=\"verdana\" color=\"green\">练习大厅</font></th><th><a href=\"#\" onclick=\"ChangeHall(true)\">前往比赛大厅</a></th></tr>");
+		nowHall="练习大厅";
+		gotoHall = "比赛大厅";
+		goto_game_hall = "true";
 	}
+	var tr=$("<tr><th></th><th align=\"center\"><font  size=\"6\" face=\"verdana\" color=\"green\">" + 
+		nowHall +"</font></th><th><a href=\"#\" onclick=\"ChangeHall("+goto_game_hall+")\">前往"+
+		gotoHall + "</a></th></tr>");
 	tr.appendTo(table);
 }
 
@@ -183,7 +191,7 @@ function Jumpto(page)
 	if( page > 0 && page <= hall.pageNum )
 	{
 		hall.curPage = page-1;
-		DisplayHall();
+		DisplayHall(hall.now_game_hall);
 	}
 }	
 
@@ -265,10 +273,10 @@ function CreateOnLineUsersList(list,table)
 
 function SetListHover(table)
 {
-	$(table).delegate("tr","mouseover",function(){
+	table.delegate("tr","mouseover",function(){
 		$(this).addClass("over")
 	});	
-	$(table).delegate("tr","mouseout",function(){
+	table.delegate("tr","mouseout",function(){
 		$(this).removeClass("over");
 	});	
 }
@@ -297,22 +305,9 @@ function getTableHtml(talbeid)
 
 function ClearTableButHead(table)
 {
-	var cit= $(table);
-	if(cit.size()>0) {
-	   cit.find("tr:not(:first)").remove();
+	if(table.size()>0) {
+	   table.find("tr:not(:first)").remove();
 	}
 }
 
-function reserved(tablied,player)
-{
-	var username = $.cookie("username");
-	var password = $.cookie("password");
-    try 
-	{
-		alert();
-	} catch(e) 
-	{
-		alert(e);
-	}
-}
 
