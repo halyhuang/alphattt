@@ -22,8 +22,10 @@
 						<td>
 							<table class="heading">
 								<tr>
+									<td><div id="dest_no" class="dest_no"></div></td>
 									<td><div id="playerinfoX" class="playerinfoX">player X:</div></td>
 									<td><div id="playerinfoO" class="playerinfoO">player O:</div></td>
+									<td><div id="timerbox" class="timerbox">time(seconds): 0</div></td>
 								</tr>				  			
 							</table>
 						</td>
@@ -179,13 +181,17 @@
 					</tr>
 					<tr>
 						<td>
-							<table class="botton">
+							<table class="botton" >
 								<tr>
-									<td><div id="start_game" class="btns_begin">我入座</div></td>								
-									<td><div id="start_rule" class="btns_begin">规则</div></td>								
-									<td><div id="start_hall" class="btns_begin">大厅</div></td>								
-									<td><div id="start_robot" class="btns_begin">AI入座</div></td>						
-									<td><div id="div_robotlist" style="display:none;"><select class="combox" id="robotlist" onchange="select_robot()"></select></div></td>
+									<td align="left" width="25%"><div id="start_game" class="btns_begin">我入座</div></td>								
+									<td align="center" width="25%"><div id="start_rule" class="btns_begin">规则</div></td>								
+									<td align="center" width="25%"><div id="start_hall" class="btns_begin">大厅</div></td>								
+									<td align="right" width="25%">
+										<div id="start_robot" class="btns_begin">AI入座</div>
+										<div id="div_robotlist" style="height:38px;display:none;">
+											<select class="combox" id="robotlist" onchange="select_robot()" onblur="discard_select_robot()" style="font-size:18px;" ></select>
+										</div>
+									</td>						
 								</tr>
 							</table>
 						</td>
