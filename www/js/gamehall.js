@@ -9,13 +9,14 @@ var hall =
 	lineSize:3,	//行显示的游戏房间行数
 	curPage:0,	//当前页码
 	pageNum:0,	//总页数
-	roomNum:0	//游戏房间数
+	roomNum:0,	//游戏房间数
+	nnow_game_hall:false	// true:当前处于比赛大厅 false:当前处于练习大厅
 };
 
 $(document).ready(function() {
 	check_login();
 	UpdatePage();
-	timerID = setInterval(UpdatePage, 3000);	
+//	timerID = setInterval(UpdatePage, 3000);	
 	}
 )
 
@@ -68,11 +69,18 @@ function enterRoom(tableid)
      }	
 }
 
-function getHallState()
+function getHallState(game_hall)
 {
     try 
 	{
-		hall.data = service.get_hallState();		
+		if(game_hall)
+		{
+			hall.data = service.get_hallState();	// TODO
+		}
+		else
+		{
+			hall.data = service.get_hallState();	
+		}
 		hall.roomNum = hall.data.rooms.length;
 		var lineNum=hall.roomNum % hall.lineSize==0 ? hall.roomNum/hall.lineSize : Math.floor(hall.roomNum/hall.lineSize)+1;//根据记录条数，计算行数
 		hall.pageNum = lineNum % hall.pageSize==0 ? lineNum/hall.pageSize : Math.floor(lineNum/hall.pageSize)+1;//根据记录条数，计算页数
@@ -89,10 +97,30 @@ function DisplayHall()
 		return;
 	var table = $("#gamehalltb");
 	table.empty();
+	CreateHallHead(hall.now_game_hall,table)
 	CreateHall(table);
 	DisplayPages(table);
 
 }	
+
+function ChangeHall(game_hall)
+{
+	hall.now_game_hall = game_hall;
+	UpdatePage();
+}
+
+function CreateHallHead(game_hall,table)
+{
+	if(game_hall)
+	{
+		var tr=$("<tr><th></th><th align=\"center\"><font  size=\"6\" face=\"verdana\" color=\"green\">比赛大厅</font></th><th><a href=\"#\" onclick=\"ChangeHall(false)\">前往练习大厅</a></th></tr>");
+	}
+	else
+	{
+		var tr=$("<tr><th></th><th align=\"center\"><font  size=\"6\" face=\"verdana\" color=\"green\">练习大厅</font></th><th><a href=\"#\" onclick=\"ChangeHall(true)\">前往比赛大厅</a></th></tr>");
+	}
+	tr.appendTo(table);
+}
 
 // 根据游戏大厅数据生成大厅的HTML脚本
 function CreateHall(table)
@@ -164,11 +192,20 @@ function getRankList()
 {
     try 
 	{
-		return service.get_RankList();
-     } catch(e) 
-	 {
-        alert(e);
-     }	
+		if(hall.now_game_hall)
+		{
+			return service.get_RankList();	//TODO
+		}
+		else
+		{
+			return service.get_RankList();
+		}
+		
+	} 
+	catch(e) 
+	{
+		alert(e);
+	}	
 }
 
 // 查询在线用户数据
