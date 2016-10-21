@@ -55,9 +55,7 @@ function check_room()
 	}
 	else
 	{
-		var title = document.getElementById('title');  	
-		title.innerHTML = "AlphaTTT " + result.room_id + "号桌子";
-	    set_dest_no(result.room_id);
+        set_dest_no(result.room_id);
 	}	
 }
 
@@ -129,8 +127,8 @@ function poll_room_state()
 			{
 				bn_robot.disabled = true;
 				bn_start.disabled = true; 
-				document.getElementById('playerinfoX').innerHTML = "[X]: " + result.players[0];
-	            document.getElementById('playerinfoO').innerHTML = "[O]: " + result.players[1];					
+				document.getElementById('playerinfoX').innerHTML = "玩家[X]: " + result.players[0];
+	            document.getElementById('playerinfoO').innerHTML = "玩家[O]: " + result.players[1];					
 	            timebox_need_started = true;
 
 			}
@@ -414,14 +412,14 @@ function leave_bn()
 function clearTimer()
 {
 	timebox_c = 0;
-	document.getElementById('timerbox').innerHTML = "time(seconds):0";
+	document.getElementById('timerbox').innerHTML = "计时：0";
 }
 
 function startTimer()
 {
     if (timebox_need_started)
     {
-	    document.getElementById('timerbox').innerHTML = "time(seconds):" + timebox_c;
+	    document.getElementById('timerbox').innerHTML = "计时：" + timebox_c;
 	    timebox_c=timebox_c+1;
 	    timebox_need_started = false;
     }
@@ -429,6 +427,6 @@ function startTimer()
  
 function set_dest_no(destno)
 {
-   document.getElementById('dest_no').innerHTML = "DestNo. " + destno;
+   document.getElementById('dest_no').innerHTML = "房间号：" + destno;
 }
  
