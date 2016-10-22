@@ -4,7 +4,7 @@
 -export([reset/1]).
 
 -define(ROOM_TIME_OUT, 600).
--define(REMAIN_TIME, 600).
+-define(REMAIN_TIME, 600 * 1000 div 100). % unit 100ms
 
 -record(state, {board,
 				room_id,
@@ -56,7 +56,7 @@ call(Pid, Msg) ->
 init(Board, RoomID) ->
 	<<A:32, B:32, C:32>> = crypto:rand_bytes(12),
 	random:seed({A, B, C}),
-	timer:send_interval(1 * 1000, time_elapse),
+	timer:send_interval(100, time_elapse),
 	loop(#state{board = Board, room_id = RoomID}).	
 
 select_player(Players = [Player1, Player2]) ->
@@ -105,7 +105,7 @@ loop(State = #state{status = waiting, board = Board, players = Players}) ->
 			end;
 		{get_state, Ref, From} ->
 			PlayerNickNames = [ NickName || {_Pid, NickName, _Ref, _} <- Players],
-			PlayerRemainTimes = [RemainTime || {_Pid, _NickName, _Ref, RemainTime} <- Players],
+			PlayerRemainTimes = [(RemainTime div 10) || {_Pid, _NickName, _Ref, RemainTime} <- Players],
 			From ! {Ref, {State#state.status, PlayerNickNames, PlayerRemainTimes}},
 			loop(State);
 		reset ->
@@ -219,7 +219,7 @@ loop(State = #state{status = playing,
 			loop(State);
 		{get_state, Ref, From} ->
 			PlayerNickNames = [ NickName || {_Pid, NickName, _Ref, _} <- Players],
-			PlayerRemainTimes = [RemainTime || {_Pid, _NickName, _Ref, RemainTime} <- Players],
+			PlayerRemainTimes = [(RemainTime div 10) || {_Pid, _NickName, _Ref, RemainTime} <- Players],
 			From ! {Ref, {State#state.status, PlayerNickNames, PlayerRemainTimes}},
 			loop(State);				
 		{'DOWN', _, process, Pid, Reason} ->

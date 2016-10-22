@@ -256,6 +256,12 @@ function set_backgroud_opponent(enter_grid, is_show)
 
 function info(player, msg)
 {
+    if (msg.indexOf('Wins!!!') > 0)
+    {
+        alert(msg);
+        return;
+    }
+
     var chatNewThread = document.createElement('li'),
     	chatNewMessage = document.createTextNode(msg);
 		
