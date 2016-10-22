@@ -82,7 +82,7 @@ handle_cast({reset, RoomID}, State=#state{rooms=Rooms}) ->
 
 handle_call(get_all_rooms, _From, State=#state{rooms=Rooms}) ->
 	RoomStates = [ begin
-					{Status, Players} = room:get_state(RoomPid),
+					{Status, Players, _} = room:get_state(RoomPid),
 					PlayerTypes = [ begin
 										Type = db_api:get_user_type(Player),							
 										 {Player, atom_to_list(Type)}

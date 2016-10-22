@@ -127,8 +127,8 @@ function poll_room_state()
 			{
 				bn_robot.disabled = true;
 				bn_start.disabled = true; 
-				document.getElementById('playerinfoX').innerHTML = "玩家[X]: " + result.players[0];
-	            document.getElementById('playerinfoO').innerHTML = "玩家[O]: " + result.players[1];					
+				document.getElementById('playerinfoX').innerHTML = "玩家[X]: " + result.players[0] + showRemainTime(result.remain_times[0]);
+	            document.getElementById('playerinfoO').innerHTML = "玩家[O]: " + result.players[1] + showRemainTime(result.remain_times[1]);					
 	            timebox_need_started = true;
 
 			}
@@ -141,6 +141,14 @@ function poll_room_state()
         alert(e);
      }		
 }
+
+function showRemainTime(time)
+{
+	var min = Math.floor(time/60);
+	var sec = time%60;
+	return "(" + min + "分" + sec + "秒)"
+}
+
 
 function grid_pos(move)
 {
