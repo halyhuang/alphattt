@@ -320,6 +320,8 @@ store_data({move, Player, {R, C, R1, C1}}, LogFile) ->
 	io:format(LogFile, "{~p:[~p,~p,~p,~p]}~n", [Player, R, C, R1, C1]);
 store_data({finish, draw}, LogFile) ->	
 	io:format(LogFile, "{~p:~p}~n", ["end", "draw"]);
+store_data({use_up_time, winner, Player}, LogFile) ->	
+	io:format(LogFile, "{~p:~p}~n", ["use up time", Player]);
 store_data({finish, winner, Player}, LogFile) ->	
 	io:format(LogFile, "{~p:~p}~n", ["end", Player]).
 
