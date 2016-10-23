@@ -224,7 +224,6 @@ loop(State = #state{status = playing,
 			error_logger:format("unexpected @waiting ~p~n", [Unexpected]),
 			loop(State)
 	    after ?ROOM_TIME_OUT ->  
-			error_logger:format("room ~p time_out~n", [RoomID]),	      
 	        exit(time_out)			
 	end.
 
