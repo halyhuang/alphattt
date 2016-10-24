@@ -17,7 +17,7 @@ start_link(LPort, Agent) ->
 init([LPort, Agent]) ->
 	case gen_tcp:listen(LPort, [binary, {packet, 2}, {active, true}]) of
 		{ok, LSock} ->
-			spawn_acceptor(LSock, Agent, 20),
+			spawn_acceptor(LSock, Agent, 5),
 			io:format("tcp_server started @ [~p]~n", [LPort]),
 			{ok, #state{port=LPort, lsock=LSock, agent=Agent}};
 		{error, Reason} ->

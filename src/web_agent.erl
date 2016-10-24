@@ -4,7 +4,7 @@
 		get_info/1, start_observe/1, is_move/1, get_legal_moves/1, set_move/2,  
 		get_display_move/1, get_room/1, get_room_state/1, stop/1, get_state/1, get_all_robots/1]).
 
--define(TIME_OUT, 600).
+-define(TIME_OUT, 600 * 1000).
 
 -record(state,  {
 				 status = waiting_login,
@@ -105,7 +105,7 @@ loop(State=#state{status = waiting_login}) ->
 		Unexpected ->
 			io:format("unexpected @waiting_login ~p~n", [Unexpected]),
 			loop(State)	
-	    after ?TIME_OUT * 1000 ->    %% keep state for 60 secs only
+	    after ?TIME_OUT ->    %% keep state for 60 secs only
 	        exit(time_out)			
 	end;
 
@@ -133,7 +133,7 @@ loop(State=#state{status = waiting_enter_room, username = UserName,
 		Unexpected ->
 			error_logger:format("unexpected @waiting_enter_room ~p~n", [Unexpected]),
 			loop(State)	
-	    after ?TIME_OUT * 1000 ->    %% keep state for 60 secs only
+	    after ?TIME_OUT ->    %% keep state for 60 secs only
 	        exit(time_out)				
 	end;
 
@@ -169,7 +169,7 @@ loop(State=#state{status = enter_room, username = UserName, room = RoomID,
 			event_store:unsuscribe(WebPlayer),			
 			loop(State#state{status = waiting_enter_room, room = none});
 		{get_all_robots, Ref, From} ->
-			RobotList = game_auth:get_all_robots(),	
+			RobotList = [{"mcts", ""}, {"mcts_ucb1", ""}],	
 			RobotList2 = [RobotName || {RobotName, _RobotPassword} <- RobotList],	
 			From ! {Ref, RobotList2},
 			loop(State#state{robot = RobotList});			
@@ -223,7 +223,7 @@ loop(State=#state{status = enter_room, username = UserName, room = RoomID,
 		Unexpected ->
 			error_logger:format("unexpected @enter_room ~p~n", [Unexpected]),
 			loop(State)	
-	    after ?TIME_OUT * 1000 ->    %% keep state for 60 secs only
+	    after ?TIME_OUT ->    %% keep state for 60 secs only
 	        exit(time_out)				
 	end.
 

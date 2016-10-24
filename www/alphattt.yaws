@@ -54,10 +54,11 @@ handle(_State, {call, set_move, {array, [R, C, R1, C1]}}, #session{pid_str = Pid
 
 handle(_State, {call, get_room_state, _}, #session{pid_str = PidStr}) ->
     Pid = web_agent_mgr:get_agent_pid(PidStr),
-    {ok, {RoomState, Players}} = web_agent:get_room_state(Pid),
+    {ok, {RoomState, Players, RemainTimes}} = web_agent:get_room_state(Pid),
     ResponseJson = 
         json2:obj_from_list([{"state", atom_to_list(RoomState)},
-                             {"players", {array, Players}}]),
+                             {"players", {array, Players}},
+                             {"remain_times", {array, RemainTimes}}]),
     {true, 0, #session{pid_str = pid_to_list(Pid)}, 
         {response, ResponseJson}};
 

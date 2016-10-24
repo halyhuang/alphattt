@@ -1,1 +1,1 @@
-erl -sname webserver -setcookie alphattt -s ybed_boot start
+erl -sname webserver@localhost -setcookie alphattt -s ybed_boot start -s test connect

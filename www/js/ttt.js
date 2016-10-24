@@ -7,8 +7,10 @@ var auth_service = new jsonrpc.ServiceProxy("auth.yaws", ["is_login"]);
 	
 var grids;
 var poll_timerID = 0;
+var poll_timerboxID = 0;
 var is_poll_get_move = false;
 var is_poll_display = false;
+var destno;
 
 var players = new Array();
 players[0] = {player:'0', color:"white", innerHTML:""};
@@ -21,6 +23,10 @@ var child_nums = 0;
 var bn_start;
 var bn_robot;
 
+var timebox_need_started = false;
+var timebox_c = 0;
+var timebox_t;
+
 function is_login()
 {
 	var r = auth_service.is_login();
@@ -32,6 +38,7 @@ function check_login()
 	if (!is_login())
 	{		
 		clearInterval(poll_timerID);
+		clearInterval(poll_timerboxID);
 		location.href = "login.html";
 	}
 }
@@ -42,13 +49,13 @@ function check_room()
 	if (result.room_id == 0)
 	{
 		clearInterval(poll_timerID);
+		clearInterval(poll_timerboxID);
 		alert("roomID invalid,please select a room");
 		location.href = "hall.html";
 	}
 	else
 	{
-		var title = document.getElementById('title');  	
-		title.innerHTML = "AlphaTTT " + result.room_id + "号桌子";
+        set_dest_no(result.room_id);
 	}	
 }
 
@@ -64,6 +71,7 @@ window.onload = function() {
 function init_poll()
 {
 	poll_timerID = setInterval(poll, 300);	
+	poll_timerboxID = setInterval(startTimer, 1000);	
 }
 
 
@@ -84,7 +92,8 @@ function poll_get_move()
 				if (result.is_get_move)
 				{
 					g_player = result.player;
-					legal_moves = result.legal_moves;
+					legal_moves = result.legal_moves;					
+					clearTimer();
 				}	
 			}				
      } catch(e) {
@@ -118,8 +127,10 @@ function poll_room_state()
 			{
 				bn_robot.disabled = true;
 				bn_start.disabled = true; 
-				document.getElementById('playerinfoX').innerHTML = "[X]: " + result.players[0];
-	                        document.getElementById('playerinfoO').innerHTML = "[O]: " + result.players[1];					
+				document.getElementById('playerinfoX').innerHTML = "玩家[X]: " + result.players[0] + showRemainTime(result.remain_times[0]);
+	            document.getElementById('playerinfoO').innerHTML = "玩家[O]: " + result.players[1] + showRemainTime(result.remain_times[1]);					
+	            timebox_need_started = true;
+
 			}
 			else
 			{
@@ -130,6 +141,14 @@ function poll_room_state()
         alert(e);
      }		
 }
+
+function showRemainTime(time)
+{
+	var min = Math.floor(time/60);
+	var sec = time%60;
+	return "(" + min + "分" + sec + "秒)"
+}
+
 
 function grid_pos(move)
 {
@@ -237,6 +256,12 @@ function set_backgroud_opponent(enter_grid, is_show)
 
 function info(player, msg)
 {
+    if (msg.indexOf('Wins!!!') > 0)
+    {
+        alert(msg);
+        return;
+    }
+
     var chatNewThread = document.createElement('li'),
     	chatNewMessage = document.createTextNode(msg);
 		
@@ -318,6 +343,7 @@ function start_hall()
 			if (confirm("是否要离开房间?"))
 			{
 				clearInterval(poll_timerID);
+				clearInterval(poll_timerboxID);
 				hall_service.leave_room();
 				location.href = "hall.html";
 			}	
@@ -396,3 +422,25 @@ function leave_bn()
 {
 	this.style.background = "#FFFFFF";
 }
+
+function clearTimer()
+{
+	timebox_c = 0;
+	document.getElementById('timerbox').innerHTML = "计时：0";
+}
+
+function startTimer()
+{
+    if (timebox_need_started)
+    {
+	    document.getElementById('timerbox').innerHTML = "计时：" + timebox_c;
+	    timebox_c=timebox_c+1;
+	    timebox_need_started = false;
+    }
+}
+ 
+function set_dest_no(destno)
+{
+   document.getElementById('dest_no').innerHTML = "房间号：" + destno;
+}
+ 
