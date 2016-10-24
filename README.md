@@ -206,28 +206,48 @@ Working With Python
 -----
 
 ####编写自己的python机器人
-在src/python下增加python对弈算法pybot.py，实现1个接口 get_move；
+在src/python下增加python对弈算法，接口已经定义好：
+
+```python
+from py_robot.pybot_module import PybotModule
+
+class Pybot(PybotModule):
+    def __init__(self, cal_time, board):
+        super(PybotModule, self).__init__()
+        self.tree = {}
+        self.cal_time = cal_time
+        self.board = board
+
+    def get_move(self, state):
+        move = (0, 0, 0, 0)
+        msg_time = "== calculate 999 paths using 1.0 seconds =="
+        msg_pro = "== probability is 100. 999/999 =="
+        return move, msg_time, msg_pro
+```
 
 已提供一个python版本的board程序可供调用。
 
-####配置
-client.py提供了连接对战平台的客户端程序；
-修改
+####对战
+代码如下：
 
 ```python
 if __name__ == '__main__':
+    from py_robot.board import Board
+    from py_robot.client import Client
+    
+    IP = "10.9.88.20"
+    PORT = 8011
+    USERNAME = ""
+    PASSWORD = ""
+    ROOMID = 1
+
     pybot = Pybot(1, Board)
     state = {"state": Board.start()}
-    socket_client = init("10.9.88.20", 8011)
-    socket_client.set_recv_callback(make_recv(pybot, state, socket_client))
-    login(socket_client, "pybot", "1234")
-    enter_room(socket_client, "pybot", 3)
-    time.sleep(10000)
+    client = Client(IP, PORT, pybot, state)
+    client.play(USERNAME, PASSWORD, ROOMID)
 ```
 
 ####执行
-
-执行
 
 ```python
 python client.py
