@@ -9,8 +9,6 @@ class Pybot(PybotModule):
     def __init__(self, cal_time, board):
         super(Pybot, self).__init__(cal_time, board)
         self.tree = {}
-        self.cal_time = cal_time
-        self.board = board
 
     def get_move(self, state):
         paras = {"begin": time.time(), "num": 0, "time": 0}
