@@ -7,7 +7,7 @@ from py_robot.pybot_module import PybotModule
 class Pybot(PybotModule):
 
     def __init__(self, cal_time, board):
-        super(Pybot, self).__init__()
+        super(Pybot, self).__init__(self, cal_time, board)
         self.tree = {}
         self.cal_time = cal_time
         self.board = board
