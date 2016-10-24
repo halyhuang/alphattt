@@ -1,20 +1,14 @@
 # -*- coding: UTF-8 -*-
 import time
 import random
+from py_robot.pybot_module import PybotModule
 
 
-class Pybot(object):
+class Pybot(PybotModule):
+
     def __init__(self, cal_time, board):
-        super(Pybot, self).__init__()
+        super(Pybot, self).__init__(cal_time, board)
         self.tree = {}
-        self.cal_time = cal_time
-        self.board = board
-
-    def __random_choice(self, legal_moves, _):
-        return random.choice(legal_moves)
-
-    def __choice(self, legal_moves, state):
-        return self.__random_choice(legal_moves, state)
 
     def get_move(self, state):
         paras = {"begin": time.time(), "num": 0, "time": 0}
@@ -32,6 +26,12 @@ class Pybot(object):
         # print msg_time
         move, msg_pro = self.__search_tree(state, legal_moves)
         return move, msg_time, msg_pro
+
+    def __random_choice(self, legal_moves, _):
+        return random.choice(legal_moves)
+
+    def __choice(self, legal_moves, state):
+        return self.__random_choice(legal_moves, state)
 
     def __tree_path(self, state, legal_moves):
         _state = list(state)
@@ -78,3 +78,13 @@ class Pybot(object):
         msg_pro = "== probability is %d. %d/%d ==" % (final["per"], final["win"], final["total"])
         # print msg_pro
         return final["move"], msg_pro
+
+
+if __name__ == '__main__':
+    from py_robot.board import Board
+    from py_robot.client import Client
+
+    pybot = Pybot(1, Board)
+    state = {"state": Board.start()}
+    client = Client("10.9.88.20", 8011, pybot, state)
+    client.play("pybot", "1234", 3)
