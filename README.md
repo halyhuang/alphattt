@@ -213,10 +213,8 @@ from py_robot.pybot_module import PybotModule
 
 class YourRobot(PybotModule):
     def __init__(self, cal_time, board):
-        super(PybotModule, self).__init__()
+        super(YourRobot, self).__init__(cal_time, board)
         self.tree = {}
-        self.cal_time = cal_time
-        self.board = board
 
     def get_move(self, state):
         move = (0, 0, 0, 0)
