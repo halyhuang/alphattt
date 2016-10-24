@@ -8,9 +8,7 @@ class PybotModule(object):
         self.board = board
 
     def get_move(self, state):
-        import random
-
-        move = random.choice(self.board.legal_moves(state))
-        msg_time = "== calculate 1 paths using 1.0 seconds =="
-        msg_pro = "== probability is 100. 1/1 =="
+        move = (0, 0, 0, 0)
+        msg_time = "== calculate 999 paths using 1.0 seconds =="
+        msg_pro = "== probability is 100. 999/999 =="
         return move, msg_time, msg_pro
