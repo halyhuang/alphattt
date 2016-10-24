@@ -247,13 +247,7 @@ if __name__ == '__main__':
     client.play(USERNAME, PASSWORD, ROOMID)
 ```
 
-####执行
-
-```python
-python client.py
-```
-
-进入对战房间。
+执行后进入对战房间。
 
 Working with C/C++
 -----
