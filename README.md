@@ -211,7 +211,7 @@ Working With Python
 ```python
 from py_robot.pybot_module import PybotModule
 
-class Pybot(PybotModule):
+class YourRobot(PybotModule):
     def __init__(self, cal_time, board):
         super(PybotModule, self).__init__()
         self.tree = {}
@@ -241,9 +241,9 @@ if __name__ == '__main__':
     PASSWORD = ""
     ROOMID = 1
 
-    pybot = Pybot(1, Board)
+    your_robot = YourRobot(1, Board)
     state = {"state": Board.start()}
-    client = Client(IP, PORT, pybot, state)
+    client = Client(IP, PORT, your_robot, state)
     client.play(USERNAME, PASSWORD, ROOMID)
 ```
 
