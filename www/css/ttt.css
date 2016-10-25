@@ -130,41 +130,28 @@ body {
 } 
 
 .playerinfoX {  
-    width: 150px;  
+    width: 35%;  
     height: 150px;  
 	  color:solid white;	
 	  opacity:0.8;	
-    float: center;  
+    float: left;  
     position: absolute;
-	  left: 10%;
+	  left: 0;
 	  top: 10%;
     font: 20px "microsoft yahei",Helvetica,Tahoma,Arial,"Microsoft jhengHei";
 } 
 
 .playerinfoO {  
-    width: 150px;  
+    width: 35%;  
     height: 150px;  
 	  color:solid white;
 	  opacity:0.8;		
-    float: center;  
+    float: left;  
     position: absolute;
-	  left: 30%;
+	  left: 15%;
 	  top: 10%;
     font: 20px "microsoft yahei",Helvetica,Tahoma,Arial,"Microsoft jhengHei";
 } 
-
-.timerbox {  
-    width: 150px;  
-    height: 150px;  
-	  color:solid white;
-	  opacity:0.8;		
-    float: center;  
-    position: absolute;
-	  left: 30%;
-	  top: 5%;
-    font: 20px "microsoft yahei",Helvetica,Tahoma,Arial,"Microsoft jhengHei";
-} 
-
 
 
   
