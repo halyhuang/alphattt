@@ -124,8 +124,8 @@ function CreateHallHead(now_game_hall,table)
 		gotoHall = "比赛大厅";
 		goto_game_hall = "true";
 	}
-	var tr=$("<tr><th></th><th align=\"center\"><font  size=\"6\" face=\"verdana\" color=\"green\">" + 
-		nowHall +"</font></th><th><a href=\"#\" onclick=\"ChangeHall("+goto_game_hall+")\">前往"+
+	var tr=$("<tr><th></th><th class=\"hallname\">" + 
+		nowHall +"</th><th><a href=\"#\" onclick=\"ChangeHall("+goto_game_hall+")\">前往"+
 		gotoHall + "</a></th></tr>");
 	tr.appendTo(table);
 }
