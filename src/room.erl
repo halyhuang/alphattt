@@ -116,7 +116,6 @@ loop(State = #state{status = waiting, board = Board, players = Players}) ->
 		{observe, Observer} ->			
 			loop(State#state{observer = Observer});	
 		{'DOWN', _, process, Pid, Reason} ->
-			error_logger:format("~p down @waiting for: ~p~n", [Pid, Reason]),
 			self() ! {leave, Pid},
 			loop(State);
 		time_elapse ->
@@ -223,7 +222,6 @@ loop(State = #state{status = playing,
 			From ! {Ref, {State#state.status, PlayerNickNames, PlayerRemainTimes}},
 			loop(State);				
 		{'DOWN', _, process, Pid, Reason} ->
-			error_logger:format("~p down @waiting for: ~p~n", [Pid, Reason]),
 			self() ! {leave, Pid},
 			loop(State);
 		time_elapse ->

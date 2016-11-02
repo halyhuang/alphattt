@@ -44,7 +44,6 @@ get_room_state(RoomID) ->
 handle_info({'DOWN', _, process, Pid, Reason}, State=#state{board = Board, rooms=Rooms}) ->
 	case lists:keyfind(Pid, 2, Rooms) of
 		{RoomID, Pid, _Ref} ->
-			error_logger:format("room ~p down, reason ~p~n", [RoomID, Reason]),
 			NewRoom = spawn_room(RoomID, Board),
 			NewRooms = lists:keyreplace(Pid, 2, Rooms, NewRoom),
 		    {noreply, State#state{rooms = NewRooms}};

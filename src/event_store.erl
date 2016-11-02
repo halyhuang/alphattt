@@ -52,7 +52,6 @@ handle_info({notify_observer, RoomID, Msg}, State=#state{rooms=Rooms}) ->
 	{noreply, State};
 
 handle_info({'DOWN', _, process, WebPlayer, Reason}, State=#state{rooms=Rooms}) ->
-	error_logger:format("web player ~p down, reason ~p~n", [WebPlayer, Reason]),
 	NewRooms = delete_suscriber(Rooms, WebPlayer),
 	{noreply, State#state{rooms = NewRooms}}.	
 

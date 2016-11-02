@@ -53,7 +53,6 @@ init([]) ->
 handle_info({'DOWN', _, process, Pid, Reason}, State=#state{agents=Agents}) ->
 	case lists:keyfind(Pid, 2, Agents) of
 		{_ID, Pid, _Ref} ->
-			error_logger:format("web agent ~p down, reason ~p~n", [Pid, Reason]),
 			NewAgents = lists:keydelete(Pid, 2, Agents),
 		    {noreply, State#state{agents = NewAgents}};
 		_ ->
