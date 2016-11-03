@@ -4,13 +4,13 @@
 -export([reset/1]).
 
 -define(ROOM_TIME_OUT, 600 * 1000).
--define(REMAIN_TIME, 600 * 1000 div 100). % unit 100ms
+-define(REMAIN_TIME, 600 * 1000). % 600sec
 
 -record(state, {board,
 				room_id,
 				status = waiting, % status = waiting ! playing
 				current_player = none,
-				players = [], % players = [{pid, nick_name, monitor_ref, remain_time}]
+				players = [], % players = [{pid, nick_name, monitor_ref, {now, remain_time}}]
 				observer = none,
 				game_state,
 				moves = [],
@@ -56,7 +56,7 @@ call(Pid, Msg) ->
 init(Board, RoomID) ->
 	<<A:32, B:32, C:32>> = crypto:rand_bytes(12),
 	random:seed({A, B, C}),
-	timer:send_interval(100, time_elapse),
+	timer:send_interval(1000, time_elapse), % set timerinterval  to 1 sec
 	loop(#state{board = Board, room_id = RoomID}).	
 
 select_player(Players = [Player1, Player2]) ->
@@ -77,7 +77,7 @@ loop(State = #state{status = waiting, board = Board, players = Players}) ->
 				[] ->
 					notify_user(Pid, {0, greeting(NickName)}),
 					Ref = erlang:monitor(process, Pid),
-					loop(State#state{players = [{Pid, NickName, Ref, ?REMAIN_TIME}]});
+					loop(State#state{players = [{Pid, NickName, Ref, {none, ?REMAIN_TIME}}]});
 				[{Pid, _, _, _}] ->
 					notify_user(Pid, {0, "already enter room"}),
 					loop(State);
@@ -85,7 +85,7 @@ loop(State = #state{status = waiting, board = Board, players = Players}) ->
 					notify_user(Pid, {0, greeting(NickName)}),
 					notify_user(Pid2, {0, greeting(NickName)}),
 					Ref = erlang:monitor(process, Pid),
-					NewPlayers = [{Pid, NickName, Ref, ?REMAIN_TIME} | Players],
+					NewPlayers = [{Pid, NickName, Ref, {none, ?REMAIN_TIME}} | Players],
 					{First, NewPlayers2} = select_player(NewPlayers),
 					GameState = Board:start(),
 					self() ! begin_game,
@@ -105,7 +105,7 @@ loop(State = #state{status = waiting, board = Board, players = Players}) ->
 			end;
 		{get_state, Ref, From} ->
 			PlayerNickNames = [ NickName || {_Pid, NickName, _Ref, _} <- Players],
-			PlayerRemainTimes = [(RemainTime div 10) || {_Pid, _NickName, _Ref, RemainTime} <- Players],
+			PlayerRemainTimes = [(RemainTime div 1000) || {_Pid, _NickName, _Ref, {_, RemainTime}} <- Players],
 			From ! {Ref, {State#state.status, PlayerNickNames, PlayerRemainTimes}},
 			loop(State);
 		reset ->
@@ -115,7 +115,7 @@ loop(State = #state{status = waiting, board = Board, players = Players}) ->
 				 current_player=none});			
 		{observe, Observer} ->			
 			loop(State#state{observer = Observer});	
-		{'DOWN', _, process, Pid, Reason} ->
+		{'DOWN', _, process, Pid, _Reason} ->
 			self() ! {leave, Pid},
 			loop(State);
 		time_elapse ->
@@ -139,8 +139,8 @@ loop(State = #state{status = playing,
 		{leave, Pid} ->
 			case lists:keyfind(Pid, 1, Players) of
 				{Pid, _NickName, Ref, _} ->
-					NewPlayers = [{_Pid2, _NickName2, _, _}]
-							   = lists:keydelete(Pid, 1, Players),
+					[{Pid2, NickName2, Ref2, _}] = lists:keydelete(Pid, 1, Players),
+					NewPlayers = [{Pid2, NickName2, Ref2, {none, ?REMAIN_TIME}}],
 					erlang:demonitor(Ref),
 					update_observer(Observer, RoomID, GameState, none),
 					loop(State#state{status=waiting,
@@ -162,7 +162,8 @@ loop(State = #state{status = playing,
 			update(Next, GameState),
 			update_observer(Observer, RoomID, GameState, none),
 			play(Current),
-			loop(State#state{steps = [{start, CurrentNickName, NextNickName}]});
+			NewPlayers = update_player_time(CurrentNickName, Players),
+			loop(State#state{players = NewPlayers, steps = [{start, CurrentNickName, NextNickName}]});
 		reset ->
 			loop(State#state{status=waiting,
 				 players=[],
@@ -184,7 +185,9 @@ loop(State = #state{status = playing,
 					case Board:winner(GameState2) of
 						on_going ->
 							play(Next),
-							loop(State#state{game_state = GameState2,
+							NewPlayers = update_player_time(CurrentNickName, Players),
+							loop(State#state{players = NewPlayers,
+											 game_state = GameState2,
 											 current_player = NextPlayer,
 											 steps=NewSteps,
 											 moves=[{Board:current_player(GameState), Move} | Moves]});
@@ -218,19 +221,19 @@ loop(State = #state{status = playing,
 			loop(State);
 		{get_state, Ref, From} ->
 			PlayerNickNames = [ NickName || {_Pid, NickName, _Ref, _} <- Players],
-			PlayerRemainTimes = [(RemainTime div 10) || {_Pid, _NickName, _Ref, RemainTime} <- Players],
+			PlayerRemainTimes = [(RemainTime div 1000) || {_Pid, _NickName, _Ref, {_, RemainTime}} <- Players],
 			From ! {Ref, {State#state.status, PlayerNickNames, PlayerRemainTimes}},
 			loop(State);				
-		{'DOWN', _, process, Pid, Reason} ->
+		{'DOWN', _, process, Pid, _Reason} ->
 			self() ! {leave, Pid},
 			loop(State);
 		time_elapse ->
-			{Pid, CurrentNickName, Ref, RemainTime} = current_player(CurrentNickName, Players),
-			NewRemainTime = RemainTime - 1,
-			case 0 =:=  NewRemainTime of
+			NewPlayers = update_player_time(CurrentNickName, Players),
+			{_Pid, CurrentNickName, _Ref, {_NowTime, RemainTime}} = current_player(CurrentNickName, NewPlayers),
+			case RemainTime =< 0 of
 				true ->
 					io:format("~p lose because of use up time ~p~n", [CurrentNickName, ?REMAIN_TIME]),
-					{_Next, NextNickName} = next_player(Current, Players),
+					{_Next, NextNickName} = next_player(Current, NewPlayers),
 					NewSteps = Steps ++ [{use_up_time, winner, integer_to_list(1 - Board:current_player(GameState))}], 
 					store_data(NewSteps),
 					db_api:add_game(CurrentNickName, NextNickName, NextNickName, NewSteps),
@@ -243,8 +246,6 @@ loop(State = #state{status = playing,
 									  moves = [],
 									steps=[]});
 				false ->
-					NewPlayers = lists:keyreplace(CurrentNickName, 2, Players, 
-											{Pid, CurrentNickName, Ref, NewRemainTime}),
 					loop(State#state{players = NewPlayers})
 			end;
 		Unexpected ->
@@ -254,10 +255,28 @@ loop(State = #state{status = playing,
 	        exit(time_out)			
 	end.
 
+%% get now time, the unit is ms
+get_now_time() ->
+	{MegaSecs, Secs, MicroSecs} = erlang:now(),
+	MegaSecs*1000000000 + Secs*1000 + (MicroSecs div 1000).
 
-current_player(CurrentNickName, [{_Pid, CurrentNickName, _Ref, _RemainTime} = Player, {_, _, _, _}]) ->
+%% update player time
+update_player_time(CurrentNickName, Players) ->
+	NowTime = get_now_time(),
+	[update_player_time(CurrentNickName, Player, NowTime) || Player <- Players].
+
+update_player_time(_CurrentNickName, {Pid, NickName, Ref, {none, RemainTime}}, NowTime) ->
+	{Pid, NickName, Ref, {NowTime, RemainTime}};
+update_player_time(NickName, {Pid, NickName, Ref, {OldNowTime, RemainTime}}, NowTime) ->
+	NewRemainTime = RemainTime - (NowTime - OldNowTime),
+	{Pid, NickName, Ref, {NowTime, NewRemainTime}};
+update_player_time(_CurrentNickName, {Pid, NickName, Ref, {_OldNowTime, RemainTime}}, NowTime) ->
+	{Pid, NickName, Ref, {NowTime, RemainTime}}.
+
+
+current_player(CurrentNickName, [{_, CurrentNickName, _, _} = Player, {_, _, _, _}]) ->
 	Player;
-current_player(CurrentNickName, [{_, _, _, _}, {_Pid, CurrentNickName,  _Ref, _RemainTime} = Player]) ->
+current_player(CurrentNickName, [{_, _, _, _}, {_, CurrentNickName,  _, _} = Player]) ->
 	Player.
 
 
