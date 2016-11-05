@@ -11,7 +11,7 @@
 start() ->
 	mnesia:start(),
 	mnesia:info(),
-	mnesia:wait_for_tables([user, game], 2000).
+	mnesia:wait_for_tables([user, game_record, game], 2000).
 
 stop() ->
 	mnesia:stop().
@@ -20,10 +20,12 @@ stop() ->
 install() ->
 	install_database(),
 	create_table(user),
+	create_table(game_record),
 	create_table(game).
 
 
 table_fileds(user) -> record_info(fields, user);
+table_fileds(game_record) -> record_info(fields, game_record);
 table_fileds(game) -> record_info(fields, game).
 
 install_database() ->

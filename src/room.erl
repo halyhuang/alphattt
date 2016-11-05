@@ -1,5 +1,5 @@
 -module(room).
--export([start/2]).
+-export([start/3]).
 -export([enter/2, leave/2, play/2, get_state/1, observe/2, notify_player/3]).
 -export([reset/1]).
 
@@ -14,13 +14,14 @@
 				observer = none,
 				game_state,
 				moves = [],
-				steps = []
+				steps = [],
+				room_type=practice    % practice|game
 				}).
 
 %% APIs
-start(Board, RoomID) ->
-	Pid = spawn(fun() -> init(Board, RoomID) end),
-	{ok, Pid}.
+start(Board, RoomID, RoomType) ->
+	Pid = spawn(fun() -> init(Board, RoomID, RoomType) end),
+	{ok, Pid}.	
 
 enter(Pid, {Player, NickName}) ->
 	Pid ! {enter, Player, NickName}.
@@ -53,11 +54,11 @@ call(Pid, Msg) ->
 		error			
 	end.	
 
-init(Board, RoomID) ->
+init(Board, RoomID, RoomType) ->
 	<<A:32, B:32, C:32>> = crypto:rand_bytes(12),
 	random:seed({A, B, C}),
 	timer:send_interval(1000, time_elapse), % set timerinterval  to 1 sec
-	loop(#state{board = Board, room_id = RoomID}).	
+	loop(#state{board = Board, room_id = RoomID, room_type = RoomType}).	
 
 select_player(Players = [Player1, Player2]) ->
 	N = random:uniform(2),
@@ -132,7 +133,8 @@ loop(State = #state{status = playing,
 					board = Board,
 					game_state = GameState, 
 					moves = Moves,
-					steps = Steps}) ->
+					steps = Steps,
+					room_type = RoomType}) ->
 	receive 
 		{enter, _Pid, _NickName} ->
 			loop(State);
@@ -194,7 +196,7 @@ loop(State = #state{status = playing,
 						draw ->
 							NewSteps2 = NewSteps ++ [{finish, draw}],
 							store_data(NewSteps2),
-							db_api:add_game(CurrentNickName, NextNickName, draw, NewSteps2),
+							db_api:add_game(RoomType, CurrentNickName, NextNickName, draw, NewSteps2),
 							loop(State#state{status = waiting,
 											 players=[],
 											 current_player=none,
@@ -203,7 +205,7 @@ loop(State = #state{status = playing,
 						_ ->
 							NewSteps2 = NewSteps ++ [{finish, winner, integer_to_list(Board:current_player(GameState))}], 
 							store_data(NewSteps2),
-							db_api:add_game(CurrentNickName, NextNickName, CurrentNickName, NewSteps2),
+							db_api:add_game(RoomType, CurrentNickName, NextNickName, CurrentNickName, NewSteps2),
 							[notify_user(Pid, {0, congradulations(CurrentNickName)}) || {Pid, _, _, _} <- Players],
 							PlayerID = Board:current_player(GameState),
 							notify_observer(Observer, RoomID, {PlayerID, congradulations(CurrentNickName)}),							
@@ -226,7 +228,7 @@ loop(State = #state{status = playing,
 			loop(State);				
 		{'DOWN', _, process, Pid, _Reason} ->
 			self() ! {leave, Pid},
-			loop(State);
+			loop(State); 
 		time_elapse ->
 			NewPlayers = update_player_time(CurrentNickName, Players),
 			{_Pid, CurrentNickName, _Ref, {_NowTime, RemainTime}} = current_player(CurrentNickName, NewPlayers),
@@ -236,7 +238,7 @@ loop(State = #state{status = playing,
 					{_Next, NextNickName} = next_player(Current, NewPlayers),
 					NewSteps = Steps ++ [{use_up_time, winner, integer_to_list(1 - Board:current_player(GameState))}], 
 					store_data(NewSteps),
-					db_api:add_game(CurrentNickName, NextNickName, NextNickName, NewSteps),
+					db_api:add_game(RoomType, CurrentNickName, NextNickName, NextNickName, NewSteps),
 					[notify_user(PlayerPid, {0, congradulations(NextNickName, use_up_time)}) || {PlayerPid, _, _, _} <- Players],
 					PlayerID = 1 - Board:current_player(GameState),
 					notify_observer(Observer, RoomID, {PlayerID, congradulations(NextNickName, use_up_time)}),							

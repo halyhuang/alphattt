@@ -37,15 +37,22 @@ create_single_online_user({ID, Name, Room, Status, _Pid})->
 						 {"type", "human"}, 
 						 {"roomid", RoomID}]).
 						 	
+handle(State, {call, get_hallState, {array, [HallType]}}, Session = #session{pid_str = PidStr}) ->
+    %io:format("get_hallState~n"),
+	RoomsJason =[ create_single_room(Room) || Room <- room_mgr:get_all_rooms(erlang:list_to_atom(HallType))],
+	StateJson = json2:obj_from_list([{"rooms", {array, RoomsJason}}]), 
+    {true, 0, Session, {response, StateJson}};	
+
 handle(State, {call, get_hallState, _Arg}, Session = #session{pid_str = PidStr}) ->
     %io:format("get_hallState~n"),
 	RoomsJason =[ create_single_room(Room) || Room <- room_mgr:get_all_rooms()],
 	StateJson = json2:obj_from_list([{"rooms", {array, RoomsJason}}]), 
     {true, 0, Session, {response, StateJson}};	
 
-handle(State, {call, get_RankList, _Arg} , Session = #session{pid_str = PidStr}) ->
+
+handle(State, {call, get_RankList, {array, [HallType]}} , Session = #session{pid_str = PidStr}) ->
     %io:format("get_RankList~n"),
-	Ranklist =[ create_single_user(User) || User <- ranklist:top()],
+	Ranklist =[ create_single_user(User) || User <- ranklist:top(erlang:list_to_atom(HallType))],
 	StateJson = json2:obj_from_list([{"users", {array, Ranklist}}]), 
     {true, 0, Session, {response, StateJson}};	
 
