@@ -10,7 +10,7 @@ var hall =
 	curPage:0,	//当前页码
 	pageNum:0,	//总页数
 	roomNum:0,	//游戏房间数
-	nnow_game_hall:false	// true:当前处于比赛大厅 false:当前处于练习大厅
+	now_game_hall:false	// true:当前处于比赛大厅 false:当前处于练习大厅
 };
 
 $(document).ready(function() {
@@ -75,11 +75,11 @@ function getHallState(now_game_hall)
 	{
 		if(now_game_hall)
 		{
-			hall.data = service.get_hallState();	// TODO
+			hall.data = service.get_hallState("game");	// TODO
 		}
 		else
 		{
-			hall.data = service.get_hallState();	
+			hall.data = service.get_hallState("practice");	
 		}
 		hall.roomNum = hall.data.rooms.length;
 		var lineNum=hall.roomNum % hall.lineSize==0 ? hall.roomNum/hall.lineSize : Math.floor(hall.roomNum/hall.lineSize)+1;//根据记录条数，计算行数
@@ -202,11 +202,11 @@ function getRankList()
 	{
 		if(hall.now_game_hall)
 		{
-			return service.get_RankList();	//TODO
+			return service.get_RankList("game");	//TODO
 		}
 		else
 		{
-			return service.get_RankList();
+			return service.get_RankList("practice");
 		}
 		
 	} 
