@@ -33,10 +33,7 @@ handle_info({update, RoomID, GameState, Move}, State=#state{rooms=Rooms}) ->
 	NewRooms = case lists:keyfind(RoomID, 1, Rooms) of
 					{RoomID, Moves, Obs} ->
 						[web_player:display(WebPlayer, GameState, Move) || WebPlayer <- Obs],
-						NewMoves = case Move of
-										none -> [{GameState, Move}];					 
-										_ -> [{GameState, Move} | Moves]
-								   end,
+						NewMoves = [{GameState, Move} | Moves],
 						lists:keyreplace(RoomID, 1, Rooms, {RoomID, NewMoves, Obs});						
 					_ -> Rooms						
 				end,
@@ -51,7 +48,7 @@ handle_info({notify_observer, RoomID, Msg}, State=#state{rooms=Rooms}) ->
 	end,
 	{noreply, State};
 
-handle_info({'DOWN', _, process, WebPlayer, Reason}, State=#state{rooms=Rooms}) ->
+handle_info({'DOWN', _, process, WebPlayer, _Reason}, State=#state{rooms=Rooms}) ->
 	NewRooms = delete_suscriber(Rooms, WebPlayer),
 	{noreply, State#state{rooms = NewRooms}}.	
 

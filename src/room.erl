@@ -96,7 +96,7 @@ loop(State = #state{status = waiting, board = Board, players = Players}) ->
 			end;
 		{leave, Pid} ->
 			case lists:keyfind(Pid, 1, Players) of
-				{Pid, _, Ref} ->
+				{Pid, _NickName, Ref, _} ->
 					NewPlayers = lists:keydelete(Pid, 1, Players),
 					erlang:demonitor(Ref),
 					loop(State#state{players=NewPlayers});
@@ -115,7 +115,7 @@ loop(State = #state{status = waiting, board = Board, players = Players}) ->
 				 current_player=none});			
 		{observe, Observer} ->			
 			loop(State#state{observer = Observer});	
-		{'DOWN', _, process, Pid, Reason} ->
+		{'DOWN', _, process, Pid, _Reason} ->
 			self() ! {leave, Pid},
 			loop(State);
 		time_elapse ->
@@ -142,7 +142,6 @@ loop(State = #state{status = playing,
 					NewPlayers = [{_Pid2, _NickName2, _, _}]
 							   = lists:keydelete(Pid, 1, Players),
 					erlang:demonitor(Ref),
-					update_observer(Observer, RoomID, GameState, none),
 					loop(State#state{status=waiting,
 									 current_player = none,
 									 players = NewPlayers});
@@ -221,7 +220,7 @@ loop(State = #state{status = playing,
 			PlayerRemainTimes = [(RemainTime div 10) || {_Pid, _NickName, _Ref, RemainTime} <- Players],
 			From ! {Ref, {State#state.status, PlayerNickNames, PlayerRemainTimes}},
 			loop(State);				
-		{'DOWN', _, process, Pid, Reason} ->
+		{'DOWN', _, process, Pid, _Reason} ->
 			self() ! {leave, Pid},
 			loop(State);
 		time_elapse ->
@@ -277,13 +276,13 @@ notify_observer(Observer, RoomID, Msg) ->
 	Observer ! {notify_observer, RoomID, Msg}.	
 
 update(Obs, GameState) when is_list(Obs) ->
-	[Pid ! {update, none, GameState} || {Pid, _, _} <- Obs];
+	[Pid ! {update, none, GameState} || {Pid, _, _, _} <- Obs];
 
 update(Pid, GameState) ->
 	Pid ! {update, none, GameState}.
 
 update(Obs, Move, GameState) when is_list(Obs) ->
-	[Pid ! {update, Move, GameState} || {Pid, _, _} <- Obs];
+	[Pid ! {update, Move, GameState} || {Pid, _, _, _} <- Obs];
 
 update(Pid, Move, GameState) ->
 	Pid ! {update, Move, GameState}.
