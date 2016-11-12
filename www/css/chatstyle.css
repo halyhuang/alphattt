@@ -63,6 +63,7 @@
   float: right;
   margin-right: 80px;
   color: white;
+  white-space: pre; 
 }
 
 .chat-thread li[player='0']:before {
@@ -82,6 +83,7 @@
   float: right;
   margin-right: 80px;
   color: white;
+  white-space: pre;
 }
 
 .chat-thread li[player='1']:before {
@@ -101,6 +103,7 @@
   float: left;
   margin-left: 80px;
   color: white;
+  white-space: pre;   
 }
 
 .chat-thread li[player='2']:before {
