@@ -89,7 +89,6 @@ handle_call(get_move, State=#state{board=Board, game_states=GSs, player_client =
 				{Games, MaxDepth, Time}
 					= run_simulation(Player, LegalStates, State),
 				CurrentPlayerID = Board:current_player(GS),
-
 				GameTimeMsg = io_lib:format("[~p]Games: ~p Time: ~pms~n", [?MODULE, Games, Time]),
 				MaxDepthMsg = io_lib:format("Maximum depth searched: ~p~n", [MaxDepth]),
 
@@ -182,6 +181,9 @@ select_one(Player, LegalStates,
 	RandomGS = choice(GSs),
 	{RandomGS, lookup(PlaysWins, {Player, RandomGS}) =/= none}.	
 
+choice(L) ->
+	lists:nth(random:uniform(length(L)), L).	
+
 propagate_back(Winner, none, NeedUpdateds, PlaysWins) ->
 	update_plays_wins(Winner, NeedUpdateds, PlaysWins);
 propagate_back(Winner, Expand, NeedUpdateds, PlaysWins) ->
@@ -221,10 +223,6 @@ lookup(Tid, Key) ->
 
 insert(Tid, Key, Value) -> 
 	ets:insert(Tid, {Key, Value}).
-
-
-choice(L) ->
-	lists:nth(random:uniform(length(L)), L).
 
 %% 1|2|draw|on_going
 get_winner(Board, GS) ->

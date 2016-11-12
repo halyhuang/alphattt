@@ -69,8 +69,8 @@ function init_poll()
 function poll()
 {		
 	poll_room_state();
+	poll_get_move();    
 	poll_display();
-	poll_get_move();
 }
 
 

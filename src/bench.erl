@@ -2,7 +2,7 @@
 -export([run/6, run_compete/0]).
 
 run_compete() ->
-	MT = 200,
+	MT = 1000,
 	EF1 = 0,
 	EF2 = 0,
 	N = 300,

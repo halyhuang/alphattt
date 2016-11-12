@@ -9,8 +9,7 @@
 				              %             value = {plays::integer(),
                               %			             wins:integer()}
 				 game_states = [],
-				 player_client,
-				 infos = []
+				 player_client
 				 }).
 
 % APIs

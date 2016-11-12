@@ -1,16 +1,20 @@
 -module(test).
 
--export([robot_vs_robot/0, human_vs_robot/2, test_robot/0]).
+-compile(export_all).
 
--export([connect/0]).
+mcts_vs_ucb1() ->
+	robot_vs_robot(mcts, mcts_ucb1).
 
-robot_vs_robot() ->
-	SIP = "10.8.39.80",
-	NickName = "mcts",
-	{ok, Pid} = player_client:start(NickName, mcts, board, SIP, 8011),
+pall_vs_ucb1() ->
+	robot_vs_robot(mcts_pall, mcts_ucb1).	
+
+robot_vs_robot(Mcts, Mcts_ucb1) ->	
+	SIP = "127.0.0.1",
+	NickName = atom_to_list(Mcts),
+	{ok, Pid} = player_client:start(NickName, Mcts, board, SIP, 8011),
 	player_client:login(Pid, ""),
-	RobotNickName = "mcts_ucb1",
-	{ok, RobotPid} = player_client:start(RobotNickName, mcts_ucb1, board, SIP, 8011),
+	RobotNickName = atom_to_list(Mcts_ucb1),
+	{ok, RobotPid} = player_client:start(RobotNickName, Mcts_ucb1, board, SIP, 8011),
 	player_client:login(RobotPid, ""),
 
 	Rooms = player_client:show_room(Pid),
@@ -22,7 +26,7 @@ robot_vs_robot() ->
 
 	player_client:enter_room(RobotPid, RoomID),
 	io:format("player ~p enter room ~p~n", [RobotNickName, RoomID]),
-	ok.
+	{Pid, RobotPid, RoomID}.
 
 get_empty_room(Rooms) ->
 	io:format("rooms ~p~n", [Rooms]),
@@ -30,7 +34,7 @@ get_empty_room(Rooms) ->
 	EmptyRoomID.
 
 human_vs_robot(Type, RoomID) ->	
-	{ok, RobotPid} = player_client:start(atom_to_list(Type), Type, board, "127.0.0.1", 8011),
+	{ok, RobotPid} = player_client:start(atom_to_list(Type), Type, board, "10.8.39.80", 8011),
 	player_client:login(RobotPid, ""),
 	player_client:enter_room(RobotPid, RoomID).
 
@@ -43,23 +47,7 @@ test_robot() ->
 
 init() ->
 	timer:send_interval(1 * 30 * 1000, robot_interval),
-	SIP = "127.0.0.1",
-	NickName = "mcts",
-	{ok, Pid} = player_client:start(NickName, mcts, board, SIP, 8011),
-	player_client:login(Pid, ""),
-	RobotNickName = "mcts_ucb1",
-	{ok, RobotPid} = player_client:start(RobotNickName, mcts_ucb1, board, SIP, 8011),
-	player_client:login(RobotPid, ""),
-
-	Rooms = player_client:show_room(Pid),
-	RoomID = get_empty_room(Rooms),
-	io:format("enter room ~p~n", [RoomID]),
-
-	player_client:enter_room(Pid, RoomID),
-	io:format("player ~p enter room ~p~n", [NickName, RoomID]),
-
-	player_client:enter_room(RobotPid, RoomID),
-	io:format("player ~p enter room ~p~n", [RobotNickName, RoomID]),
+	{Pid, RobotPid, RoomID} = robot_vs_robot(mcts, mcts_ucb1),
 	loop([Pid, RobotPid, RoomID]).
 
 loop([Pid, RobotPid, RoomID]) ->

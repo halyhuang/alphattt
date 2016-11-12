@@ -31,7 +31,7 @@
   display: inline-block;
   padding: 16px 40px 16px 120px;
   margin: 0 0 5px 0;
-  font-size: 15px; 
+  font-size: 25px; 
   border-radius: 7px;
   background-color: rgba(25, 147, 147, 0.2);
 }
@@ -62,7 +62,7 @@
   -webkit-animation: show-chat-odd 0.15s 1 ease-in;
   float: right;
   margin-right: 80px;
-  color: #0AD5C1;
+  color: white;
 }
 
 .chat-thread li[player='0']:before {
@@ -81,7 +81,7 @@
   -webkit-animation: show-chat-odd 0.15s 1 ease-in;
   float: right;
   margin-right: 80px;
-  color: #0AD5C1;
+  color: white;
 }
 
 .chat-thread li[player='1']:before {
@@ -100,7 +100,7 @@
   -webkit-animation: show-chat-even 0.15s 1 ease-in;
   float: left;
   margin-left: 80px;
-  color: #0EC879;
+  color: white;
 }
 
 .chat-thread li[player='2']:before {
