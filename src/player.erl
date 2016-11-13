@@ -3,7 +3,7 @@
 -export([get_legal_move/2, set_move/3, is_move/2, get_opponent_move/2]).
 
 start(Module, Board) ->
-	Module:start(Board, 1000, 1.4).
+	Module:start(Board, 1000, 0.4).
 
 update(Module, Player, GameState) ->
 	Module:update(Player, GameState).

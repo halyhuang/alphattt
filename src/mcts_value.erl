@@ -1,4 +1,4 @@
--module(mcts).
+-module(mcts_value).
 -export([start/0, start/3]).
 -export([get_move/1, update/2, display/3, notify/2, stop/1]).
 
@@ -68,7 +68,7 @@ call(Pid, Msg) ->
 
 handle_call({update, GameState}, State=#state{game_states=GSs}) -> 
 	{reply, ok, State#state{game_states=[GameState | GSs]}};
-handle_call({display, _GameState, Move}, State=#state{board=Board}) ->
+handle_call({display, _GameState, _Move}, State=#state{board=_Board}) ->
 %%	io:format("player move ~p~n", [Move]),
 %%	io:format("~ts~n", [Board:display(GameState, Move)]),
 	{reply, ok, State};
@@ -95,12 +95,12 @@ handle_call(get_move, State=#state{board=Board, game_states=GSs, player_client =
 				%% stats = [{move, percent, wins, plays}]
 				Stats = make_stats(Player, LegalStates,
 									State#state.plays_wins),
-				SortedStats = lists:reverse(lists:keysort(2, Stats)),
-				SortedStatsMsg = lists:foldl(fun({Move, Percent, Wins, Plays}, Acc) ->
-						Acc ++ io_lib:format("~p: ~.2f% (~p / ~p)~n", [Move, Percent, Wins, Plays])
+				SortedStats = lists:reverse(lists:keysort(5, Stats)),
+				SortedStatsMsg = lists:foldl(fun({Move, Percent, Wins, Plays, Value}, Acc) ->
+						Acc ++ io_lib:format("~p: ~.2f% ~p (~p / ~p)~n", [Move, Percent, Value, Wins, Plays])
 						end, [], SortedStats),
 				notify_room(PlayerClient, CurrentPlayerID, GameTimeMsg ++ MaxDepthMsg ++ SortedStatsMsg),
-				[{Move, _, _, _} | _] = SortedStats,
+				[{Move, _, _, _, _} | _] = SortedStats,
 				Move
 		end,
 	PlayerClient ! {play, NextMove},
@@ -123,14 +123,14 @@ run_simulation(Player, LegalStates, State) ->
 	BeginTime = os:timestamp(),
 	run_simulation(Player, LegalStates, State, {BeginTime, 0, 0}).
 
-run_simulation(Player, LegalStates, State, {BeginTime, Games, MaxDepth}) ->
+run_simulation(Player, LegalStates, State=#state{board=Board}, {BeginTime, Games, MaxDepth}) ->
 	TimeComsumed = timer:now_diff(os:timestamp(), BeginTime) div 1000,
 	case TimeComsumed < State#state.max_time of
 		true ->
-			{Winner, Expand, NeedUpdateds, Depth}
+			{Winner, Expand, NeedUpdateds, Depth, _Step}
 				= random_game(Player, LegalStates, State),
 			propagate_back(Winner, Expand, NeedUpdateds,
-							State#state.plays_wins),
+							State#state.plays_wins, Board:max_moves()),
 			run_simulation(Player, LegalStates, State,
 							{BeginTime, Games + 1, max(Depth, MaxDepth)});
 		false ->
@@ -141,26 +141,28 @@ random_game(Player, LegalStates, State=#state{board=Board}) ->
 	<<A:32, B:32, C:32>> = crypto:rand_bytes(12),
 	random:seed({A, B, C}),
 	MaxMoves = Board:max_moves(),
-	random_game(Player, LegalStates, 1, 
-				MaxMoves, {none, [], 0}, State).
+	{Winner, Expand, NeedUpdateds, Depth, WinStep} = random_game(Player, LegalStates, 1, 
+				MaxMoves, {none, [], 0, 0}, State),
+	{Expand2, NeedUpdateds2} = update_step(Expand, NeedUpdateds, WinStep),
+	{Winner, Expand2, NeedUpdateds2, Depth, WinStep}.
 
 %% no winner, draw
 random_game(_, _, IterCount, MaxMoves, 
-			{Expand, NeedUpdateds, MaxDepth},
+			{Expand, NeedUpdateds, MaxDepth, Step},
 			_) when IterCount =:= MaxMoves + 1 ->
-	{draw, Expand, NeedUpdateds, MaxDepth};
+	{draw, Expand, NeedUpdateds, MaxDepth, Step};
 random_game(_, [], _IterCount, _MaxMoves, 
-			{Expand, NeedUpdateds, MaxDepth}, _) ->
-	{draw, Expand, NeedUpdateds, MaxDepth};
+			{Expand, NeedUpdateds, MaxDepth, Step}, _) ->
+	{draw, Expand, NeedUpdateds, MaxDepth, Step};
 random_game(Player, LegalStates, IterCount, MaxMoves,
-				{Expand, NeedUpdateds, MaxDepth}, State) ->
+				{Expand, NeedUpdateds, MaxDepth, Step}, State) ->
 	{GS, Existed} = select_one(Player, LegalStates, State),
 	{Expand2, NeedUpdateds2, MaxDepth2} =
 		case {Expand, Existed} of
 			{none, false} ->
-				{{Player, GS}, NeedUpdateds, IterCount};
+				{{Player, GS, Step}, NeedUpdateds, IterCount};
 			{_, true} ->
-				{Expand, [{Player, GS} | NeedUpdateds], MaxDepth};
+				{Expand, [{Player, GS, Step} | NeedUpdateds], MaxDepth};
 			{_, false} ->
 				{Expand, NeedUpdateds, MaxDepth}
 		end,	
@@ -169,43 +171,69 @@ random_game(Player, LegalStates, IterCount, MaxMoves,
 			{Player2, LegalStates2}
 				= player_legal_states(State#state.board, GS),
 			random_game(Player2, LegalStates2, IterCount + 1, MaxMoves,
-							{Expand2, NeedUpdateds2, MaxDepth2}, State);
+							{Expand2, NeedUpdateds2, MaxDepth2, Step + 1}, State);
 		Winner ->
-			{Winner, Expand2, NeedUpdateds2, MaxDepth2}
+			{Winner, Expand2, NeedUpdateds2, MaxDepth2, Step}
 	end.
+
+update_step(Expand, NeedUpdateds, WinStep) ->
+	NeedUpdateds2 = [ {Player, GS, WinStep - Step} || {Player, GS, Step} <- NeedUpdateds],
+	Expand2 = case Expand of
+					{Player, GS, Step} -> {Player, GS, WinStep - Step};
+					_ -> Expand
+			  end,
+	{Expand2, NeedUpdateds2}.
 
 %% return: {GameState, Existed}
 select_one(Player, LegalStates,
 			#state{exploration_factor=_EF, plays_wins=PlaysWins}) ->
-	GSs = [ I || {_, I} <- LegalStates],
-	RandomGS = choice(GSs),
-	{RandomGS, lookup(PlaysWins, {Player, RandomGS}) =/= none}.	
+	GSs = [ GameState || {_, GameState} <- LegalStates],
+	AllExpanded = 
+		lists:all(fun(GameState) ->
+						lookup(PlaysWins, {Player, GameState}) =/= none
+				  end, GSs),
+	case AllExpanded of
+		true ->
+			{select_value(Player, GSs, PlaysWins), true};
+		false ->
+			RandomGS = choice(GSs),
+			{RandomGS, lookup(PlaysWins, {Player, RandomGS}) =/= none}
+	end.
 
 choice(L) ->
-	lists:nth(random:uniform(length(L)), L).	
+	lists:nth(random:uniform(length(L)), L).
 
-propagate_back(Winner, none, NeedUpdateds, PlaysWins) ->
-	update_plays_wins(Winner, NeedUpdateds, PlaysWins);
-propagate_back(Winner, Expand, NeedUpdateds, PlaysWins) ->
-	case lookup(PlaysWins, Expand) of
-		none ->
-			insert(PlaysWins, Expand, {0, 0});
-		_ ->
-			void
-	end,
-	update_plays_wins(Winner, [Expand | NeedUpdateds], PlaysWins).
+select_value(Player, GSs, PlaysWins) ->	
+	Stats = [list_to_tuple([GameState | get_plays_wins(PlaysWins, Player, GameState)])
+		|| GameState <- GSs],
+	SortedStats = lists:reverse(lists:keysort(5, Stats)),
+	[{Selected, _, _, _, _} | _] = SortedStats,
+	Selected.		
 
-update_plays_wins(Winner, Updateds, PlaysWins) ->
+propagate_back(Winner, none, NeedUpdateds, PlaysWins, MaxStep) ->
+	update_plays_wins(Winner, NeedUpdateds, PlaysWins, MaxStep);
+propagate_back(Winner, {Player, GS, _Step} = Expand, NeedUpdateds, PlaysWins, MaxStep) ->
+	insert(PlaysWins, {Player, GS}, {0, 0, 0}),
+	update_plays_wins(Winner, [Expand | NeedUpdateds], PlaysWins, MaxStep).
+
+update_plays_wins(Winner, Updateds, PlaysWins, MaxStep) ->
 	[begin
-		{Ps, Ws} = lookup(PlaysWins, Key),
+		Key = {Player, GS},
+		{Ps, Ws, OldValue} = lookup(PlaysWins, Key),
 		Ws2 = if
 				Winner =:= Player ->
 					Ws + 1;
 				true ->
 					Ws				
 			  end,
-		insert(PlaysWins, Key, {Ps + 1, Ws2})
-	 end || {Player, _} = Key <- Updateds].
+		StepValue = case Winner of
+						draw -> 0;
+						Player ->
+							MaxStep - Step;
+						_ -> -((MaxStep - Step) * 3)
+					end,	  
+		insert(PlaysWins, Key, {Ps + 1, Ws2, OldValue + StepValue})
+	 end || {Player, GS, Step} <- Updateds].
 
 
 		
@@ -213,9 +241,9 @@ update_plays_wins(Winner, Updateds, PlaysWins) ->
 get_plays_wins(Tid, Player, GameState) ->
 	case lookup(Tid, {Player, GameState}) of
 		none ->
-			[0.0, 0, 0];
-		{Plays, Wins} ->
-			[100 * Wins/Plays, Wins, Plays]
+			[0.0, 0, 0, 0];
+		{Plays, Wins, Value} ->
+			[100 * Wins/Plays, Wins, Plays, Value]
 	end.
 
 lookup(Tid, Key) ->

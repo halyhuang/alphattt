@@ -169,7 +169,7 @@ loop(State=#state{status = enter_room, username = UserName, room = RoomID,
 			event_store:unsuscribe(WebPlayer),			
 			loop(State#state{status = waiting_enter_room, room = none});
 		{get_all_robots, Ref, From} ->
-			RobotList = [{"mcts", ""}, {"mcts_ucb1", ""}],	
+			RobotList = [{"mcts", ""}, {"mcts_pall", ""}, {"mcts_ucb1", ""}, {"mcts_ucb1_pall", ""}],	
 			RobotList2 = [RobotName || {RobotName, _RobotPassword} <- RobotList],	
 			From ! {Ref, RobotList2},
 			loop(State#state{robot = RobotList});			

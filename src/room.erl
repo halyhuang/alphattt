@@ -196,6 +196,7 @@ loop(State = #state{status = playing,
 							NewSteps2 = NewSteps ++ [{finish, draw}],
 							store_data(NewSteps2),
 							db_api:add_game(RoomType, CurrentNickName, NextNickName, draw, NewSteps2),
+							notify_broadcast("Draw!!!", State),
 							loop(State#state{status = waiting,
 											 players=[],
 											 current_player=none,
@@ -205,9 +206,7 @@ loop(State = #state{status = playing,
 							NewSteps2 = NewSteps ++ [{finish, winner, integer_to_list(Board:current_player(GameState))}], 
 							store_data(NewSteps2),
 							db_api:add_game(RoomType, CurrentNickName, NextNickName, CurrentNickName, NewSteps2),
-							[notify_user(Pid, {0, congradulations(CurrentNickName)}) || {Pid, _, _, _} <- Players],
-							PlayerID = Board:current_player(GameState),
-							notify_observer(Observer, RoomID, {PlayerID, congradulations(CurrentNickName)}),							
+							notify_broadcast(congradulations(CurrentNickName), State),
 							loop(State#state{status=waiting,
 											 players=[],
 											 current_player=none,
@@ -238,9 +237,7 @@ loop(State = #state{status = playing,
 					NewSteps = Steps ++ [{use_up_time, winner, integer_to_list(1 - Board:current_player(GameState))}], 
 					store_data(NewSteps),
 					db_api:add_game(RoomType, CurrentNickName, NextNickName, NextNickName, NewSteps),
-					[notify_user(PlayerPid, {0, congradulations(NextNickName, use_up_time)}) || {PlayerPid, _, _, _} <- Players],
-					PlayerID = 1 - Board:current_player(GameState),
-					notify_observer(Observer, RoomID, {PlayerID, congradulations(NextNickName, use_up_time)}),							
+					notify_broadcast(congradulations(NextNickName, use_up_time), State),					
 					loop(State#state{status=waiting, 
 									 players=[],
 									 current_player=none,
@@ -255,6 +252,15 @@ loop(State = #state{status = playing,
 	    after ?ROOM_TIME_OUT ->  
 	        exit(time_out)			
 	end.
+
+notify_broadcast(Msg, _State = #state{room_id = RoomID,
+					players = Players,
+					observer = Observer,
+					board = Board,
+					game_state = GameState}) ->	
+	[notify_user(Pid, {0, Msg}) || {Pid, _, _, _} <- Players],
+	PlayerID = Board:current_player(GameState),
+	notify_observer(Observer, RoomID, {PlayerID, Msg}).
 
 %% get now time, the unit is ms
 get_now_time() ->
@@ -323,36 +329,12 @@ congradulations(NickName) ->
 congradulations(NickName, use_up_time) ->
 	NickName ++ " Wins!!!" ++ " because opponent timeout!".
 
-store_data(Steps) ->
-	{ok, CurrentDir} = file:get_cwd(),
-	make_dir(),
-	{ok, LogFile} = file:open(make_filename(), [append]),	
-	[store_data(Step, LogFile) || Step <- Steps],
-	file:close(LogFile),
-	file:set_cwd(CurrentDir).
-
-store_data({start, CurrentNickName, NextNickName}, LogFile) ->	
-	io:format(LogFile, "{\"begin\":[~p,~p]}~n", [CurrentNickName, NextNickName]);
-store_data({move, Player, {R, C, R1, C1}}, LogFile) ->
-	io:format(LogFile, "{~p:[~p,~p,~p,~p]}~n", [Player, R, C, R1, C1]);
-store_data({finish, draw}, LogFile) ->	
-	io:format(LogFile, "{~p:~p}~n", ["end", "draw"]);
-store_data({use_up_time, winner, Player}, LogFile) ->	
-	io:format(LogFile, "{~p:~p}~n", ["use up time", Player]);
-store_data({finish, winner, Player}, LogFile) ->	
-	io:format(LogFile, "{~p:~p}~n", ["end", Player]).
-
-make_dir() ->
-	DataDir = "play_data",
-	file:make_dir(DataDir),
-	file:set_cwd(DataDir),
-	{Year, Month, Day} = date(),	 
-	Dir = io_lib:format("~p_~p_~p", [Year, Month, Day]),
-	file:make_dir(Dir),
-	file:set_cwd(Dir).
-
-make_filename() ->
-	{MegaSecs, Secs, MicroSecs} = now(),
-	io_lib:format("~p_~p_~p_~p.txt", [MegaSecs, Secs, MicroSecs, random:uniform(100)]).
-
+store_data(_Steps) ->
+	% {ok, CurrentDir} = file:get_cwd(),
+	%make_dir(),
+	%{ok, LogFile} = file:open(make_filename(), [append]),	
+	%[store_data(Step, LogFile) || Step <- Steps],
+	%file:close(LogFile),
+	%file:set_cwd(CurrentDir).
+	ok.
 

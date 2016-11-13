@@ -204,7 +204,12 @@ ucb1(Player, GSs, EF, PlaysWins) ->
 propagate_back(Winner, none, NeedUpdateds, PlaysWins) ->
 	update_plays_wins(Winner, NeedUpdateds, PlaysWins);
 propagate_back(Winner, Expand, NeedUpdateds, PlaysWins) ->
-	insert(PlaysWins, Expand, {0, 0}),
+	case lookup(PlaysWins, Expand) of
+		none ->
+			insert(PlaysWins, Expand, {0, 0});
+		_ ->
+			void
+	end,
 	update_plays_wins(Winner, [Expand | NeedUpdateds], PlaysWins).
 
 update_plays_wins(Winner, Updateds, PlaysWins) ->

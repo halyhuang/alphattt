@@ -1,4 +1,4 @@
--module(mcts).
+-module(mcts_ucb1_pall).
 -export([start/0, start/3]).
 -export([get_move/1, update/2, display/3, notify/2, stop/1]).
 
@@ -31,7 +31,7 @@ get_move(Pid) ->
 	call(Pid, get_move).
 
 notify(Pid, Info) ->
-	call(Pid, {notify, Info}).	
+	call(Pid, {notify, Info}).
 	
 stop(Pid) ->
 	call(Pid, stop).	
@@ -66,9 +66,9 @@ call(Pid, Msg) ->
 			Reply
 	end.
 
-handle_call({update, GameState}, State=#state{game_states=GSs}) -> 
+handle_call({update, GameState}, State=#state{game_states=GSs}) ->
 	{reply, ok, State#state{game_states=[GameState | GSs]}};
-handle_call({display, _GameState, Move}, State=#state{board=Board}) ->
+handle_call({display, _GameState, _Move}, State=#state{board=_Board}) ->
 %%	io:format("player move ~p~n", [Move]),
 %%	io:format("~ts~n", [Board:display(GameState, Move)]),
 	{reply, ok, State};
@@ -125,14 +125,30 @@ run_simulation(Player, LegalStates, State) ->
 
 run_simulation(Player, LegalStates, State, {BeginTime, Games, MaxDepth}) ->
 	TimeComsumed = timer:now_diff(os:timestamp(), BeginTime) div 1000,
+	N = 4,
 	case TimeComsumed < State#state.max_time of
 		true ->
-			{Winner, Expand, NeedUpdateds, Depth}
-				= random_game(Player, LegalStates, State),
-			propagate_back(Winner, Expand, NeedUpdateds,
-							State#state.plays_wins),
+			Parent = self(),
+			[spawn(
+				fun() ->
+					Res = random_game(Player, LegalStates, State),
+					Parent ! {random_game_over, Res}
+				end) || _ <- lists:seq(1, N)],
+			AllRes = lists:foldl(fun(_, Acc) ->
+									receive
+										{random_game_over, Res} ->
+											[Res | Acc]
+									end
+								end, [], lists:seq(1, N)),
+			MaxDepth2 = 
+				lists:foldl(fun(Res, Depth) ->
+								{Winner, Expand, NeedUpdateds, Depth2} = Res,
+								propagate_back(Winner, Expand, NeedUpdateds,
+											State#state.plays_wins),
+								max(Depth, Depth2)								
+							end, MaxDepth, AllRes),			
 			run_simulation(Player, LegalStates, State,
-							{BeginTime, Games + 1, max(Depth, MaxDepth)});
+							{BeginTime, Games + N, MaxDepth2});
 		false ->
 			{Games, MaxDepth, TimeComsumed}
 	end.
@@ -176,13 +192,30 @@ random_game(Player, LegalStates, IterCount, MaxMoves,
 
 %% return: {GameState, Existed}
 select_one(Player, LegalStates,
-			#state{exploration_factor=_EF, plays_wins=PlaysWins}) ->
-	GSs = [ I || {_, I} <- LegalStates],
-	RandomGS = choice(GSs),
-	{RandomGS, lookup(PlaysWins, {Player, RandomGS}) =/= none}.	
+			#state{exploration_factor=EF, plays_wins=PlaysWins}) ->
+
+	GSs = [ GameState || {_, GameState} <- LegalStates],
+	AllExpanded = 
+		lists:all(fun(GameState) ->
+						lookup(PlaysWins, {Player, GameState}) =/= none
+				  end, GSs),
+	case AllExpanded of
+		true ->
+			{ucb1(Player, GSs, EF, PlaysWins), true};
+		false ->
+			RandomGS = choice(GSs),
+			{RandomGS, lookup(PlaysWins, {Player, RandomGS}) =/= none}
+	end.
 
 choice(L) ->
 	lists:nth(random:uniform(length(L)), L).	
+
+ucb1(Player, GSs, EF, PlaysWins) ->	
+	PlayStats = [{GS, lookup(PlaysWins, {Player, GS})} || GS <- GSs],
+	LogTotal = math:log(lists:sum([P || {_, {P,_}} <- PlayStats])),
+	{_, Selected} = lists:max([{W/P + EF * math:sqrt(LogTotal / P), GS}
+						|| {GS, {P, W}} <- PlayStats]),
+	Selected.
 
 propagate_back(Winner, none, NeedUpdateds, PlaysWins) ->
 	update_plays_wins(Winner, NeedUpdateds, PlaysWins);
