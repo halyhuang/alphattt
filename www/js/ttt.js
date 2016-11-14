@@ -308,16 +308,19 @@ function discard_select_robot()
 
 function show_robotlist()
 {
-    var result = service.get_all_robots();
-	var robotlist = result.robot;
-	var list = $("#robotlist");
-	list.empty();
-	list.append("<option value=\"请选择机器人\">请选择机器人</option>");
-	for (var i = 0; i < robotlist.length; i++) {
-		list.append("<option value=\"" + robotlist[i] + "\">" + robotlist[i] + "</option>");
-	}
-    $("#div_robotlist").show();	
-	$("#start_robot").hide();
+	if (!this.disabled)
+	{
+        var result = service.get_all_robots();
+        var robotlist = result.robot;
+        var list = $("#robotlist");
+        list.empty();
+        list.append("<option value=\"请选择机器人\">请选择机器人</option>");
+        for (var i = 0; i < robotlist.length; i++) {
+            list.append("<option value=\"" + robotlist[i] + "\">" + robotlist[i] + "</option>");
+        }
+        $("#div_robotlist").show();	
+        $("#start_robot").hide();        
+    }
 }
 
 function start_robot()
