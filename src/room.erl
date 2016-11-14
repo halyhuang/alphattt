@@ -163,7 +163,7 @@ loop(State = #state{status = playing,
 			update(Next, GameState),
 			update_observer(Observer, RoomID, GameState, none),
 			play(Current),
-			NewPlayers = update_player_time(CurrentNickName, Players),
+			NewPlayers = update_player_time(Current, Players),
 			loop(State#state{players = NewPlayers, steps = [{start, CurrentNickName, NextNickName}]});
 		reset ->
 			loop(State#state{status=waiting,
@@ -186,7 +186,7 @@ loop(State = #state{status = playing,
 					case Board:winner(GameState2) of
 						on_going ->
 							play(Next),
-							NewPlayers = update_player_time(CurrentNickName, Players),
+							NewPlayers = update_player_time(Current, Players),
 							loop(State#state{players = NewPlayers,
 											 game_state = GameState2,
 											 current_player = NextPlayer,
@@ -228,8 +228,8 @@ loop(State = #state{status = playing,
 			self() ! {leave, Pid},
 			loop(State); 
 		time_elapse ->
-			NewPlayers = update_player_time(CurrentNickName, Players),
-			{_Pid, CurrentNickName, _Ref, {_NowTime, RemainTime}} = current_player(CurrentNickName, NewPlayers),
+			NewPlayers = update_player_time(Current, Players),
+			{Current, CurrentNickName, _Ref, {_NowTime, RemainTime}} = current_player(Current, NewPlayers),
 			case RemainTime =< 0 of
 				true ->
 					io:format("~p lose because of use up time ~p~n", [CurrentNickName, ?REMAIN_TIME]),
@@ -268,22 +268,22 @@ get_now_time() ->
 	MegaSecs*1000000000 + Secs*1000 + (MicroSecs div 1000).
 
 %% update player time
-update_player_time(CurrentNickName, Players) ->
+update_player_time(Pid, Players) ->
 	NowTime = get_now_time(),
-	[update_player_time(CurrentNickName, Player, NowTime) || Player <- Players].
+	[update_player_time(Pid, Player, NowTime) || Player <- Players].
 
-update_player_time(_CurrentNickName, {Pid, NickName, Ref, {none, RemainTime}}, NowTime) ->
+update_player_time(_Pid, {Pid, NickName, Ref, {none, RemainTime}}, NowTime) ->
 	{Pid, NickName, Ref, {NowTime, RemainTime}};
-update_player_time(NickName, {Pid, NickName, Ref, {OldNowTime, RemainTime}}, NowTime) ->
+update_player_time(Pid, {Pid, NickName, Ref, {OldNowTime, RemainTime}}, NowTime) ->
 	NewRemainTime = RemainTime - (NowTime - OldNowTime),
 	{Pid, NickName, Ref, {NowTime, NewRemainTime}};
-update_player_time(_CurrentNickName, {Pid, NickName, Ref, {_OldNowTime, RemainTime}}, NowTime) ->
+update_player_time(_Pid, {Pid, NickName, Ref, {_OldNowTime, RemainTime}}, NowTime) ->
 	{Pid, NickName, Ref, {NowTime, RemainTime}}.
 
 
-current_player(CurrentNickName, [{_, CurrentNickName, _, _} = Player, {_, _, _, _}]) ->
+current_player(Pid, [{Pid, _, _, _} = Player, {_, _, _, _}]) ->
 	Player;
-current_player(CurrentNickName, [{_, _, _, _}, {_, CurrentNickName,  _, _} = Player]) ->
+current_player(Pid, [{_, _, _, _}, {Pid, _,  _, _} = Player]) ->
 	Player.
 
 
