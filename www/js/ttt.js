@@ -245,12 +245,6 @@ function set_backgroud_opponent(enter_grid, is_show)
 
 function info(player, msg)
 {
-    if (msg.indexOf('Wins!!!') > 0 || msg.indexOf('Draw!!!') > 0)
-    {
-        alert(msg);
-        return;
-    }
-
     var chatNewThread = document.createElement('li'),
     	chatNewMessage = document.createTextNode(msg);
 		
@@ -268,6 +262,10 @@ function info(player, msg)
 		chatThread.removeChild(childNode); 	
 	}
     chatThread.scrollTop = chatThread.scrollHeight;	
+    if (msg.indexOf('Wins!!!') > 0 || msg.indexOf('Draw!!!') > 0)
+    {
+        alert(msg);
+    }    
 }
 
 function start_game()
