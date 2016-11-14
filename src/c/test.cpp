@@ -14,6 +14,7 @@
 */
 void test_status()
 {
+#if 0
     {
     /* X X X
        O O -
@@ -74,7 +75,7 @@ void test_status()
     assert(STATUS_O_WON == gridUpStatus(ele, PLAYER_O, 6));
     }
     
-    
+    #endif
     printf("test_status ok!\n");
 }
 
@@ -122,7 +123,23 @@ void test_grid()
       
 }
 
+void test_tick()
+{
+    unsigned int t1 = GetTickCount();
+    unsigned int tt = 0;
+    for (int i = 0; i < 1000000; i++)
+    {
+        tt = GetTickCount();
+        if ((tt - t1) > 999)
+        {
+        }
+    }
 
+    
+    unsigned int t2 = GetTickCount();
+
+    printf("time tick %d ms\n",  t2 - t1);    
+}
 void main()
 {
     T_BOARD_RECD board = {
@@ -169,6 +186,8 @@ void main()
     test_status();
 
     game_play();
+
+    test_tick();
     
     getchar();   
 }

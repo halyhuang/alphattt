@@ -117,9 +117,10 @@ function poll_room_state()
 			{
 				bn_robot.disabled = true;
 				bn_start.disabled = true; 
-				document.getElementById('playerinfoX').innerHTML = "玩家[X]: " + result.players[0] + showRemainTime(result.remain_times[0]);
-	            document.getElementById('playerinfoO').innerHTML = "玩家[O]: " + result.players[1] + showRemainTime(result.remain_times[1]);					
-
+				document.getElementById('playerinfoX').innerHTML = "玩家[X]: " + result.players[0];
+                document.getElementById('playerinfoX_time').innerHTML = "计时[X]: " + showRemainTime(result.remain_times[0]);
+	            document.getElementById('playerinfoO').innerHTML = "玩家[O]: " + result.players[1];
+                document.getElementById('playerinfoO_time').innerHTML = "计时[O]: " + showRemainTime(result.remain_times[1]);					
 			}
 			else
 			{

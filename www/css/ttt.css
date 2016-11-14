@@ -118,13 +118,13 @@ body {
 }  
 
 .dest_no {  
-    width: 150px;  
+    width: 35%;   
     height: 150px;  
 	  color:solid white;	
 	  opacity:0.8;	
-    float: center;  
+    float: left;  
     position: absolute;
-	  left: 10%;
+	  left: 0;
 	  top: 5%;
     font: 20px "microsoft yahei",Helvetica,Tahoma,Arial,"Microsoft jhengHei";
 } 
@@ -137,7 +137,7 @@ body {
     float: left;  
     position: absolute;
 	  left: 0;
-	  top: 10%;
+	  top: 9%;
     font: 20px "microsoft yahei",Helvetica,Tahoma,Arial,"Microsoft jhengHei";
 } 
 
@@ -149,7 +149,32 @@ body {
     float: left;  
     position: absolute;
 	  left: 15%;
-	  top: 10%;
+	  top: 9%;
+    font: 20px "microsoft yahei",Helvetica,Tahoma,Arial,"Microsoft jhengHei";
+} 
+
+
+.playerinfoX_time {  
+    width: 35%;  
+    height: 150px;  
+	  color:solid white;	
+	  opacity:0.8;	
+    float: left;  
+    position: absolute;
+	  left: 0;
+	  top: 13%;
+    font: 20px "microsoft yahei",Helvetica,Tahoma,Arial,"Microsoft jhengHei";
+} 
+
+.playerinfoO_time {  
+    width: 35%;  
+    height: 150px;  
+	  color:solid white;
+	  opacity:0.8;		
+    float: left;  
+    position: absolute;
+	  left: 15%;
+	  top: 13%;
     font: 20px "microsoft yahei",Helvetica,Tahoma,Arial,"Microsoft jhengHei";
 } 
 

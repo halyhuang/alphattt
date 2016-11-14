@@ -11,15 +11,6 @@ int g_weights[9] = {1,  2,  4,
                     8, 16, 32,
                     64,128,256};
 
-int g_won[8] = {7,   /*1+2+4*/
-                56,  /*8+16+32*/
-                448, /*64+128+256*/
-                73,  /*1+8+64*/
-                146, /*2+16+128*/
-                292, /*4+32+256*/
-                273, /*1+16+256*/
-                84   /*4+16+64*/
-    };
 
 
 
@@ -47,6 +38,7 @@ void T_ELEMENT::init()
     unsigned char choice[9] = {0,1,2,3,4,5,6,7,8};
     memcpy(choices, choice, 9);
     choice_number = 9;
+
 }
 
 
@@ -59,7 +51,8 @@ void T_BOARD_RECD::init()
     status = STATUS_PLAYING;
     unsigned char choice[9] = {0,1,2,3,4,5,6,7,8};
     memcpy(choices, choice, 9);
-    choice_number = 9;    
+    choice_number = 9;   
+ 
 }
 
 void timerun_ms()
@@ -138,14 +131,12 @@ int calcStatus(int *pWeight, E_PLAYER player, int index, int iChoiceNum)
 {
     int status = STATUS_PLAYING;
 
-    int add_w = g_weights[index];
     T_ASSO_WEIGHT &tAweight = g_assiWeight[index];
     for (int i = 0; i < tAweight.number; i++)
     {
         int wonIndex = tAweight.indexs[i];
         int &w = pWeight[wonIndex];
-        w += add_w;
-        if (w == g_won[wonIndex])
+        if (++w == 3)
         {
             status = whoWon(player);
             break;
@@ -163,55 +154,48 @@ int calcStatus(int *pWeight, E_PLAYER player, int index, int iChoiceNum)
 int gridUpStatus(T_ELEMENT &grid, E_PLAYER player, int index)
 {
     int status = STATUS_PLAYING;
-    //status = calcStatus(grid.weight[player], player, index, grid.choice_number);
-#if 1
 
-    int add_w = g_weights[index];
     T_ASSO_WEIGHT &tAweight = g_assiWeight[index];
     for (int i = 0; i < tAweight.number; i++)
     {
         int wonIndex = tAweight.indexs[i];
-        int &w = grid.weight[player][wonIndex];
-        w += add_w;
-        if (w == g_won[wonIndex])
+        int &w = grid.weight[player][wonIndex]; 
+        if (++w == 3)
         {
             status = whoWon(player);
             break;
         }
     }
     
+
+    
+    
     if ((STATUS_PLAYING == status) && (0 == grid.choice_number))
     {
         status = STATUS_FAIR;
     }
-#endif
+
+
     if ((STATUS_PLAYING == status) && (1 == grid.choice_number))
     {
-    #if 0
-        T_ELEMENT tGrid1 = grid;
-        T_ELEMENT tGrid2 = grid;
-        play_one_step(tGrid1, PLAYER_X);
-        play_one_step(tGrid2, PLAYER_O);
-    #endif
+
         int tStas = STATUS_PLAYING;
         int lastIndex = grid.choices[0];
-        int add_w = g_weights[lastIndex];
+
         T_ASSO_WEIGHT &tAweight = g_assiWeight[lastIndex];
         
         for (int i = 0; i < tAweight.number; i++)
         {
             int wonIndex = tAweight.indexs[i];
             int wX = grid.weight[PLAYER_X][wonIndex];
-            wX += add_w;
-            if (wX == g_won[wonIndex])
+            if (++wX == 3)
             {
                 tStas = STATUS_X_WON;
                 break;
             }
 
             int wO = grid.weight[PLAYER_O][wonIndex];
-            wO += add_w;
-            if (wO == g_won[wonIndex])
+            if (++wO == 3)
             {
                 tStas = STATUS_O_WON;
                 break;
@@ -253,12 +237,6 @@ int play_one_step(T_ELEMENT &grid, E_PLAYER player)
     
     grid.rcd.eline[index] = getSign(player);
 
-    //gridUpChoices(randn, grid.choices, grid.choice_number);
-
-    //for (int i = randn; i < grid.choice_number; i++)
-    //{
-    //    grid.choices[i] = grid.choices[i+1];
-    //}
     grid.choice_number--;
 
     grid.choices[randn] = grid.choices[grid.choice_number];
@@ -294,14 +272,15 @@ void UpdatStatistics(int status, T_STATISTIC &tStatic)
 void game_play()
 {
     T_STATISTIC tStatic = {0};
+    T_BOARD_RECD tBoard = {0};
 
     unsigned int t1 = GetTickCount();
     
-    for (int itest = 0; itest < 90000; itest++)
+    for (int itest = 0; itest < 100000; itest++)
     {
     
     /*init*/
-    T_BOARD_RECD tBoard;
+
     memset(&tBoard, 0, sizeof(tBoard));
     tBoard.init();
 
@@ -327,6 +306,7 @@ void game_play()
         T_ELEMENT &tEle = tBoard.board[row][volu];
 
         int next_index = play_one_step(tEle, ePlayer);
+        
         //printf("next index %d\n", next_index);
 
         if (tEle.status > STATUS_PLAYING)
@@ -342,11 +322,7 @@ void game_play()
                 {
                     tBoard.choice_number--;
                     tBoard.choices[i] = tBoard.choices[tBoard.choice_number];
-                    //for (int j = i; j < tBoard.choice_number; j++)
-                    //{
-                    //    tBoard.choices[j] = tBoard.choices[j+1];
-                    //}
-                    //tBoard.choice_number--;
+
                     break;
                 }
             }
@@ -372,6 +348,7 @@ void game_play()
     
     }
 
+    //print(tBoard);
     unsigned int t2 = GetTickCount();
 
     printf("time diff %d ms\n",  t2 - t1);
