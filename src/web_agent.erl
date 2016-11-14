@@ -176,14 +176,16 @@ loop(State=#state{status = enter_room, username = UserName, room = RoomID,
 		{start_robot, RobotName}	->
 			case lists:keyfind(RobotName, 1, Robots) of
 				{RobotName, RobotPassword} ->
-					NewRobotPlayer = case RobotPlayer of
-										none ->
-											{ok, RobotPlayer2} = player_client:start(RobotName, list_to_atom(RobotName), board, "127.0.0.1", 8011),	
-											erlang:link(RobotPlayer2),	
-											player_client:login(RobotPlayer2, RobotPassword),
-											RobotPlayer2;
-										RobotPlayer -> RobotPlayer
-									 end,
+					case RobotPlayer of
+						none ->
+							ok;
+						RobotPlayer -> 
+							player_client:stop(RobotPlayer),
+							erlang:unlink(RobotPlayer)
+					end,				
+					{ok, NewRobotPlayer} = player_client:start(RobotName, list_to_atom(RobotName), board, "127.0.0.1", 8011),	
+					erlang:link(NewRobotPlayer),	
+					player_client:login(NewRobotPlayer, RobotPassword),
 					player_client:enter_room(NewRobotPlayer, RoomID),
 					io:format("~p enter room ~p~n", [RobotName, RoomID]),
 					loop(State#state{robot_player = NewRobotPlayer});

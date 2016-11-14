@@ -95,7 +95,7 @@ handle_call(get_move, State=#state{board=Board, game_states=GSs, player_client =
 				%% stats = [{move, percent, wins, plays}]
 				Stats = make_stats(Player, LegalStates,
 									State#state.plays_wins),
-				SortedStats = lists:reverse(lists:keysort(2, Stats)),
+				SortedStats = lists:sublist(lists:reverse(lists:keysort(2, Stats)), 5),
 				SortedStatsMsg = lists:foldl(fun({Move, Percent, Wins, Plays}, Acc) ->
 						Acc ++ io_lib:format("~p: ~.2f% (~p / ~p)~n", [Move, Percent, Wins, Plays])
 						end, [], SortedStats),
