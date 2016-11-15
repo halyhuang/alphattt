@@ -1,6 +1,6 @@
 -module(web_agent).
 
--export([start/0, login/3, logout/1, is_login/1, set_room/2, enter_room/1, leave_room/1, start_robot/2, 
+-export([start/0, login/3, logout/1, is_login/1, is_guest/1, set_room/2, enter_room/1, leave_room/1, start_robot/2, 
 		get_info/1, start_observe/1, is_move/1, get_legal_moves/1, set_move/2,  
 		get_display_move/1, get_room/1, get_room_state/1, stop/1, get_state/1, get_all_robots/1]).
 
@@ -13,7 +13,8 @@
 				 web_player = none,
 				 player = none,
 				 robot_player = none,
-				 robot = []}).
+				 robot = [],
+				 is_guest = false}).
 
 %% APIs.
 
@@ -28,7 +29,10 @@ logout(Pid) ->
 	cast(Pid, logout).
 
 is_login(Pid) ->
-	call(Pid, is_login).	
+	call(Pid, is_login).
+
+is_guest(Pid) ->
+	call(Pid, is_guest).	
 
 set_room(Pid, RoomID) ->
 	cast(Pid, {set_room, RoomID}).
@@ -139,11 +143,14 @@ loop(State=#state{status = waiting_enter_room, username = UserName,
 
 
 loop(State=#state{status = enter_room, username = UserName, room = RoomID, 
-		player = Player, robot_player = RobotPlayer, web_player = WebPlayer, robot = Robots}) ->
+		player = Player, robot_player = RobotPlayer, web_player = WebPlayer, robot = Robots, is_guest = IsGuest}) ->
 	receive
 		{is_login, Ref, From} ->
 			From ! {Ref, true},
 			loop(State);
+		{is_guest, Ref, From} ->
+			From ! {Ref, IsGuest},
+			loop(State);			
 		{get_state, Ref, From} ->
 			From ! {Ref, {enter_room, UserName, RoomID, Player, WebPlayer, RobotPlayer}},
 			loop(State);						
@@ -237,7 +244,8 @@ handle_cast({login, UserName, Password}, State) ->
 		ok ->
     		io:format("user ~p login~n", [UserName]),    		
 			WebPlayer = player_client:get_player(Player),
-			State#state{status = waiting_enter_room, username = UserName, player = Player, web_player = WebPlayer};
+			IsGuest = (UserName == "guest"),
+			State#state{status = waiting_enter_room, username = UserName, player = Player, web_player = WebPlayer, is_guest = IsGuest};
 		Reason ->
 			io:format("user ~p login failed,reason:~p~n", [UserName, Reason]),			
 			State

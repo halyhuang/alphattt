@@ -1,4 +1,4 @@
-﻿<erl module=auth_mod>
+<erl module=auth_mod>
 -include("session.hrl").
 -compile(export_all).
 
@@ -17,6 +17,12 @@ handle(_State, {call, is_login, _}, #session{pid_str = PidStr}) ->
     IsLogin = web_agent:is_login(Pid),
     Response = json2:obj_from_list([{"value", IsLogin}]),
     {true, 0, #session{pid_str = pid_to_list(Pid)}, {response, Response}};
+    
+handle(_State, {call, is_guest, _}, #session{pid_str = PidStr}) ->
+    Pid = web_agent_mgr:get_agent_pid(PidStr),
+    IsGeust = web_agent:is_guest(Pid),
+    Response = json2:obj_from_list([{"value", IsGeust}]),
+    {true, 0, #session{pid_str = pid_to_list(Pid)}, {response, Response}};    
 
 handle(_State, {call, register, {array, [UserName, Password, Type]}}, Session) ->
 	io:format("call ~p ~p ~p ~p ~n", [UserName, Password, Type, Session]),
