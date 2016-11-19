@@ -42,6 +42,11 @@ connect() ->
 	io:format("ping gameserver ~p~n", [net_adm:ping('gameserver@localhost')]),
 	io:format("ping webserver ~p~n", [net_adm:ping('webserver@localhost')]).
 
+connect_db_backup() ->
+	io:format("ping gameserver ~p~n", [net_adm:ping('gameserver@localhost')]),
+	io:format("ping dbbackup ~p~n", [net_adm:ping('dbbackup@localhost')]).
+
+
 test_robot() ->
 	spawn(fun() -> init() end).
 
