@@ -52,7 +52,8 @@ function check_room()
 	{        
         set_dest_no(result.room_id);
 	}	
-    is_guest = auth_service.is_guest();
+    var guest_result = auth_service.is_guest();
+    is_guest = guest_result.value;
 }
 
 window.onload = function() {  
@@ -289,6 +290,7 @@ function start_game()
     if (is_guest && g_destno >= 37)
     {
         alert("这是比赛大厅，Guest不能入座只能观战，对弈请进入练习大厅！");        
+        return;
     }
 	if (!this.disabled)
 	{
@@ -362,14 +364,7 @@ function start_robot()
 
 function start_hall()
 {
-    try {
-			if (confirm("是否要离开房间?"))
-			{
-				location.href = "hall.html";
-			}	
-     } catch(e) {
-        alert(e);
-     }	
+    location.href = "hall.html";
 }
 
 function set_grid_inlegal()
