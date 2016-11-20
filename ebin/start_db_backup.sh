@@ -1,0 +1,1 @@
+nohup erl -sname dbbackup -setcookie alphattt -detached -s db_backup_boot start -s test connect_db_backup &
