@@ -124,10 +124,11 @@ function CreateHallHead(now_game_hall,table)
 		gotoHall = "比赛大厅";
 		goto_game_hall = "true";
 	}
-	var tr=$("<tr><th></th><th class=\"hallname\">" + 
+	var tr=$("<tr><th class=\"hallname\">" + 
 		nowHall +"</th><th><a href=\"#\" onclick=\"ChangeHall("+goto_game_hall+")\">前往"+
-		gotoHall + "</a></th></tr>");
+		gotoHall + "</a></th><th><a href=\"#\" onclick=\"window.open('../guide.html')\">用户指南</th></tr>");
 	tr.appendTo(table);
+
 }
 
 // 根据游戏大厅数据生成大厅的HTML脚本
