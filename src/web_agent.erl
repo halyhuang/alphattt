@@ -2,7 +2,8 @@
 
 -export([start/0, login/3, logout/1, is_login/1, is_guest/1, set_room/2, enter_room/1, leave_room/1, start_robot/2, 
 		get_info/1, start_observe/1, is_move/1, get_legal_moves/1, set_move/2,  
-		get_display_move/1, get_room/1, get_room_state/1, stop/1, get_state/1, get_all_robots/1]).
+		get_display_move/1, get_room/1, get_room_state/1, stop/1, get_state/1, get_all_robots/1, 
+		chat/2, get_msg/1, get_user_name/1]).
 
 -define(TIME_OUT, 600 * 1000).
 
@@ -33,6 +34,10 @@ is_login(Pid) ->
 
 is_guest(Pid) ->
 	call(Pid, is_guest).	
+
+
+get_user_name(Pid) ->
+	call(Pid, get_user_name).
 
 set_room(Pid, RoomID) ->
 	cast(Pid, {set_room, RoomID}).
@@ -68,10 +73,16 @@ get_legal_moves(Pid) ->
 	call(Pid, get_legal_moves).	
 
 get_info(Pid) ->
-	call(Pid, get_info).		
+	call(Pid, get_info).
+
+get_msg(Pid) ->
+	call(Pid, get_msg).			
 
 get_state(Pid) ->
 	call(Pid, get_state).
+
+chat(Pid, Msg) ->
+	Pid ! {chat, Msg}.	
 
 get_all_robots(Pid) ->
 	call(Pid, get_all_robots).	
@@ -127,7 +138,10 @@ loop(State=#state{status = waiting_enter_room, username = UserName,
 			loop(State);			
 		{get_room, Ref, From} ->
 			From ! {Ref, 0},
-			loop(State);			
+			loop(State);		
+		{get_user_name, Ref, From} ->
+			From ! {Ref, UserName},
+			loop(State);	
 		{set_room, RoomID} ->
 			io:format("~p enter room ~p~n", [UserName, RoomID]),		
 			event_store:observe(RoomID, WebPlayer),
@@ -223,7 +237,24 @@ loop(State=#state{status = enter_room, username = UserName, room = RoomID,
 					end,
 			From ! {Ref, Infos},
 			loop(State);
-
+		{get_msg, Ref, From} ->
+			Msgs = case WebPlayer of
+						none -> [];
+						_ -> web_player:get_msg(WebPlayer)
+					end,
+			From ! {Ref, Msgs},
+			loop(State);			
+		{chat, Msg} ->
+			%% io:format("web_agent receive a msg ~p~n", [Msg]),
+			player_client:chat(Player, Msg),
+			loop(State);
+		{get_user_name, Ref, From} ->
+			From ! {Ref, UserName},
+			loop(State);	
+		{set_room, RoomID} ->
+			io:format("~p enter room ~p again ~n", [UserName, RoomID]),		
+			event_store:observe(RoomID, WebPlayer),
+			loop(State);	
 		{set_move, Move} ->
 			web_player:set_move(WebPlayer, Move),
 			loop(State);

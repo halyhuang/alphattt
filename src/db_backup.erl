@@ -35,15 +35,6 @@ handle_info(db_backup, State) ->
 	{noreply, State}.
 
 
-store_symbol(Symbol) ->
-	{ok, CurrentDir} = file:get_cwd(),
-	make_dir(),
-	{ok, LogFile} = file:open(make_filename(), [append]),	
-	[store_data(Step, LogFile) || Step <- Steps],
-	file:close(LogFile),
-	file:set_cwd(CurrentDir).
-	ok.
-
 get_symbol_sec() ->
 	{{Year, Month, Day}, {Hour, Minute, Second}} = calendar:local_time(),
 	list_to_atom("backup" ++ integer_to_list((Year * 10000 + Month*100 + Day)*1000000 + 

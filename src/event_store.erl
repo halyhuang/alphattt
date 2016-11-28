@@ -51,6 +51,15 @@ handle_info({notify_observer, RoomID, Msg}, State=#state{rooms=Rooms}) ->
 	end,
 	{noreply, State};
 
+handle_info({chat_observer, RoomID, Msg}, State=#state{rooms=Rooms}) ->
+	%% io:format("event_store chat_observer ~p ~p ~p ~n", [RoomID, Msg, Rooms]),
+	case lists:keyfind(RoomID, 1, Rooms) of
+		{RoomID, _Moves, Obs} ->
+			[web_player:chat(WebPlayer, Msg) || WebPlayer <- Obs];
+		_ -> ok			
+	end,
+	{noreply, State};	
+
 handle_info({'DOWN', _, process, WebPlayer, _Reason}, State=#state{rooms=Rooms}) ->
 	NewRooms = delete_suscriber(Rooms, WebPlayer),
 	{noreply, State#state{rooms = NewRooms}}.	

@@ -10,6 +10,18 @@ handle(_State, {call, get_move, _Arg}, #session{pid_str = PidStr}) ->
 	Response = web_agent:get_move(Pid), 
     {true, 0, #session{pid_str = pid_to_list(Pid)}, {response, Response}};
 
+handle(_State, {call, chat, {array, [RoomId, Msg]}}, #session{pid_str = PidStr}) ->
+    Pid = web_agent_mgr:get_agent_pid(PidStr),
+    web_agent:chat(Pid, {RoomId, Msg}), 
+    {true, 0, #session{pid_str = pid_to_list(Pid)}, {response, true}};   
+
+handle(_State, {call, get_user_name, _Arg}, #session{pid_str = PidStr}) ->
+    Pid = web_agent_mgr:get_agent_pid(PidStr),
+    UserName = web_agent:get_user_name(Pid), 
+    Response = json2:obj_from_list([{"username", UserName}]),
+    {true, 0, #session{pid_str = pid_to_list(Pid)}, {response, Response}};   
+
+
 handle(_State, {call, poll_get_move, _Arg}, #session{pid_str = PidStr}) ->
     Pid = web_agent_mgr:get_agent_pid(PidStr),
 
@@ -36,9 +48,11 @@ handle(_State, {call, poll_display, _Arg}, #session{pid_str = PidStr}) ->
     Infos = web_agent:get_info(Pid),
     InfosJson = [json2:obj_from_list([{"player", Player},
                                       {"info", Info}])
-                 || {Player, Info} <- Infos],  
+                 || {Player, Info} <- Infos], 
+    Msgs = web_agent:get_msg(Pid), 
     Response = json2:obj_from_list([{"moves", {array, MovesJson}},
-				                    {"infos", {array, InfosJson}}]),
+				                    {"infos", {array, InfosJson}},
+                                    {"msgs", {array, Msgs}}]),
     {true, 0, #session{pid_str = pid_to_list(Pid)}, {response, Response}};
 
 handle(_State, {call, get_legal_moves, _Arg}, #session{pid_str = PidStr}) ->

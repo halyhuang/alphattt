@@ -44,6 +44,13 @@ handle_tcp_data(TcpData, State=#state{status = wait_enter_room}) ->
 		{leave_room, NickName} ->
 			io:format("player ~p already leave room~n", [NickName]),
 			{ok, State};			
+		{chat, {RoomId, Msg}} ->
+			case room_mgr:enter(RoomId) of
+				{ok, NewRoomPid} -> room:chat(NewRoomPid, Msg);
+				Reason ->
+					io:format("chat in room ~p failed, reason ~p~n", [RoomId, Reason])
+			end,
+			{ok, State};
 		{notify, _PlayerID, _Info} ->
 			{ok, State};	
 		tcp_closed ->
@@ -75,6 +82,9 @@ handle_tcp_data(TcpData, State=#state{status = enter_room, room = RoomPid}) ->
 			{ok, State};
 		{notify, PlayerID, Info} ->
 			room:notify_player(RoomPid, PlayerID, Info),
+			{ok, State};
+		{chat, {_RoomId, Msg}} ->
+			room:chat(RoomPid, Msg),
 			{ok, State};
 		tcp_closed ->
 			room:leave(RoomPid, self()),

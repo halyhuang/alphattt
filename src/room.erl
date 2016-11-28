@@ -1,6 +1,6 @@
 -module(room).
 -export([start/3]).
--export([enter/2, leave/2, play/2, get_state/1, observe/2, notify_player/3]).
+-export([enter/2, leave/2, play/2, get_state/1, observe/2, notify_player/3, chat/2]).
 -export([reset/1]).
 
 -define(ROOM_TIME_OUT, 600 * 1000).
@@ -39,7 +39,10 @@ get_state(Pid) ->
 	call(Pid, get_state).	
 
 notify_player(Pid, PlayerID, Info) ->
-	Pid ! {notify_player, PlayerID, Info}.	
+	Pid ! {notify_player, PlayerID, Info}.
+
+chat(Pid, Msg) ->
+	Pid ! {chat, Msg}.	
 
 reset(Pid) ->
 	Pid ! reset.
@@ -109,6 +112,9 @@ loop(State = #state{status = waiting, board = Board, players = Players}) ->
 			PlayerRemainTimes = [(RemainTime div 1000) || {_Pid, _NickName, _Ref, {_, RemainTime}} <- Players],
 			From ! {Ref, {State#state.status, PlayerNickNames, PlayerRemainTimes}},
 			loop(State);
+		{chat, Msg} ->    % chat in the room, you can chat when no one begin game
+			chat_broadcast(Msg, State),
+			loop(State);	
 		reset ->
 			loop(State#state{status=waiting,
 				 players=[],
@@ -219,6 +225,9 @@ loop(State = #state{status = playing,
 			notify_user(Next, {PlayerID, Info}),
 			notify_observer(Observer, RoomID, {PlayerID, Info}),
 			loop(State);
+		{chat, Msg} ->    % chat in the room
+			chat_broadcast(Msg, State),
+			loop(State);	
 		{get_state, Ref, From} ->
 			PlayerNickNames = [ NickName || {_Pid, NickName, _Ref, _} <- Players],
 			PlayerRemainTimes = [(RemainTime div 1000) || {_Pid, _NickName, _Ref, {_, RemainTime}} <- Players],
@@ -252,6 +261,22 @@ loop(State = #state{status = playing,
 	    after ?ROOM_TIME_OUT ->  
 	        exit(time_out)			
 	end.
+
+%% chat
+%% chat_broadcast
+chat_broadcast(Msg, _State = #state{
+					room_id = RoomID,
+					players = Players,
+					observer = Observer}) ->
+	[chat_with_user(Pid, Msg) || {Pid, _, _, _} <- Players],
+	chat_observer(Observer, RoomID, Msg).
+
+%% chat
+%% chat_broadcast
+chat_with_user(Pid, Msg) ->
+	Pid ! {chat, Msg}.	
+
+
 
 notify_broadcast(Msg, _State = #state{room_id = RoomID,
 					players = Players,
@@ -301,6 +326,13 @@ notify_observer(none, _RoomID, _Msg) ->
 	ok;
 notify_observer(Observer, RoomID, Msg) ->
 	Observer ! {notify_observer, RoomID, Msg}.	
+
+chat_observer(none, _RoomID, _Msg) ->
+	ok;
+chat_observer(Observer, RoomID, Msg) ->
+	Observer ! {chat_observer, RoomID, Msg}.	
+
+
 
 update(Obs, GameState) when is_list(Obs) ->
 	[Pid ! {update, none, GameState} || {Pid, _, _, _} <- Obs];

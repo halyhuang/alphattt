@@ -10,14 +10,45 @@ body {
 	width: 500px;
 }
 
+.container_chat {
+    width: 800px; 
+}
+
 #margin {
 	width: 50px;
+    height: 850
 }
 
 .chat-room {
 	width: 800px;
-	height: 850px;
+	height: 550px;
 }
+
+.chat-text {
+    width: 800px;
+    height: 200px;
+}
+
+#chat-text {
+    width: 60%;    
+    height: 90%;   
+    text-align: left;     
+    font-size: 20px;     
+}
+
+.chat-area {
+    width: 800px;
+    height: 50px;
+}
+
+
+#chat-area {
+    width: 60%;    
+    height: 90%;   
+    text-align: left;     
+    font-size: 20px;     
+}
+
 
 .heading{  
     width: 100%;  	
@@ -49,7 +80,7 @@ body {
     cursor: pointer;  
 } 
 
-.btns_begin{  
+.btns_begin,.btn_chat_with{  
     font: 18px "microsoft yahei",Helvetica,Tahoma,Arial,"Microsoft jhengHei";
 	color: #000000;
     text-align: center;  

@@ -1,8 +1,11 @@
 ﻿
 
 var jsonrpc = imprt("jsonrpc");
-var service = new jsonrpc.ServiceProxy("alphattt.yaws", ["poll_get_move", "poll_display", "start_game", "start_robot", "get_all_robots", "set_move", "get_room_state"]);
-var hall_service = new jsonrpc.ServiceProxy("hall.yaws", ["get_room", "leave_room"]);
+var service = new jsonrpc.ServiceProxy("alphattt.yaws", ["poll_get_move", "poll_display", 
+														 "start_game", "start_robot", "get_all_robots", 
+														 "set_move", "get_room_state", "chat",
+														 "get_user_name"]);
+var hall_service = new jsonrpc.ServiceProxy("hall.yaws", ["get_room", "leave_room", "set_room"]);
 var auth_service = new jsonrpc.ServiceProxy("auth.yaws", ["is_login", "is_guest"]);
 	
 var grids;
@@ -17,6 +20,7 @@ players[2] = {player:'2', color:"#53FF53", innerHTML:"O"};
 var g_player = 1;
 var g_destno = 0;
 var is_guest = false;
+var g_username = "";
 
 var legal_moves = new Array();
 var child_nums = 0;
@@ -40,6 +44,8 @@ function check_login()
 
 function check_room()
 {
+	var result_username = service.get_user_name();
+	g_username = result_username.username;
 	var result = hall_service.get_room();
     g_destno = result.room_id;   
 	if (result.room_id == 0)
@@ -115,6 +121,10 @@ function poll_display()
 			{ 
 				var player = result.infos[i].player;
 				info(players[player].player, result.infos[i].info);
+			}
+			for (var i = 0; i < result.msgs.length; i++)
+			{
+				set_chat_text(result.msgs[i]);
 			}
 			set_legal_move();					
      } catch(e) {
@@ -212,6 +222,12 @@ function init_botton()
 	bn_rule.onmouseenter = enter_bn;
 	bn_rule.onmouseleave = leave_bn;
 	bn_rule.disabled = false;	
+
+	var bn_chat = document.getElementById('chat');
+	bn_chat.onclick = chat;
+	bn_chat.onmouseenter = enter_bn;
+	bn_chat.onmouseleave = leave_bn;
+	bn_chat.disabled = false;	
 }  
 
 function init_board()
@@ -280,7 +296,21 @@ function info(player, msg)
     if (msg.indexOf('Wins!!!') >= 0 || msg.indexOf('Draw!!!') >= 0)
     {
         alert(msg);
+        // 此时游戏结束，应该恢复到进入大厅时的set_room的状态
+        set_room();
     }    
+}
+
+function set_room()
+{
+    try 
+    {
+		hall_service.set_room(g_destno);
+    } 
+    catch(e) 
+    {
+        console.log(e);
+    }	
 }
 
 
@@ -443,3 +473,20 @@ function set_dest_no(destno)
    document.getElementById('dest_no').innerHTML = "房间号：" + destno;  
 }
  
+
+function chat()
+{
+	var Msg = $("#chat-area").val();
+	if ("" == Msg)
+	{
+		return;
+	}
+	$("#chat-area").val('');
+	service.chat(g_destno, g_username + " : " + Msg);
+}
+
+function set_chat_text(Msg)
+{
+	var OldMsg = $("#chat-text").val();
+	$("#chat-text").val(OldMsg + "\n" + Msg);
+}
