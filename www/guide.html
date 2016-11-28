@@ -463,18 +463,22 @@ playerClient.enterRoom("javarobot", 6);
 
 <p>在src/python下增加python对弈算法，接口已经定义好：</p>
 
-<pre><code class="python">from py_robot.pybot_module import PybotModule
+<pre><code class="python">from client.client import run, Player
 
-class YourRobot(PybotModule):
+class MctsAI(Player):
+    '''初始化函数，cal_time为每步所需时间，board为使用的board类'''
     def __init__(self, cal_time, board):
-        super(YourRobot, self).__init__(cal_time, board)
-        self.tree = {}
+        super(MctsAI, self).__init__(cal_time, board)
 
-    def get_move(self, state):
-        move = (0, 0, 0, 0)
-        msg_time = "== calculate 999 paths using 1.0 seconds =="
-        msg_pro = "== probability is 100. 999/999 =="
-        return move, msg_time, msg_pro
+    '''获取下一步函数，需返回元祖(R,C,r,c)，其中　R,C　为大棋盘坐标,　r,c 为小棋盘坐标'''
+    def get_move(self):
+        ...
+</code></pre>
+
+<p>Player父类里，帮助缓存了对方上一步的移动Move和棋盘状态status，在子类里可以调用如下两个属性获取，请参考MctsAI的实现：</p>
+
+<pre><code class="python">self.cur_opponent_state
+self.cur_opponent_move
 </code></pre>
 
 <p>已提供一个python版本的board程序可供调用。</p>
@@ -484,19 +488,7 @@ class YourRobot(PybotModule):
 <p>代码如下：</p>
 
 <pre><code class="python">if __name__ == '__main__':
-    from py_robot.board import Board
-    from py_robot.client import Client
-
-    IP = "10.9.88.20"
-    PORT = 8011
-    USERNAME = ""
-    PASSWORD = ""
-    ROOMID = 1
-
-    your_robot = YourRobot(1, Board)
-    state = {"state": Board.start()}
-    client = Client(IP, PORT, your_robot, state)
-    client.play(USERNAME, PASSWORD, ROOMID)
+    run("127.0.0.1", 8011, "TT", "123456", 3, MctsAI)
 </code></pre>
 
 <p>执行后进入对战房间。</p>
