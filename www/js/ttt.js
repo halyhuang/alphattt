@@ -124,7 +124,7 @@ function poll_display()
 			}
 			for (var i = 0; i < result.msgs.length; i++)
 			{
-				set_chat_text(result.msgs[i]);
+				info(0, result.msgs[i]);
 			}
 			set_legal_move();					
      } catch(e) {
@@ -300,6 +300,7 @@ function info(player, msg)
         set_room();
     }    
 }
+
 
 function set_room()
 {
@@ -483,10 +484,4 @@ function chat()
 	}
 	$("#chat-area").val('');
 	service.chat(g_destno, g_username + " : " + Msg);
-}
-
-function set_chat_text(Msg)
-{
-	var OldMsg = $("#chat-text").val();
-	$("#chat-text").val(OldMsg + "\n" + Msg);
 }
