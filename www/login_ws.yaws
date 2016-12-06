@@ -1,0 +1,13 @@
+<erl>
+out(A) ->
+	io:format("init a login websocket~n"),
+    Opts = [
+            {origin,            "http://" ++ (A#arg.headers)#headers.host},
+            {keepalive,         true},
+            {keepalive_timeout, 30000},
+            {drop_on_timeout,   true},
+            {close_if_unmasked, true}
+           ],
+    {websocket, webagent_ws, Opts}.
+	
+</erl>
