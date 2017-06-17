@@ -1,5 +1,5 @@
-﻿-module(game_sup).
--behaviour(supervisor).
+-module(game_sup).
+-behavior(supervisor).
 
 %% API
 -export([start_link/0]).
