@@ -89,14 +89,13 @@ handle_call(get_move, State=#state{board=Board, game_states=GSs, player_client =
 				{Games, MaxDepth, Time}
 					= run_simulation(Player, LegalStates, State),
 				CurrentPlayerID = Board:current_player(GS),
-
 				GameTimeMsg = io_lib:format("[~p]Games: ~p Time: ~pms~n", [?MODULE, Games, Time]),
 				MaxDepthMsg = io_lib:format("Maximum depth searched: ~p~n", [MaxDepth]),
 
 				%% stats = [{move, percent, wins, plays}]
 				Stats = make_stats(Player, LegalStates,
 									State#state.plays_wins),
-				SortedStats = lists:reverse(lists:keysort(2, Stats)),
+				SortedStats = lists:sublist(lists:reverse(lists:keysort(2, Stats)), 5),
 				SortedStatsMsg = lists:foldl(fun({Move, Percent, Wins, Plays}, Acc) ->
 						Acc ++ io_lib:format("~p: ~.2f% (~p / ~p)~n", [Move, Percent, Wins, Plays])
 						end, [], SortedStats),
@@ -182,10 +181,18 @@ select_one(Player, LegalStates,
 	RandomGS = choice(GSs),
 	{RandomGS, lookup(PlaysWins, {Player, RandomGS}) =/= none}.	
 
+choice(L) ->
+	lists:nth(random:uniform(length(L)), L).	
+
 propagate_back(Winner, none, NeedUpdateds, PlaysWins) ->
 	update_plays_wins(Winner, NeedUpdateds, PlaysWins);
 propagate_back(Winner, Expand, NeedUpdateds, PlaysWins) ->
-	insert(PlaysWins, Expand, {0, 0}),
+	case lookup(PlaysWins, Expand) of
+		none ->
+			insert(PlaysWins, Expand, {0, 0});
+		_ ->
+			void
+	end,
 	update_plays_wins(Winner, [Expand | NeedUpdateds], PlaysWins).
 
 update_plays_wins(Winner, Updateds, PlaysWins) ->
@@ -221,10 +228,6 @@ lookup(Tid, Key) ->
 
 insert(Tid, Key, Value) -> 
 	ets:insert(Tid, {Key, Value}).
-
-
-choice(L) ->
-	lists:nth(random:uniform(length(L)), L).
 
 %% 1|2|draw|on_going
 get_winner(Board, GS) ->

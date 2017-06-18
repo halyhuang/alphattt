@@ -43,6 +43,10 @@ handle_info({tcp, _, RcvData}, State=#state{cb_module = CBM, cb_state = CBS}) ->
 		stop ->
 			{stop, normal, State}
 	end;
+handle_info({tcp_closed, _}, State=#state{cb_module = CBM, cb_state = CBS}) ->
+	CBM:handle_tcp_data(term_to_binary(tcp_closed), CBS),
+	{stop, normal, State};
+
 handle_info(Msg, State = #state{cb_module = CBM, cb_state = CBS}) ->
 	case CBM:handle_info(Msg, CBS) of
 		{ok, NewSBS} ->

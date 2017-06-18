@@ -2,15 +2,13 @@
 -export([run/6, run_compete/0]).
 
 run_compete() ->
-	MT = 200,
-	EF1 = 0,
-	EF2 = 0,
-	N = 300,
-%	compete(mcts, mcts_pall, MT, 0, 0, 100),
-	[ compete(V1, V2, MT, EF2, EF2, N) || V1 <- [mcts, mcts_ucb1], 
-	                                      V2 <- [mcts, mcts_ucb1],
-	                                     EF2 <- [0.2, 0.3, 0.4, 0.5, 0.6, 1.0], 
-	                                     V1 =/= V2],
+	MT = 1000,
+	N = 100,
+%	compete(mcts_ucb1, mcts_ucb1, MT, EF1, EF2, N),
+	[ compete(V1, V2, MT, EF1, EF2, N) || V1 <- [mcts_ucb1], 
+	                                      V2 <- [mcts_ucb1_pall],
+	                                      EF1 <- [0.4, 0.4],
+	                                      EF2 <- [0.4, 0.4]],
 	ok.
 
 compete(V1, V2, MT, EF1, EF2, N) ->

@@ -53,7 +53,6 @@ init([]) ->
 handle_info({'DOWN', _, process, Pid, Reason}, State=#state{agents=Agents}) ->
 	case lists:keyfind(Pid, 2, Agents) of
 		{_ID, Pid, _Ref} ->
-			error_logger:format("web agent ~p down, reason ~p~n", [Pid, Reason]),
 			NewAgents = lists:keydelete(Pid, 2, Agents),
 		    {noreply, State#state{agents = NewAgents}};
 		_ ->
@@ -74,11 +73,12 @@ handle_cast({stop, ID}, State=#state{agents=Agents}) ->
 	end.
 	
 handle_call(get_online_users, _From, State=#state{agents=Agents}) ->
-	WebAgentStatus = [ begin
+	OnlineUsers = [ begin
 		{Status, UserName, RoomID, _Player, _WebPlayer, _RobotPlayer} = web_agent:get_state(Pid),
 		{ID, UserName, RoomID, Status, Pid}
 	   end || {ID, Pid, _Ref} <- Agents],
-	{reply, {ok, WebAgentStatus}, State};
+	Users = lists:sublist([ {ID, UserName, RoomID, Status, Pid} || {ID, UserName, RoomID, Status, Pid} <- OnlineUsers, Status =/= waiting_login], 10),
+	{reply, {ok, Users}, State};
 
 handle_call(start_agent, _From, State=#state{agents=Agents, index = Index}) ->
 	{ok, Pid} = web_agent:start(),

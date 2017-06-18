@@ -1,6 +1,6 @@
 -module(player_client).
 -export([start/5]).
--export([login/2, enter_room/2, leave_room/1, show_room/1, get_info/1, show/1, stop/1]).
+-export([login/2, enter_room/2, leave_room/1, show_room/1, get_info/1, show/1, stop/1, chat/2]).
 -export([get_player/1]).
 
 -record(state, {nickname,
@@ -20,6 +20,10 @@ login(Pid, Password) ->
 
 enter_room(Pid, RoomID) ->
 	Pid ! {enter_room, RoomID},
+	ok.
+
+chat(Pid, Msg) ->
+	Pid ! {chat, Msg},
 	ok.
 
 leave_room(Pid) ->
@@ -89,7 +93,11 @@ loop(State = #state{nickname=NickName,
 			loop(State);
 		{notify, PlayerID, Info} ->
 			gen_tcp:send(Sock, term_to_binary({notify, PlayerID, Info})),
-			loop(State);						
+			loop(State);
+		{chat, Info} ->
+			%% io:format("player_client receive and send a msg ~p ~n", [Info]),
+			gen_tcp:send(Sock, term_to_binary({chat, Info})),
+			loop(State);							
 		stop ->
 			player:stop(Type, Player);	
 		{get_player, Ref, From} ->
@@ -117,6 +125,8 @@ loop(State = #state{nickname=NickName,
 					player:display(Type, Player, GameState, Move);
 				{notify, Msg} ->
 					player:notify(Type, Player, Msg);
+				{chat, Msg} ->  
+					process_receive_chat_msg(Type, Player, Msg);			
 				play ->
 					player:get_move(Type, Player);
 				stop ->
@@ -125,4 +135,13 @@ loop(State = #state{nickname=NickName,
 					io:format("client receive unexpected tcp ~p~n", [Unexpected])
 			end,
 			loop(State)
+	end.
+
+%% chat is a op just for web agent, the other type do not need this op
+%% this func may be ugly, but it keep the definition of player.erl clean
+process_receive_chat_msg(Type, Player, Msg) ->
+	io:format("player client process_receive_chat_msg ~p ~p ~p~n", [Type, Player, Msg]),
+	case web_player =:= Type of
+		true -> web_player:chat(Player, Msg);	
+		false -> donothing
 	end.

@@ -1,10 +1,11 @@
 -module(web_agent).
 
--export([start/0, login/3, logout/1, is_login/1, set_room/2, enter_room/1, leave_room/1, start_robot/3, 
+-export([start/0, login/3, logout/1, is_login/1, is_guest/1, set_room/2, enter_room/1, leave_room/1, start_robot/2, 
 		get_info/1, start_observe/1, is_move/1, get_legal_moves/1, set_move/2,  
-		get_display_move/1, get_room/1, get_room_state/1, stop/1, get_state/1]).
+		get_display_move/1, get_room/1, get_room_state/1, stop/1, get_state/1, get_all_robots/1, 
+		chat/2, get_msg/1, get_user_name/1]).
 
--define(TIME_OUT, 60 * 10).
+-define(TIME_OUT, 600 * 1000).
 
 -record(state,  {
 				 status = waiting_login,
@@ -12,7 +13,9 @@
 				 room = none,
 				 web_player = none,
 				 player = none,
-				 robot_player = none}).
+				 robot_player = none,
+				 robot = [],
+				 is_guest = false}).
 
 %% APIs.
 
@@ -27,7 +30,14 @@ logout(Pid) ->
 	cast(Pid, logout).
 
 is_login(Pid) ->
-	call(Pid, is_login).	
+	call(Pid, is_login).
+
+is_guest(Pid) ->
+	call(Pid, is_guest).	
+
+
+get_user_name(Pid) ->
+	call(Pid, get_user_name).
 
 set_room(Pid, RoomID) ->
 	cast(Pid, {set_room, RoomID}).
@@ -44,8 +54,8 @@ enter_room(Pid) ->
 leave_room(Pid) ->
 	cast(Pid, leave_room).	
 
-start_robot(Pid, RobotName, RobotType) ->
-	cast(Pid, {start_robot, RobotName, RobotType}).
+start_robot(Pid, RobotName) ->
+	cast(Pid, {start_robot, RobotName}).
 
 start_observe(Pid) ->
 	cast(Pid, start_observe).
@@ -63,10 +73,19 @@ get_legal_moves(Pid) ->
 	call(Pid, get_legal_moves).	
 
 get_info(Pid) ->
-	call(Pid, get_info).		
+	call(Pid, get_info).
+
+get_msg(Pid) ->
+	call(Pid, get_msg).			
 
 get_state(Pid) ->
 	call(Pid, get_state).
+
+chat(Pid, Msg) ->
+	Pid ! {chat, Msg}.	
+
+get_all_robots(Pid) ->
+	call(Pid, get_all_robots).	
 
 stop(Pid) ->
 	Pid ! stop.
@@ -80,6 +99,8 @@ call(Pid, Msg) ->
 	receive
 		{Ref, Reply} ->
 			Reply
+	after 5 * 1000 ->
+		io:format("web_agent call timeout")
 	end.
 %%
 init() ->
@@ -99,6 +120,8 @@ loop(State=#state{status = waiting_login}) ->
 		Unexpected ->
 			io:format("unexpected @waiting_login ~p~n", [Unexpected]),
 			loop(State)	
+	    after ?TIME_OUT ->    %% keep state for 60 secs only
+	        exit(time_out)			
 	end;
 
 loop(State=#state{status = waiting_enter_room, username = UserName,  
@@ -115,7 +138,10 @@ loop(State=#state{status = waiting_enter_room, username = UserName,
 			loop(State);			
 		{get_room, Ref, From} ->
 			From ! {Ref, 0},
-			loop(State);			
+			loop(State);		
+		{get_user_name, Ref, From} ->
+			From ! {Ref, UserName},
+			loop(State);	
 		{set_room, RoomID} ->
 			io:format("~p enter room ~p~n", [UserName, RoomID]),		
 			event_store:observe(RoomID, WebPlayer),
@@ -125,17 +151,20 @@ loop(State=#state{status = waiting_enter_room, username = UserName,
 		Unexpected ->
 			error_logger:format("unexpected @waiting_enter_room ~p~n", [Unexpected]),
 			loop(State)	
-	    after ?TIME_OUT * 1000 ->    %% keep state for 60 secs only
+	    after ?TIME_OUT ->    %% keep state for 60 secs only
 	        exit(time_out)				
 	end;
 
 
 loop(State=#state{status = enter_room, username = UserName, room = RoomID, 
-		player = Player, robot_player = RobotPlayer, web_player = WebPlayer}) ->
+		player = Player, robot_player = RobotPlayer, web_player = WebPlayer, robot = Robots, is_guest = IsGuest}) ->
 	receive
 		{is_login, Ref, From} ->
 			From ! {Ref, true},
 			loop(State);
+		{is_guest, Ref, From} ->
+			From ! {Ref, IsGuest},
+			loop(State);			
 		{get_state, Ref, From} ->
 			From ! {Ref, {enter_room, UserName, RoomID, Player, WebPlayer, RobotPlayer}},
 			loop(State);						
@@ -160,18 +189,32 @@ loop(State=#state{status = enter_room, username = UserName, room = RoomID,
 			end_game(Player, RobotPlayer),
 			event_store:unsuscribe(WebPlayer),			
 			loop(State#state{status = waiting_enter_room, room = none});
-		{start_robot, RobotName, RobotType}	->
-			NewRobotPlayer = case RobotPlayer of
-								none ->
-									{ok, RobotPlayer2} = player_client:start(RobotName, RobotType, board, "127.0.0.1", 8011),	
-									erlang:link(RobotPlayer2),	
-									player_client:login(RobotPlayer2, ""),
-									RobotPlayer2;
-								RobotPlayer -> RobotPlayer
-							 end,
-			player_client:enter_room(NewRobotPlayer, RoomID),
-			io:format("~p enter room ~p~n", [RobotName, RoomID]),
-			loop(State#state{robot_player = NewRobotPlayer});
+		{get_all_robots, Ref, From} ->
+			RobotList = [{"mcts", ""}, {"mcts_pall", ""}, {"mcts_ucb1", ""}, {"mcts_ucb1_pall", ""}],	
+			RobotList2 = [RobotName || {RobotName, _RobotPassword} <- RobotList],	
+			From ! {Ref, RobotList2},
+			loop(State#state{robot = RobotList});			
+		{start_robot, RobotName}	->
+			case lists:keyfind(RobotName, 1, Robots) of
+				{RobotName, RobotPassword} ->
+					case RobotPlayer of
+						none ->
+							ok;
+						RobotPlayer -> 
+							player_client:stop(RobotPlayer),
+							erlang:unlink(RobotPlayer)
+					end,				
+					{ok, NewRobotPlayer} = player_client:start(RobotName, list_to_atom(RobotName), board, "127.0.0.1", 8011),	
+					erlang:link(NewRobotPlayer),	
+					player_client:login(NewRobotPlayer, RobotPassword),
+					player_client:enter_room(NewRobotPlayer, RoomID),
+					io:format("~p enter room ~p~n", [RobotName, RoomID]),
+					loop(State#state{robot_player = NewRobotPlayer});
+				_ ->
+					io:format("robot ~p not exist~n", [RobotName]),
+					loop(State)
+			end;
+
 		{is_move, Ref, From} ->
 			{ok, IsMove} = web_player:is_move(WebPlayer),		
 			From ! {Ref, IsMove},
@@ -194,7 +237,24 @@ loop(State=#state{status = enter_room, username = UserName, room = RoomID,
 					end,
 			From ! {Ref, Infos},
 			loop(State);
-
+		{get_msg, Ref, From} ->
+			Msgs = case WebPlayer of
+						none -> [];
+						_ -> web_player:get_msg(WebPlayer)
+					end,
+			From ! {Ref, Msgs},
+			loop(State);			
+		{chat, Msg} ->
+			%% io:format("web_agent receive a msg ~p~n", [Msg]),
+			player_client:chat(Player, Msg),
+			loop(State);
+		{get_user_name, Ref, From} ->
+			From ! {Ref, UserName},
+			loop(State);	
+		{set_room, RoomID} ->
+			io:format("~p enter room ~p again ~n", [UserName, RoomID]),		
+			event_store:observe(RoomID, WebPlayer),
+			loop(State);	
 		{set_move, Move} ->
 			web_player:set_move(WebPlayer, Move),
 			loop(State);
@@ -203,7 +263,7 @@ loop(State=#state{status = enter_room, username = UserName, room = RoomID,
 		Unexpected ->
 			error_logger:format("unexpected @enter_room ~p~n", [Unexpected]),
 			loop(State)	
-	    after ?TIME_OUT * 1000 ->    %% keep state for 60 secs only
+	    after ?TIME_OUT ->    %% keep state for 60 secs only
 	        exit(time_out)				
 	end.
 
@@ -215,7 +275,8 @@ handle_cast({login, UserName, Password}, State) ->
 		ok ->
     		io:format("user ~p login~n", [UserName]),    		
 			WebPlayer = player_client:get_player(Player),
-			State#state{status = waiting_enter_room, username = UserName, player = Player, web_player = WebPlayer};
+			IsGuest = (UserName == "guest"),
+			State#state{status = waiting_enter_room, username = UserName, player = Player, web_player = WebPlayer, is_guest = IsGuest};
 		Reason ->
 			io:format("user ~p login failed,reason:~p~n", [UserName, Reason]),			
 			State

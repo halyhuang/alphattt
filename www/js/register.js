@@ -1,4 +1,4 @@
-var jsonrpc = imprt("jsonrpc");
+﻿var jsonrpc = imprt("jsonrpc");
 var service = new jsonrpc.ServiceProxy("auth.yaws", ["register"]);
 
 

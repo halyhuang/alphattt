@@ -9,8 +9,7 @@
 				              %             value = {plays::integer(),
                               %			             wins:integer()}
 				 game_states = [],
-				 player_client,
-				 infos = []
+				 player_client
 				 }).
 
 % APIs
@@ -96,7 +95,7 @@ handle_call(get_move, State=#state{board=Board, game_states=GSs, player_client =
 				%% stats = [{move, percent, wins, plays}]
 				Stats = make_stats(Player, LegalStates,
 									State#state.plays_wins),
-				SortedStats = lists:reverse(lists:keysort(2, Stats)),
+				SortedStats = lists:sublist(lists:reverse(lists:keysort(2, Stats)), 5),
 				SortedStatsMsg = lists:foldl(fun({Move, Percent, Wins, Plays}, Acc) ->
 						Acc ++ io_lib:format("~p: ~.2f% (~p / ~p)~n", [Move, Percent, Wins, Plays])
 						end, [], SortedStats),
@@ -205,7 +204,12 @@ ucb1(Player, GSs, EF, PlaysWins) ->
 propagate_back(Winner, none, NeedUpdateds, PlaysWins) ->
 	update_plays_wins(Winner, NeedUpdateds, PlaysWins);
 propagate_back(Winner, Expand, NeedUpdateds, PlaysWins) ->
-	insert(PlaysWins, Expand, {0, 0}),
+	case lookup(PlaysWins, Expand) of
+		none ->
+			insert(PlaysWins, Expand, {0, 0});
+		_ ->
+			void
+	end,
 	update_plays_wins(Winner, [Expand | NeedUpdateds], PlaysWins).
 
 update_plays_wins(Winner, Updateds, PlaysWins) ->

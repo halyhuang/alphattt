@@ -1,10 +1,12 @@
 -module(web_player).
 -export([start/1, start/3, update/2, display/3, get_move/1, leave_room/1, stop/1]).
--export([get_legal_moves/1, set_move/2, is_move/1, get_display_move/1, get_info/1, notify/2]).
+-export([get_legal_moves/1, set_move/2, is_move/1, get_display_move/1, get_info/1, 
+									notify/2, chat/2, get_msg/1]).
 
 -record(state,  {board = board,
 			     game_states = [],
 			     infos = [],
+			     msgs = [],
 			     is_get_move = false,
 			     moves = [],
 			     player_client,
@@ -29,6 +31,9 @@ display(Pid, GameState, Move) ->
 notify(Pid, Info) ->
 	Pid ! {notify, Info}.	
 
+chat(Pid, Msg) ->
+	Pid ! {chat, Msg}.
+
 get_move(Pid) ->
 	Pid ! {get_move, self()}.
 
@@ -52,6 +57,9 @@ get_display_move(Pid) ->
 
 get_info(Pid) ->
 	call(Pid, get_info).	
+
+get_msg(Pid) ->
+	call(Pid, get_msg).		
 
 init([Board]) ->
 	loop(#state{board = Board, game_states = []}).
@@ -100,6 +108,9 @@ handle_cast({notify, Info}, State=#state{infos = Infos}) ->
 %%	io:format("webplayer notify:~p~n", [Info]),
 	{noreply, State#state{infos = [ Info | Infos]}};
 
+handle_cast({chat, Msg}, State=#state{msgs = Msgs}) ->
+	{noreply, State#state{msgs = [ Msg | Msgs]}};	
+
 handle_cast(leave_room, _State) ->
 	{noreply, #state{}};	
 
@@ -120,6 +131,9 @@ handle_call(get_display_move, State=#state{moves = Moves}) ->
 
 handle_call(get_info, State=#state{infos = Infos}) ->
 	{reply, lists:reverse(Infos), State#state{infos = []}};
+
+handle_call(get_msg, State=#state{msgs = Msgs}) ->
+	{reply, lists:reverse(Msgs), State#state{msgs = []}};	
 
 handle_call(get_legal_moves, State=#state{game_states=[]}) ->
 	{reply, {ok, 1, []}, State#state{is_get_move = false}};	

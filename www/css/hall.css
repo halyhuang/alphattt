@@ -23,38 +23,50 @@ body {
 
   
 td.chessplayer {
- width:40px;
- height:40px;	
- padding:10px;
- background: url(../image/pep.png) fixed center center;
+	width:40px;
+	height:40px;	
+	padding:10px;
+	background: url(../image/pep.png) fixed center center;
 }
 
 td.checkdeskimg {
- width:60px;
- height:60px;	
- padding:15px;	
+	width:60px;
+	height:60px;	
+	padding:15px;	
 }
 
 .datalist {
- width:300px;
- color:white;
- background: green; 
+	font-family: "Microsoft YaHei";  
+	width:300px;
+	color:white;
+	background: green; 
 }
-
+.tablename {
+	font-family: "Microsoft YaHei";
+	font-weight:bold;
+	color:white;
+}
+.hallname {
+	font-family: "Microsoft YaHei";
+	font-weight:bold;
+	color:green;
+	font-size:32px;
+}
 .gamehall {
-    background: #FFFFFF;
+	background: #FFFFFF;
 	opacity:0.85; 
 }
 
 .onlineuser {
- height:200px;	
+	height:200px;	
 }
   
 td.tight {
- padding:15px;
+	padding:15px;
+	font-family: "Microsoft YaHei";  
 }
 
 tr.over td {
-    background:#ff8040;  /*这个将是鼠标高亮行的背景background:#bcd4ec色*/
+	background:#ff8040;  /*这个将是鼠标高亮行的背景background:#bcd4ec色*/
 	cursor: pointer;
 }

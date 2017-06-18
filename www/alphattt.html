@@ -2,11 +2,12 @@
 <html> 
 <head> 
 	<meta charset="utf-8"/> 
-	<title id="title">Ultimate Tic Tac Toe</title> 
+	<title>Ultimate Tic Tac Toe</title> 
 	<link rel="shortcut icon" href="image/lecheng.png"/>
 	<link rel="stylesheet" type="text/css" href="css/ttt.css" /> 
 	<link rel="stylesheet" type="text/css" href="css/chatstyle.css" /> 
 	<script src="jsolait/jsolait.js"></script>	
+	<script src="jquery/jquery.min.js"></script>
     <script src="js/ttt.js"></script>  
 </head> 
 <body> 	
@@ -21,9 +22,17 @@
 						<td>
 							<table class="heading">
 								<tr>
-									<td></td>
-									<td></td>
-								</tr>				  			
+									<td><div id="dest_no" class="dest_no"></div></td>
+                                    <td></td>
+								</tr>                            
+								<tr>
+									<td><div id="playerinfoX" class="playerinfoX">玩家[X]:</div></td>
+									<td><div id="playerinfoO" class="playerinfoO">玩家[O]:</div></td>
+								</tr>	
+								<tr>
+									<td><div id="playerinfoX_time" class="playerinfoX_time">计时[X]:</div></td>
+									<td><div id="playerinfoO_time" class="playerinfoO_time">计时[O]:</div></td>
+								</tr>                                
 							</table>
 						</td>
 					<tr>
@@ -178,12 +187,17 @@
 					</tr>
 					<tr>
 						<td>
-							<table class="botton">
+							<table class="botton" >
 								<tr>
-									<td><div id="start_game" class="btns_begin">我入座</div></td>								
-									<td><div id="start_rule" class="btns_begin">规则</div></td>								
-									<td><div id="start_hall" class="btns_begin">大厅</div></td>								
-									<td><div id="start_robot" class="btns_begin">AI入座</div></td>
+									<td align="left" width="25%"><div id="start_game" class="btns_begin">我入座</div></td>								
+									<td align="center" width="25%"><div id="start_rule" class="btns_begin">规则</div></td>								
+									<td align="center" width="25%"><div id="start_hall" class="btns_begin">大厅</div></td>								
+									<td align="right" width="25%">
+										<div id="start_robot" class="btns_begin">AI入座</div>
+										<div id="div_robotlist" style="height:38px;display:none;">
+											<select class="combox" id="robotlist" onchange="select_robot()" onblur="discard_select_robot()" style="font-size:18px;" ></select>
+										</div>
+									</td>						
 								</tr>
 							</table>
 						</td>
@@ -191,13 +205,41 @@
 				</table>
 			</td>
 			<td>
-				<table class="chat-room">
+				<table class="container_chat">
 					<tr>
 						<td>
-							<ul class="chat-thread" id="chat-thread-result">									
-							</ul>	
+							<table class="chat-room">
+								<tr>
+									<td>
+										<ul class="chat-thread" id="chat-thread-result">									
+										</ul>	
+									</td>
+								</tr>					
+							</table>
 						</td>
 					</tr>
+					<tr>
+						<td>
+							<table class="chat-area">
+								<tr>
+									<td>
+										<input type="text" placeholder="type and press enter to chat" id="chat-area" />
+									</td>
+								</tr>						
+							</table>
+						</td>
+					</tr>	
+					<tr>
+						<td>
+							<table class="chat">
+								<tr>
+									<td align="center" width="25%">
+										<div id="chat" class="btn_chat_with">发送</div>
+									</td>				
+								</tr>						
+							</table>
+						</td>
+					</tr>																
 				</table>				
 			</td>
 		</tr>

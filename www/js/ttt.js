@@ -1,9 +1,12 @@
 ﻿
 
 var jsonrpc = imprt("jsonrpc");
-var service = new jsonrpc.ServiceProxy("alphattt.yaws", ["poll_get_move", "poll_display", "start_game", "start_robot", "set_move", "get_room_state"]);
-var hall_service = new jsonrpc.ServiceProxy("hall.yaws", ["get_room", "leave_room"]);
-var auth_service = new jsonrpc.ServiceProxy("auth.yaws", ["is_login"]);
+var service = new jsonrpc.ServiceProxy("alphattt.yaws", ["poll_get_move", "poll_display", 
+														 "start_game", "start_robot", "get_all_robots", 
+														 "set_move", "get_room_state", "chat",
+														 "get_user_name"]);
+var hall_service = new jsonrpc.ServiceProxy("hall.yaws", ["get_room", "leave_room", "set_room"]);
+var auth_service = new jsonrpc.ServiceProxy("auth.yaws", ["is_login", "is_guest"]);
 	
 var grids;
 var poll_timerID = 0;
@@ -15,6 +18,9 @@ players[0] = {player:'0', color:"white", innerHTML:""};
 players[1] = {player:'1', color:"#00FFFF", innerHTML:"X"};
 players[2] = {player:'2', color:"#53FF53", innerHTML:"O"};
 var g_player = 1;
+var g_destno = 0;
+var is_guest = false;
+var g_username = "";
 
 var legal_moves = new Array();
 var child_nums = 0;
@@ -38,7 +44,10 @@ function check_login()
 
 function check_room()
 {
+	var result_username = service.get_user_name();
+	g_username = result_username.username;
 	var result = hall_service.get_room();
+    g_destno = result.room_id;   
 	if (result.room_id == 0)
 	{
 		clearInterval(poll_timerID);
@@ -46,10 +55,11 @@ function check_room()
 		location.href = "hall.html";
 	}
 	else
-	{
-		var title = document.getElementById('title');  	
-		title.innerHTML = "AlphaTTT " + result.room_id + "号桌子";
+	{        
+        set_dest_no(result.room_id);
 	}	
+    var guest_result = auth_service.is_guest();
+    is_guest = guest_result.value;
 }
 
 window.onload = function() {  
@@ -61,6 +71,15 @@ window.onload = function() {
 	init_poll();
 };  
 
+window.onbeforeunload = function(){
+    return "是否要离开房间?";
+}
+
+window.onunload = function(){
+    clearInterval(poll_timerID);
+	hall_service.leave_room();    
+};  
+
 function init_poll()
 {
 	poll_timerID = setInterval(poll, 300);	
@@ -70,8 +89,8 @@ function init_poll()
 function poll()
 {		
 	poll_room_state();
+	poll_get_move();    
 	poll_display();
-	poll_get_move();
 }
 
 
@@ -84,7 +103,7 @@ function poll_get_move()
 				if (result.is_get_move)
 				{
 					g_player = result.player;
-					legal_moves = result.legal_moves;
+					legal_moves = result.legal_moves;					
 				}	
 			}				
      } catch(e) {
@@ -103,6 +122,10 @@ function poll_display()
 				var player = result.infos[i].player;
 				info(players[player].player, result.infos[i].info);
 			}
+			for (var i = 0; i < result.msgs.length; i++)
+			{
+				info(0, result.msgs[i]);
+			}
 			set_legal_move();					
      } catch(e) {
         alert(e);
@@ -117,7 +140,11 @@ function poll_room_state()
 			if (result.state == "playing")
 			{
 				bn_robot.disabled = true;
-				bn_start.disabled = true; 			
+				bn_start.disabled = true; 
+				document.getElementById('playerinfoX').innerHTML = "玩家[X]: " + result.players[0];
+                document.getElementById('playerinfoX_time').innerHTML = "计时[X]: " + showRemainTime(result.remain_times[0]);
+	            document.getElementById('playerinfoO').innerHTML = "玩家[O]: " + result.players[1];
+                document.getElementById('playerinfoO_time').innerHTML = "计时[O]: " + showRemainTime(result.remain_times[1]);					
 			}
 			else
 			{
@@ -128,6 +155,14 @@ function poll_room_state()
         alert(e);
      }		
 }
+
+function showRemainTime(time)
+{
+	var min = Math.floor(time/60);
+	var sec = time%60;
+	return "(" + min + "分" + sec + "秒)"
+}
+
 
 function grid_pos(move)
 {
@@ -170,7 +205,7 @@ function init_botton()
 	bn_start.disabled = false;
 	
     bn_robot = document.getElementById('start_robot');  
-	bn_robot.onclick = start_robot; 	
+	bn_robot.onclick = show_robotlist; 	
 	bn_robot.onmouseenter = enter_bn;
 	bn_robot.onmouseleave = leave_bn;
 	bn_robot.disabled = true;
@@ -187,6 +222,12 @@ function init_botton()
 	bn_rule.onmouseenter = enter_bn;
 	bn_rule.onmouseleave = leave_bn;
 	bn_rule.disabled = false;	
+
+	var bn_chat = document.getElementById('chat');
+	bn_chat.onclick = chat;
+	bn_chat.onmouseenter = enter_bn;
+	bn_chat.onmouseleave = leave_bn;
+	bn_chat.disabled = false;	
 }  
 
 function init_board()
@@ -246,16 +287,42 @@ function info(player, msg)
 	var	chatThread = document.getElementById('chat-thread-result');
     chatThread.appendChild(chatNewThread);
 	child_nums++;
-	if (child_nums >= 20)
+	if (child_nums >= 10)
 	{
 		var childNode = chatThread.childNodes[0]; //总是删除第一个，是不是更简单 
 		chatThread.removeChild(childNode); 	
 	}
     chatThread.scrollTop = chatThread.scrollHeight;	
+    if (msg.indexOf('Wins!!!') >= 0 || msg.indexOf('Draw!!!') >= 0)
+    {
+        alert(msg);
+        // 此时游戏结束，应该恢复到进入大厅时的set_room的状态
+        set_room();
+    }    
 }
+
+
+function set_room()
+{
+    try 
+    {
+		hall_service.set_room(g_destno);
+    } 
+    catch(e) 
+    {
+        console.log(e);
+    }	
+}
+
+
 
 function start_game()
 {
+    if (is_guest && g_destno >= 37)
+    {
+        alert("这是比赛大厅，Guest不能入座只能观战，对弈请进入练习大厅！");        
+        return;
+    }
 	if (!this.disabled)
 	{
 		service.start_game();
@@ -271,18 +338,64 @@ function start_robot()
 	}
 }
 
+
+function select_robot()
+{
+	var robot = $("#robotlist").children('option:selected').val();
+	if(!this.disabled && robot!="请选择机器人")
+	{
+		if (confirm("确定要选择"+robot+"吗？"))
+		{
+			service.start_robot(robot);
+			$("#div_robotlist").hide();
+			$("#start_robot").show();
+		}
+	}
+}
+
+function discard_select_robot()
+{
+	$("#div_robotlist").hide();
+	$("#start_robot").show();
+}
+
+function check_game_room(destno)
+{
+    return (destno >= 37);
+}
+
+
+function show_robotlist()
+{
+    if (check_game_room(g_destno))
+    {
+        alert("这是比赛大厅，跟AI对弈请到练习大厅！");
+        return;
+    }
+	if (!this.disabled)
+	{
+        var result = service.get_all_robots();
+        var robotlist = result.robot;
+        var list = $("#robotlist");
+        list.empty();
+        list.append("<option value=\"请选择机器人\">请选择机器人</option>");
+        for (var i = 0; i < robotlist.length; i++) {
+            list.append("<option value=\"" + robotlist[i] + "\">" + robotlist[i] + "</option>");
+        }
+        $("#div_robotlist").show();	
+        $("#start_robot").hide();        
+    }
+}
+
+function start_robot()
+{	
+	show_robotlist();
+}
+
+
 function start_hall()
 {
-    try {
-			if (confirm("是否要离开房间?"))
-			{
-				clearInterval(poll_timerID);
-				hall_service.leave_room();
-				location.href = "hall.html";
-			}	
-     } catch(e) {
-        alert(e);
-     }	
+    location.href = "hall.html";
 }
 
 function set_grid_inlegal()
@@ -354,4 +467,21 @@ function enter_bn()
 function leave_bn()
 {
 	this.style.background = "#FFFFFF";
+}
+
+function set_dest_no(destno)
+{
+   document.getElementById('dest_no').innerHTML = "房间号：" + destno;  
+}
+ 
+
+function chat()
+{
+	var Msg = $("#chat-area").val();
+	if ("" == Msg)
+	{
+		return;
+	}
+	$("#chat-area").val('');
+	service.chat(g_destno, g_username + " : " + Msg);
 }

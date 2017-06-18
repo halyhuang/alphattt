@@ -9,13 +9,14 @@ var hall =
 	lineSize:3,	//行显示的游戏房间行数
 	curPage:0,	//当前页码
 	pageNum:0,	//总页数
-	roomNum:0	//游戏房间数
+	roomNum:0,	//游戏房间数
+	now_game_hall:false	// true:当前处于比赛大厅 false:当前处于练习大厅
 };
 
 $(document).ready(function() {
 	check_login();
 	UpdatePage();
-	timerID = setInterval(UpdatePage, 3000);	
+//	timerID = setInterval(UpdatePage, 3000);	
 	}
 )
 
@@ -35,27 +36,27 @@ function check_login()
 
 function UpdatePage()
 {
-	ShowHall();
-	ShowRankList();
-	SetListHover("#ranklist");
-	ShowOnLineList();
-	SetListHover("#onlinelist");
+	ShowHall(hall.now_game_hall);
+	ShowRankList($("#ranklist"));
+	SetListHover($("#ranklist"));
+	ShowOnLineList($("#onlinelist"));
+	SetListHover($("#onlinelist"));
 }
 
-function ShowHall()
+function ShowHall(now_game_hall)
 {
-	getHallState();
-	DisplayHall();
+	getHallState(now_game_hall);
+	DisplayHall(now_game_hall);
 }
 
-function ShowRankList()
+function ShowRankList(table)
 {
-	CreateRankList(getRankList(),"#ranklist");
+	CreateRankList(getRankList(),table);
 }
 
-function ShowOnLineList()
+function ShowOnLineList(table)
 {
-	CreateOnLineUsersList(getOneLineList(),"#onlinelist");
+	CreateOnLineUsersList(getOneLineList(),table);
 }
 
 function enterRoom(tableid)
@@ -68,11 +69,18 @@ function enterRoom(tableid)
      }	
 }
 
-function getHallState()
+function getHallState(now_game_hall)
 {
     try 
 	{
-		hall.data = service.get_hallState();		
+		if(now_game_hall)
+		{
+			hall.data = service.get_hallState("game");	// TODO
+		}
+		else
+		{
+			hall.data = service.get_hallState("practice");	
+		}
 		hall.roomNum = hall.data.rooms.length;
 		var lineNum=hall.roomNum % hall.lineSize==0 ? hall.roomNum/hall.lineSize : Math.floor(hall.roomNum/hall.lineSize)+1;//根据记录条数，计算行数
 		hall.pageNum = lineNum % hall.pageSize==0 ? lineNum/hall.pageSize : Math.floor(lineNum/hall.pageSize)+1;//根据记录条数，计算页数
@@ -83,16 +91,45 @@ function getHallState()
 }
 
 // 根据游戏大厅数据生成大厅的HTML脚本
-function DisplayHall()
+function DisplayHall(now_game_hall)
 { 
 	if( !hall.data )
 		return;
 	var table = $("#gamehalltb");
 	table.empty();
+	CreateHallHead(now_game_hall,table)
 	CreateHall(table);
 	DisplayPages(table);
 
 }	
+
+function ChangeHall(goto_game_hall)
+{
+	hall.now_game_hall = goto_game_hall;
+	UpdatePage();
+}
+
+function CreateHallHead(now_game_hall,table)
+{
+	var nowHall,goto_game_hall,gotoHall;
+	if(now_game_hall)
+	{
+		nowHall="比赛大厅";
+		gotoHall = "练习大厅";
+		goto_game_hall = "false";
+	}
+	else
+	{
+		nowHall="练习大厅";
+		gotoHall = "比赛大厅";
+		goto_game_hall = "true";
+	}
+	var tr=$("<tr><th class=\"hallname\">" + 
+		nowHall +"</th><th><a href=\"#\" onclick=\"ChangeHall("+goto_game_hall+")\">前往"+
+		gotoHall + "</a></th><th><a href=\"#\" onclick=\"window.open('../guide.html')\">用户指南</th></tr>");
+	tr.appendTo(table);
+
+}
 
 // 根据游戏大厅数据生成大厅的HTML脚本
 function CreateHall(table)
@@ -143,7 +180,9 @@ function DisplayPages(table)
 	}
 	tr=$("<tr></tr>");
 	tr.appendTo(table);
-	td=$("<td class=\"tight\"> 前往 " +pages + "</td>");
+	td=$("<td style=\"padding-top: 0px;\" class=\"tight\"> 前往 " +pages + "</td>");
+	td.appendTo(tr);
+	td=$("<td style=\"padding-top: 0px;\" class=\"tight\"> <img src=\"image/lecheng_touming.png\" width=\"30px\" height=\"40px\">乐橙团队出品</td>");
 	td.appendTo(tr);
 
 }	
@@ -153,7 +192,7 @@ function Jumpto(page)
 	if( page > 0 && page <= hall.pageNum )
 	{
 		hall.curPage = page-1;
-		DisplayHall();
+		DisplayHall(hall.now_game_hall);
 	}
 }	
 
@@ -162,11 +201,20 @@ function getRankList()
 {
     try 
 	{
-		return service.get_RankList();
-     } catch(e) 
-	 {
-        alert(e);
-     }	
+		if(hall.now_game_hall)
+		{
+			return service.get_RankList("game");	//TODO
+		}
+		else
+		{
+			return service.get_RankList("practice");
+		}
+		
+	} 
+	catch(e) 
+	{
+		alert(e);
+	}	
 }
 
 // 查询在线用户数据
@@ -226,10 +274,10 @@ function CreateOnLineUsersList(list,table)
 
 function SetListHover(table)
 {
-	$(table).delegate("tr","mouseover",function(){
+	table.delegate("tr","mouseover",function(){
 		$(this).addClass("over")
 	});	
-	$(table).delegate("tr","mouseout",function(){
+	table.delegate("tr","mouseout",function(){
 		$(this).removeClass("over");
 	});	
 }
@@ -258,22 +306,9 @@ function getTableHtml(talbeid)
 
 function ClearTableButHead(table)
 {
-	var cit= $(table);
-	if(cit.size()>0) {
-	   cit.find("tr:not(:first)").remove();
+	if(table.size()>0) {
+	   table.find("tr:not(:first)").remove();
 	}
 }
 
-function reserved(tablied,player)
-{
-	var username = $.cookie("username");
-	var password = $.cookie("password");
-    try 
-	{
-		alert();
-	} catch(e) 
-	{
-		alert(e);
-	}
-}
 
