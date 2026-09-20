@@ -1,3 +1,5 @@
+
+
 Alpha Tic Tac Toe Ultimate
 =====
 
@@ -48,7 +50,7 @@ deploy.bat
 在unix/bash环境下，执行
 
 ```bash
-bash deploy.bat
+bash deploy.sh
 ```
 
 这个脚本用于初始化数据库，仅需执行一遍。
@@ -249,4 +251,3 @@ if __name__ == '__main__':
 
 Working with C/C++
 -----
-
